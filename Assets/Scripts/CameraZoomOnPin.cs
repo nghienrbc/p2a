@@ -22,6 +22,7 @@ public class CameraZoomOnPin : MonoBehaviour
             initialCameraPosition = new GameObject("InitialCameraPosition").transform;
             initialCameraPosition.position = mainCamera.transform.position;
             initialCameraPosition.rotation = mainCamera.transform.rotation;
+
         }
     }
 
