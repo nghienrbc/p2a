@@ -50,12 +50,12 @@ public class GameSceneManager : MonoBehaviour
             {
 
                // ShowMessageBox("login success!");
-               // StartCoroutine(LoadNextAsyncScene("DashboardScene"));
+               StartCoroutine(LoadNextAsyncScene("DashboardScene"));
 
             }
         }
-        string url = "https://mobile-quanlybaochi.quangbinh.gov.vn/api/v1/media/view/2024/7/769_97c613943e3e2ca1688eafd9a21eadda.png";
-        GenerateQRCode(url);
+        //string url = "https://mobile-quanlybaochi.quangbinh.gov.vn/api/v1/media/view/2024/7/769_97c613943e3e2ca1688eafd9a21eadda.png";
+       // GenerateQRCode(url);
     }
 
     private void OnEnable()

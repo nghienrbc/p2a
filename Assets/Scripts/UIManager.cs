@@ -119,4 +119,9 @@ public class UIManager : MonoBehaviour
     {
         takePhotoAndUpload.SaveImage();
     }
+
+    public void BtnUploadPhotoClick()
+    {
+        takePhotoAndUpload.UploadPhoto();
+    }
 }
