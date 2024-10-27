@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LocationSceneManager : MonoBehaviour
@@ -393,5 +394,10 @@ public class LocationSceneManager : MonoBehaviour
 
         largeImageRectTransform.anchoredPosition = Vector2.zero;
         largeImageCanvasGroup.alpha = originalAlpha;
+    }
+
+    public void BtnBackClick()
+    {
+        SceneManager.LoadScene("PlayGameScene");
     }
 }

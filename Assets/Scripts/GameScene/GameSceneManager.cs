@@ -237,4 +237,9 @@ public class GameSceneManager : MonoBehaviour
         // thông báo nhập username và password 
         MessagePanel.transform.parent.gameObject.SetActive(true);
     }
+
+    public void BtnBackClick()
+    {
+        SceneManager.LoadScene("PlayGameScene");
+    }
 }

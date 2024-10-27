@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.Duytan.P2A.launcher-mergeDebugResources-10:/values-night-v8/values-night-v8.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Duc Nguyen\\.gradle\\caches\\transforms-3\\149517926d2529416d44e5df212fa381\\transformed\\gpm-webview\\res\\values-night-v8\\values-night-v8.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "286"
+                    }
+                }
+            ]
+        }
+    ]
+}

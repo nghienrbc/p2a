@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -123,5 +124,11 @@ public class UIManager : MonoBehaviour
     public void BtnUploadPhotoClick()
     {
         takePhotoAndUpload.UploadPhoto();
+    }
+
+
+    public void BtnBackClick()
+    {
+        SceneManager.LoadScene("PlayGameScene");
     }
 }
