@@ -354,7 +354,10 @@ struct UnaryExpression_tFB4F40A211A2FF9B58F1A86E0EDB474121867B96;
 struct Void_t4861ACF8F4594C3437BB48B6E56783494B843915;
 struct DebugInfoComparer_tF6521053ED3200284BB605E744AF65A0482F861A;
 struct GreaterThanByte_t020A4008B3BD4AB29C1137D05B5C15D87CBB49DA;
+struct GreaterThanChar_t978838F63424DAB7B3CE4DDFEFC0D0F1210B4B98;
 struct GreaterThanDouble_t4A37AF7395381B96C574A309987A52BF4B86F4DD;
+struct GreaterThanInt32_t238646BEA3C4570989A8A0A1D0896C4768B330AA;
+struct GreaterThanInt64_t433128C33E5BB0FFFCEA64F986A938C418E966B9;
 struct GreaterThanSingle_t3900C7A4FEC0E4B09FEDECEC1ACF3C1E1D8EDD03;
 struct GreaterThanUInt16_t130DB55D5A550058F7AFEAD7DCD20C74308CF7E2;
 struct GreaterThanUInt32_t9E80D5AB17A39C9F4C792B64FFA71B4B080A2444;
@@ -2140,7 +2143,16 @@ struct StoreStaticFieldInstruction_t0BAF143B7FDCABDB4FD7363E3A2CF24A83114CF4  : 
 struct GreaterThanByte_t020A4008B3BD4AB29C1137D05B5C15D87CBB49DA  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
 {
 };
+struct GreaterThanChar_t978838F63424DAB7B3CE4DDFEFC0D0F1210B4B98  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
+{
+};
 struct GreaterThanDouble_t4A37AF7395381B96C574A309987A52BF4B86F4DD  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
+{
+};
+struct GreaterThanInt32_t238646BEA3C4570989A8A0A1D0896C4768B330AA  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
+{
+};
+struct GreaterThanInt64_t433128C33E5BB0FFFCEA64F986A938C418E966B9  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
 {
 };
 struct GreaterThanSingle_t3900C7A4FEC0E4B09FEDECEC1ACF3C1E1D8EDD03  : public GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D
@@ -4455,6 +4467,228 @@ inline void List_1_AddWithResize_m47222083904E5992F1343D4C4CE32F5282C06809 (List
 {
 	((  void (*) (List_1_t6CD7C05A234AA2E6AB05AA0F27B4FDFF79C0E61D*, InstructionView_tA381D8A27DEDDEE43C71B3BB3A2FADC0CD059A3D, const RuntimeMethod*))List_1_AddWithResize_m47222083904E5992F1343D4C4CE32F5282C06809_gshared)(__this, ___0_item, method);
 }
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GreaterThanChar__ctor_m5D5434CE9C4512D0F4E0520A2A216383DC2D55C7 (GreaterThanChar_t978838F63424DAB7B3CE4DDFEFC0D0F1210B4B98* __this, RuntimeObject* ___0_nullValue, const RuntimeMethod* method) 
+{
+	{
+		RuntimeObject* L_0 = ___0_nullValue;
+		GreaterThanInstruction__ctor_mC670DA8EA6E27D811856CC33FD8EC1058EB85C2A(__this, L_0, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t GreaterThanChar_Run_m6CAD68EA0C4C67BAA8E45C99C2BCE487D2E06206 (GreaterThanChar_t978838F63424DAB7B3CE4DDFEFC0D0F1210B4B98* __this, InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* ___0_frame, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Char_t521A6F19B456D956AF452D926C32709DC03D6B17_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	RuntimeObject* V_0 = NULL;
+	RuntimeObject* V_1 = NULL;
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_0 = ___0_frame;
+		NullCheck(L_0);
+		RuntimeObject* L_1;
+		L_1 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_0, NULL);
+		V_0 = L_1;
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_2 = ___0_frame;
+		NullCheck(L_2);
+		RuntimeObject* L_3;
+		L_3 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_2, NULL);
+		V_1 = L_3;
+		RuntimeObject* L_4 = V_1;
+		if (!L_4)
+		{
+			goto IL_0014;
+		}
+	}
+	{
+		RuntimeObject* L_5 = V_0;
+		if (L_5)
+		{
+			goto IL_0022;
+		}
+	}
+
+IL_0014:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_6 = ___0_frame;
+		RuntimeObject* L_7 = ((GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D*)__this)->____nullValue;
+		NullCheck(L_6);
+		InterpretedFrame_Push_m3AB9DC7D70271DF1C6994B37C196C430FFDDAC53(L_6, L_7, NULL);
+		goto IL_0036;
+	}
+
+IL_0022:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_8 = ___0_frame;
+		RuntimeObject* L_9 = V_1;
+		RuntimeObject* L_10 = V_0;
+		NullCheck(L_8);
+		InterpretedFrame_Push_mE3F348D8327A9AC2B555DC21DFB26F4F0F9C314C(L_8, (bool)((((int32_t)((*(Il2CppChar*)((Il2CppChar*)(Il2CppChar*)UnBox(L_9, Char_t521A6F19B456D956AF452D926C32709DC03D6B17_il2cpp_TypeInfo_var))))) > ((int32_t)((*(Il2CppChar*)((Il2CppChar*)(Il2CppChar*)UnBox(L_10, Char_t521A6F19B456D956AF452D926C32709DC03D6B17_il2cpp_TypeInfo_var))))))? 1 : 0), NULL);
+	}
+
+IL_0036:
+	{
+		return 1;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GreaterThanInt32__ctor_m95C3766621EC0A01B5C1134C34D6082C6FF8F886 (GreaterThanInt32_t238646BEA3C4570989A8A0A1D0896C4768B330AA* __this, RuntimeObject* ___0_nullValue, const RuntimeMethod* method) 
+{
+	{
+		RuntimeObject* L_0 = ___0_nullValue;
+		GreaterThanInstruction__ctor_mC670DA8EA6E27D811856CC33FD8EC1058EB85C2A(__this, L_0, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t GreaterThanInt32_Run_m2292CF2A1985E98A4287403A1715ACE99A4AE0B7 (GreaterThanInt32_t238646BEA3C4570989A8A0A1D0896C4768B330AA* __this, InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* ___0_frame, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Int32_t680FF22E76F6EFAD4375103CBBFFA0421349384C_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	RuntimeObject* V_0 = NULL;
+	RuntimeObject* V_1 = NULL;
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_0 = ___0_frame;
+		NullCheck(L_0);
+		RuntimeObject* L_1;
+		L_1 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_0, NULL);
+		V_0 = L_1;
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_2 = ___0_frame;
+		NullCheck(L_2);
+		RuntimeObject* L_3;
+		L_3 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_2, NULL);
+		V_1 = L_3;
+		RuntimeObject* L_4 = V_1;
+		if (!L_4)
+		{
+			goto IL_0014;
+		}
+	}
+	{
+		RuntimeObject* L_5 = V_0;
+		if (L_5)
+		{
+			goto IL_0022;
+		}
+	}
+
+IL_0014:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_6 = ___0_frame;
+		RuntimeObject* L_7 = ((GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D*)__this)->____nullValue;
+		NullCheck(L_6);
+		InterpretedFrame_Push_m3AB9DC7D70271DF1C6994B37C196C430FFDDAC53(L_6, L_7, NULL);
+		goto IL_0036;
+	}
+
+IL_0022:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_8 = ___0_frame;
+		RuntimeObject* L_9 = V_1;
+		RuntimeObject* L_10 = V_0;
+		NullCheck(L_8);
+		InterpretedFrame_Push_mE3F348D8327A9AC2B555DC21DFB26F4F0F9C314C(L_8, (bool)((((int32_t)((*(int32_t*)((int32_t*)(int32_t*)UnBox(L_9, Int32_t680FF22E76F6EFAD4375103CBBFFA0421349384C_il2cpp_TypeInfo_var))))) > ((int32_t)((*(int32_t*)((int32_t*)(int32_t*)UnBox(L_10, Int32_t680FF22E76F6EFAD4375103CBBFFA0421349384C_il2cpp_TypeInfo_var))))))? 1 : 0), NULL);
+	}
+
+IL_0036:
+	{
+		return 1;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void GreaterThanInt64__ctor_m8F2A22A9BC81E986511CE6642A96605742333269 (GreaterThanInt64_t433128C33E5BB0FFFCEA64F986A938C418E966B9* __this, RuntimeObject* ___0_nullValue, const RuntimeMethod* method) 
+{
+	{
+		RuntimeObject* L_0 = ___0_nullValue;
+		GreaterThanInstruction__ctor_mC670DA8EA6E27D811856CC33FD8EC1058EB85C2A(__this, L_0, NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t GreaterThanInt64_Run_mA0A2268CC7D8A5ED0A129B4CDB0BAC3EB8BE9868 (GreaterThanInt64_t433128C33E5BB0FFFCEA64F986A938C418E966B9* __this, InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* ___0_frame, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Int64_t092CFB123BE63C28ACDAF65C68F21A526050DBA3_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	RuntimeObject* V_0 = NULL;
+	RuntimeObject* V_1 = NULL;
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_0 = ___0_frame;
+		NullCheck(L_0);
+		RuntimeObject* L_1;
+		L_1 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_0, NULL);
+		V_0 = L_1;
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_2 = ___0_frame;
+		NullCheck(L_2);
+		RuntimeObject* L_3;
+		L_3 = InterpretedFrame_Pop_mB08F9A4193FC9EEDFA06CF1D1950A4D6FDE035A3(L_2, NULL);
+		V_1 = L_3;
+		RuntimeObject* L_4 = V_1;
+		if (!L_4)
+		{
+			goto IL_0014;
+		}
+	}
+	{
+		RuntimeObject* L_5 = V_0;
+		if (L_5)
+		{
+			goto IL_0022;
+		}
+	}
+
+IL_0014:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_6 = ___0_frame;
+		RuntimeObject* L_7 = ((GreaterThanInstruction_tD80265D7C665F3D083AB43CA8DA033CEFF64CC1D*)__this)->____nullValue;
+		NullCheck(L_6);
+		InterpretedFrame_Push_m3AB9DC7D70271DF1C6994B37C196C430FFDDAC53(L_6, L_7, NULL);
+		goto IL_0036;
+	}
+
+IL_0022:
+	{
+		InterpretedFrame_tF030A9AC78837B1C2F9CD54B43F7A04D85A8D92D* L_8 = ___0_frame;
+		RuntimeObject* L_9 = V_1;
+		RuntimeObject* L_10 = V_0;
+		NullCheck(L_8);
+		InterpretedFrame_Push_mE3F348D8327A9AC2B555DC21DFB26F4F0F9C314C(L_8, (bool)((((int64_t)((*(int64_t*)((int64_t*)(int64_t*)UnBox(L_9, Int64_t092CFB123BE63C28ACDAF65C68F21A526050DBA3_il2cpp_TypeInfo_var))))) > ((int64_t)((*(int64_t*)((int64_t*)(int64_t*)UnBox(L_10, Int64_t092CFB123BE63C28ACDAF65C68F21A526050DBA3_il2cpp_TypeInfo_var))))))? 1 : 0), NULL);
+	}
+
+IL_0036:
+	{
+		return 1;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"

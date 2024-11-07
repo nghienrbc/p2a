@@ -1,4 +1,4 @@
-﻿using Mono.Data.Sqlite;
+﻿//using Mono.Data.Sqlite;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -7,6 +7,35 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using SQLite4Unity3d;
+using System.Linq;
+
+public class Location
+{
+    [PrimaryKey, AutoIncrement]
+    public int id { get; set; }
+
+    public string location_name { get; set; }
+    public int nation_id { get; set; }  // Phải khớp với trường nation_id trong database
+}
+
+public class P2ADataService
+{
+    private SQLiteConnection _connection;
+
+    public P2ADataService(string databasePath)
+    {
+        // Kết nối đến database với đường dẫn cho sẵn
+        _connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create);
+        Debug.Log("Connected to database at " + databasePath);
+    }
+
+    // Phương thức để lấy tất cả Location theo nation_id
+    public IEnumerable<Location> GetLocationsByNationId(int nationId)
+    {
+        return _connection.Table<Location>().Where(loc => loc.nation_id == nationId).ToList();
+    }
+}
 
 public class LocationSceneManager : MonoBehaviour
 {
@@ -32,6 +61,7 @@ public class LocationSceneManager : MonoBehaviour
     private float originalAlpha = 1f; // Độ mờ gốc của ảnh lớn
     private CanvasGroup largeImageCanvasGroup; // Để thay đổi độ mờ (alpha) của ảnh lớn
 
+    private P2ADataService _dataService;
 
     // Start is called before the first frame update
     void Start()
@@ -44,80 +74,120 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup = largeImage.gameObject.GetComponent<CanvasGroup>();
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
 
+        // Thiết lập đường dẫn tới database trong StreamingAssets
+        string dbPath = GetDatabasePath("p2a.db");
+        _dataService = new P2ADataService(dbPath);
 
-        // Đường dẫn tới file database trong thư mục StreamingAssets
-        string filepath = Path.Combine(Application.streamingAssetsPath, "p2a.db");
+        // Gọi phương thức để lấy các Location có nation_id là 1 (có thể thay thế tùy theo yêu cầu)
+        int targetNationId = 1;
+        IEnumerable<Location> locations = _dataService.GetLocationsByNationId(targetNationId);
 
-        // Với Android, cần copy database từ StreamingAssets sang persistentDataPath để có quyền truy cập đọc/ghi
-        if (Application.platform == RuntimePlatform.Android)
+        // In kết quả ra Console
+        foreach (var location in locations)
         {
-            string loadDb = Path.Combine(Application.persistentDataPath, "p2a.db");
-
-            if (!File.Exists(loadDb))
-            {
-                WWW loadDbFile = new WWW(filepath);
-                while (!loadDbFile.isDone) { }
-
-                File.WriteAllBytes(loadDb, loadDbFile.bytes);
-            }
-
-            dbPath = loadDb;
+            Debug.Log($"Location ID: {location.id}, Name: {location.location_name}, Nation ID: {location.nation_id}");
         }
-        else
-        {
-            dbPath = filepath;
-        }
-        // Giả sử bạn lấy các hình ảnh thuộc location_id = 1
-        LoadImagesByLocation(1);
+
+        //// Đường dẫn tới file database trong thư mục StreamingAssets
+        //string filepath = Path.Combine(Application.streamingAssetsPath, "p2a.db");
+
+        //// Với Android, cần copy database từ StreamingAssets sang persistentDataPath để có quyền truy cập đọc/ghi
+        //if (Application.platform == RuntimePlatform.Android)
+        //{
+        //    string loadDb = Path.Combine(Application.persistentDataPath, "p2a.db");
+
+        //    if (!File.Exists(loadDb))
+        //    {
+        //        WWW loadDbFile = new WWW(filepath);
+        //        while (!loadDbFile.isDone) { }
+
+        //        File.WriteAllBytes(loadDb, loadDbFile.bytes);
+        //    }
+
+        //    dbPath = loadDb;
+        //}
+        //else
+        //{
+        //    dbPath = filepath;
+        //}
+        //// Giả sử bạn lấy các hình ảnh thuộc location_id = 1
+        //LoadImagesByLocation(1);
     }
+    // Phương thức để lấy đường dẫn tới database
+    private string GetDatabasePath(string dbName)
+    {
+        string path;
+
+#if UNITY_EDITOR
+        path = Application.dataPath + "/StreamingAssets/" + dbName;
+#elif UNITY_ANDROID
+        path = Application.persistentDataPath + "/" + dbName;
+        if (!System.IO.File.Exists(path))
+        {
+            var loadDb = new WWW("jar:file://" + Application.dataPath + "!/assets/" + dbName);
+            while (!loadDb.isDone) { }
+            System.IO.File.WriteAllBytes(path, loadDb.bytes);
+        }
+#elif UNITY_IOS
+        path = Application.persistentDataPath + "/" + dbName;
+        if (!System.IO.File.Exists(path))
+        {
+            var loadDb = System.IO.Path.Combine(Application.dataPath + "/Raw", dbName);
+            System.IO.File.Copy(loadDb, path);
+        }
+#endif
+
+        return path;
+    }
+
     private void Update()
     {
         HandleMouseDrag();
     }
-    void LoadImagesByLocation(int locationId)
-    {
-        // Kết nối tới database
-        string conn = "URI=file:" + dbPath; // Path to database.
-        using (IDbConnection dbconn = new SqliteConnection(conn))
-        {
-            dbconn.Open(); // Mở kết nối tới database.
-            using (IDbCommand dbcmd = dbconn.CreateCommand())
-            {
-                // Truy vấn các hình ảnh dựa trên location_id
-                string sqlQuery = "SELECT image_name FROM image WHERE location_id = @location_id";
-                dbcmd.CommandText = sqlQuery;
-                var parameter = dbcmd.CreateParameter();
-                parameter.ParameterName = "@location_id";
-                parameter.Value = locationId;
-                dbcmd.Parameters.Add(parameter);
+    //void LoadImagesByLocation(int locationId)
+    //{
+    //    // Kết nối tới database
+    //    string conn = "URI=file:" + dbPath; // Path to database.
+    //    using (IDbConnection dbconn = new SqliteConnection(conn))
+    //    {
+    //        dbconn.Open(); // Mở kết nối tới database.
+    //        using (IDbCommand dbcmd = dbconn.CreateCommand())
+    //        {
+    //            // Truy vấn các hình ảnh dựa trên location_id
+    //            string sqlQuery = "SELECT image_name FROM image WHERE location_id = @location_id";
+    //            dbcmd.CommandText = sqlQuery;
+    //            var parameter = dbcmd.CreateParameter();
+    //            parameter.ParameterName = "@location_id";
+    //            parameter.Value = locationId;
+    //            dbcmd.Parameters.Add(parameter);
 
-                using (IDataReader reader = dbcmd.ExecuteReader())
-                {
-                    // Danh sách đường dẫn tới các hình ảnh
-                    List<string> imagePaths = new List<string>();
+    //            using (IDataReader reader = dbcmd.ExecuteReader())
+    //            {
+    //                // Danh sách đường dẫn tới các hình ảnh
+    //                List<string> imagePaths = new List<string>();
 
-                    while (reader.Read())
-                    {
-                        // Lấy tên file của hình ảnh
-                        string imageName = reader.GetString(0);
-                        string imagePath = Path.Combine(Application.streamingAssetsPath, "Images", imageName) + ".jpg";
+    //                while (reader.Read())
+    //                {
+    //                    // Lấy tên file của hình ảnh
+    //                    string imageName = reader.GetString(0);
+    //                    string imagePath = Path.Combine(Application.streamingAssetsPath, "Images", imageName) + ".jpg";
 
-                        // Thêm hình ảnh vào danh sách
-                        imagePaths.Add(imagePath);
-                    }
+    //                    // Thêm hình ảnh vào danh sách
+    //                    imagePaths.Add(imagePath);
+    //                }
 
-                    // Hiển thị hình ảnh trong ScrollView
-                    DisplayImages(imagePaths);
+    //                // Hiển thị hình ảnh trong ScrollView
+    //                DisplayImages(imagePaths);
 
-                    reader.Close();
-                }
+    //                reader.Close();
+    //            }
 
-                dbcmd.Dispose();
-            }
+    //            dbcmd.Dispose();
+    //        }
 
-            dbconn.Close();
-        }
-    }
+    //        dbconn.Close();
+    //    }
+    //}
 
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplayImages(List<string> imagePaths)

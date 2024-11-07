@@ -19538,7 +19538,7 @@ IL_0040_1:
 				XmlElement_t9A08B533E9A6B3548A1DE35476186F7ECCDF6FF1* L_15 = L_14;
 				NullCheck(L_15);
 				String_t* L_16;
-				L_16 = VirtualFuncInvoker0< String_t* >::Invoke(36, L_15);
+				L_16 = VirtualFuncInvoker0< String_t* >::Invoke(31, L_15);
 				V_4 = L_16;
 				Dictionary_2_tB6CE3B793B413BC658CEFEF1339D0C1E2DE28904* L_17 = __this->___languagePacks;
 				String_t* L_18 = V_4;
@@ -19568,7 +19568,7 @@ IL_0072_1:
 			{
 				NullCheck(G_B7_0);
 				String_t* L_24;
-				L_24 = VirtualFuncInvoker0< String_t* >::Invoke(38, G_B7_0);
+				L_24 = VirtualFuncInvoker0< String_t* >::Invoke(33, G_B7_0);
 				NullCheck(L_24);
 				String_t* L_25;
 				L_25 = String_Replace_mABDB7003A1D0AEDCAE9FF85E3DFFFBA752D2A166(L_24, _stringLiteral785F17F45C331C415D0A7458E6AAC36966399C51, _stringLiteral00B28FF06B788B9B67C6B259800F404F9F3761FD, NULL);

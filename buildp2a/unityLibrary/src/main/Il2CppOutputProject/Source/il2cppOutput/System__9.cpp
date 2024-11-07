@@ -11191,7 +11191,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ComponentResourceManager_ApplyResources_
 	{
 		RuntimeObject* L_0 = ___0_value;
 		String_t* L_1 = ___1_objectName;
-		VirtualActionInvoker3< RuntimeObject*, String_t*, CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* >::Invoke(10, __this, L_0, L_1, (CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0*)NULL);
+		VirtualActionInvoker3< RuntimeObject*, String_t*, CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* >::Invoke(9, __this, L_0, L_1, (CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0*)NULL);
 		return;
 	}
 }

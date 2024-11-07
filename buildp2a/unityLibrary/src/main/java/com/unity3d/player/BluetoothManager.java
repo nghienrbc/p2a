@@ -10,8 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
@@ -30,9 +32,14 @@ public class BluetoothManager {
     private InputStream inputStream;
     private boolean isConnected = false;
 
+    private String targetDeviceAddress;
+    private Thread connectionCheckerThread;
+
     // UUID cho kết nối Bluetooth SPP (Serial Port Profile)
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothDevice device;
+
+
 
     public BluetoothManager(Activity activity) {
         this.activity = activity;
@@ -73,10 +80,6 @@ public class BluetoothManager {
         activity.registerReceiver(bluetoothReceiver, filter);
     }
 
-    // Hủy đăng ký receiver khi không cần thiết nữa (thường trong onDestroy của Activity)
-    public void unregisterReceiver() {
-        activity.unregisterReceiver(bluetoothReceiver);
-    }
 
     // Bật Bluetooth
     public void enableBluetooth() {
@@ -111,7 +114,7 @@ public class BluetoothManager {
                 return;
             }
             bluetoothAdapter.disable();
-           Toast.makeText(activity, "Bluetooth đã được tắt", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Bluetooth đã được tắt", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -127,8 +130,7 @@ public class BluetoothManager {
                 // Quyền đã được cấp, bật Bluetooth
                 if (!bluetoothAdapter.isEnabled()) {
                     enableBluetooth();
-                }
-                else{
+                } else {
                     disableBluetooth();
                 }
             } else {
@@ -136,4 +138,183 @@ public class BluetoothManager {
             }
         }
     }
+
+    private BroadcastReceiver deviceReceiver;
+
+    // Bắt đầu quét thiết bị Bluetooth
+    public void startDiscovery() {
+       // Toast.makeText(activity, "call start", Toast.LENGTH_SHORT).show();
+
+        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_BLUETOOTH_PERMISSION);
+                return;
+            }
+            // Đăng ký receiver để nhận các thiết bị tìm thấy
+            deviceReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+                                ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions(activity,
+                                    new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_BLUETOOTH_PERMISSION);
+                            return;
+                        }
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        if (device != null) {
+                            // Lấy địa chỉ thiết bị và tên nếu có
+                            String deviceName = device.getName() != null ? device.getName() : "Unknown Device";
+                            String deviceAddress = device.getAddress() != null ? device.getAddress() : "Unknown Address";
+
+                            // Gửi thông tin thiết bị về Unity
+                            if (deviceName != null && deviceAddress != null) {
+                                Toast.makeText(activity, deviceName, Toast.LENGTH_SHORT).show();
+                                UnityPlayer.UnitySendMessage("UIManager", "OnDeviceFound", deviceName + ";" + deviceAddress);
+                            }
+                        }
+                        else {
+                            Log.w("BluetoothManager", "Device is null in ACTION_FOUND broadcast");
+                        }
+                    }
+                }
+            };
+
+            // Đăng ký receiver cho thiết bị tìm thấy
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            activity.registerReceiver(deviceReceiver, filter);
+
+            // Bắt đầu quá trình quét thiết bị
+            boolean started = bluetoothAdapter.startDiscovery();
+            if (started) {
+                Toast.makeText(activity, "Bắt đầu quét thiết bị...", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(activity, "Không thể bắt đầu quét", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(activity, "Bluetooth chưa được bật", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Dừng quét thiết bị Bluetooth
+    public void stopDiscovery() {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_BLUETOOTH_PERMISSION);
+            return;
+        }
+        if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
+        }
+        if (deviceReceiver != null) {
+            activity.unregisterReceiver(deviceReceiver);
+            deviceReceiver = null;
+        }
+    }
+
+    // Bỏ đăng ký tất cả receiver
+    public void unregisterReceiver() {
+        if (bluetoothReceiver != null) {
+            activity.unregisterReceiver(bluetoothReceiver);
+            bluetoothReceiver = null;
+        }
+        if (deviceReceiver != null) {
+            activity.unregisterReceiver(deviceReceiver);
+            deviceReceiver = null;
+        }
+    }
+
+    public void connectToDevice(String deviceAddress) {
+        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
+        try {
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{android.Manifest.permission.BLUETOOTH_CONNECT},
+                        REQUEST_BLUETOOTH_PERMISSION);
+                return;
+            }
+            // Tạo một BluetoothSocket
+            bluetoothSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+            bluetoothSocket.connect();
+            inputStream = bluetoothSocket.getInputStream();
+            isConnected = true;
+            UnityPlayer.UnitySendMessage("UIManager", "OnDeviceConnected", "Connected to " + deviceAddress);
+
+            // Bắt đầu luồng đọc dữ liệu
+            startListeningForData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            UnityPlayer.UnitySendMessage("UIManager", "OnDeviceConnected", "Failed to connect to " + deviceAddress);
+            closeConnection();
+        }
+    }
+
+    private void startListeningForData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                byte[] buffer = new byte[1024]; // Bộ đệm để lưu dữ liệu nhận
+                int bytes;
+
+                while (isConnected) {
+                    try {
+                        // Đọc dữ liệu từ InputStream
+                        bytes = inputStream.read(buffer);
+                        String receivedData = new String(buffer, 0, bytes);
+
+                        // Gửi dữ liệu nhận được về Unity
+                        UnityPlayer.UnitySendMessage("UIManager", "OnDataReceived", receivedData);
+                    } catch (IOException e) {
+                        Log.e("BluetoothManager", "Disconnected", e);
+                        closeConnection();
+                        break;
+                    }
+                }
+            }
+        }).start();
+    }
+
+    public void closeConnection() {
+        isConnected = false;
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (bluetoothSocket != null) {
+            try {
+                bluetoothSocket.close();
+                bluetoothSocket = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void disconnect() {
+        if (bluetoothSocket != null) {
+            try {
+                bluetoothSocket.close();
+                bluetoothSocket = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    // Hủy đăng ký receiver khi không cần thiết nữa (thường trong onDestroy của Activity)
+//    public void unregisterReceiver() {
+//        activity.unregisterReceiver(bluetoothReceiver);
+//    }
 }

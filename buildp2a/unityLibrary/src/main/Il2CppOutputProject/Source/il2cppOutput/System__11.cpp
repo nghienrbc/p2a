@@ -22180,7 +22180,7 @@ IL_005c:
 		Assembly_t* L_18 = V_2;
 		NullCheck(L_18);
 		bool L_19;
-		L_19 = VirtualFuncInvoker0< bool >::Invoke(33, L_18);
+		L_19 = VirtualFuncInvoker0< bool >::Invoke(32, L_18);
 		if (L_19)
 		{
 			goto IL_00c8;
@@ -22271,7 +22271,7 @@ IL_00d7:
 		Assembly_t* L_43 = ___1_resourceAssembly;
 		NullCheck(L_43);
 		bool L_44;
-		L_44 = VirtualFuncInvoker0< bool >::Invoke(33, L_43);
+		L_44 = VirtualFuncInvoker0< bool >::Invoke(32, L_43);
 		if (L_44)
 		{
 			goto IL_01bb;
