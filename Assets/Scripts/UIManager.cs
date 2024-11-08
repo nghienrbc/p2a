@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     public GameObject deviceItemPrefab; // Prefab cho mỗi thiết bị
     private List<string> discoveredDevices = new List<string>();
 
+    private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
     // Start is called before the first frame update
     void Start()
     {
@@ -28,8 +29,21 @@ public class UIManager : MonoBehaviour
             AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
         }
-    #endif
+#endif
         recordingIndicator.gameObject.SetActive(false);
+
+        // kiểm tra xem bluetooth đã được bật chưa, nếu chưa bật thì tự động yêu cầu bật
+        if (!IsBluetoothEnabled())
+        { 
+            EnableBluetooth();
+        }
+        else
+        {
+            // Bắt đầu kiểm tra kết nối định kỳ 
+            bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
+            //bluetoothManager.Call("startConnectionCheck");
+        }
+        
     }
 
     // Gọi phương thức bật Bluetooth từ Java
@@ -67,8 +81,7 @@ public class UIManager : MonoBehaviour
         // nếu bluetooth đã được bật
         if (IsBluetoothEnabled())
         {
-            DisableBluetooth();
-            
+            DisableBluetooth(); 
         }
         else
         {
@@ -85,6 +98,10 @@ public class UIManager : MonoBehaviour
         {
             Debug.Log("Bluetooth đã được bật!");
             connectionTxt.text = "bluetooth is enable";
+            // sau khi bluetooth đã được bật, bắt đầu kiểm tra kết nối định kỳ
+            //bluetoothManager.Call("startConnectionCheck"); 
+            bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
+
         }
         else if (state == "OFF")
         {
@@ -145,11 +162,8 @@ public class UIManager : MonoBehaviour
     {
         connectionTxt.text = $"{deviceName} ({deviceAddress})";
         GameObject deviceItem = Instantiate(deviceItemPrefab, deviceListPanel.transform);
-        TextMeshProUGUI deviceText = deviceItem.GetComponent<TextMeshProUGUI>();
-        //Text deviceText = deviceItem.GetComponentInChildren<Text>();
-        deviceText.text = $"{deviceName} ({deviceAddress})";
-        //deviceItem.
-         
+        TextMeshProUGUI deviceText = deviceItem.GetComponent<TextMeshProUGUI>(); 
+        deviceText.text = $"{deviceName} ({deviceAddress})"; 
         deviceItem.GetComponent<Button>().onClick.AddListener(() => OnItemClick(deviceAddress));
     }
 
@@ -159,15 +173,7 @@ public class UIManager : MonoBehaviour
         if (bluetoothManager != null)
         {
             bluetoothManager.Call("connectToDevice", deviceAddress);
-        }
-        for (int i = 0; i < discoveredDevices.Count; i++)
-        {
-            if (discoveredDevices[i] == deviceAddress)
-            {
-
-                break;
-            }
-        }
+        } 
     }
 
     // Nhận trạng thái kết nối từ Java

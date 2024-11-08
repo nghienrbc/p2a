@@ -22,7 +22,7 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (devices.Length > 0)
         {
             // Sử dụng camera đầu tiên
-            for (int i = 0; i < devices.Length; i++)
+            for (int i = 1; i < devices.Length; i++)
             {
                 if (devices[i].isFrontFacing)
                 {

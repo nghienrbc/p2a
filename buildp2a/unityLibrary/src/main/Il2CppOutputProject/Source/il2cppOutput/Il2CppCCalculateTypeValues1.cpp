@@ -9282,7 +9282,7 @@ struct TypeConstructorVisitor_tFC61250F68BF43FE889F5B1002CBFF90648E9C7F  : publi
 struct U3CU3Ec_t5D488D45E7E9A7468509E0FA1FDFEE022913B16E  : public RuntimeObject
 {
 };
-struct U3CU3Ec__DisplayClass17_0_t103745AA6A021B8A77309CA9460B708F61ED5F3A  : public RuntimeObject
+struct U3CU3Ec__DisplayClass18_0_t95EA849ED3F7F81BE3979A9DC81D17B2E3107BB8  : public RuntimeObject
 {
 	UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3* ___U3CU3E4__this;
 	String_t* ___deviceAddress;
@@ -39295,6 +39295,7 @@ struct UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3  : public MonoBehavio
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___deviceListPanel;
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___deviceItemPrefab;
 	List_1_tF470A3BE5C1B5B68E1325EF3F109D172E60BD7CD* ___discoveredDevices;
+	String_t* ___targetDeviceAddress;
 };
 struct UIMultiplyEffect_tDB9E57F0C92FF1F7B1A7C9AEB372489188EEAA74  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
 {
@@ -54696,7 +54697,7 @@ const Il2CppTypeDefinitionSizes g_typeDefinitionSize9638 = { sizeof(U3CUpdateIma
 extern const Il2CppTypeDefinitionSizes g_typeDefinitionSize9639;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9639 = { sizeof(TakePhotoAndUpload_t6928BBAF4C1F0F95A5E76043D1464F9458256D6B), -1, 0, 0 };
 extern const Il2CppTypeDefinitionSizes g_typeDefinitionSize9640;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize9640 = { sizeof(U3CU3Ec__DisplayClass17_0_t103745AA6A021B8A77309CA9460B708F61ED5F3A), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize9640 = { sizeof(U3CU3Ec__DisplayClass18_0_t95EA849ED3F7F81BE3979A9DC81D17B2E3107BB8), -1, 0, 0 };
 extern const Il2CppTypeDefinitionSizes g_typeDefinitionSize9641;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize9641 = { sizeof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3), -1, 0, 0 };
 extern const Il2CppTypeDefinitionSizes g_typeDefinitionSize9642;

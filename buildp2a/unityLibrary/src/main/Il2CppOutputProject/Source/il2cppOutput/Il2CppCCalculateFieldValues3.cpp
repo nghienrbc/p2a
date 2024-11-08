@@ -2807,7 +2807,7 @@ struct TypeConstructorVisitor_tFC61250F68BF43FE889F5B1002CBFF90648E9C7F  : publi
 struct U3CU3Ec_t5D488D45E7E9A7468509E0FA1FDFEE022913B16E  : public RuntimeObject
 {
 };
-struct U3CU3Ec__DisplayClass17_0_t103745AA6A021B8A77309CA9460B708F61ED5F3A  : public RuntimeObject
+struct U3CU3Ec__DisplayClass18_0_t95EA849ED3F7F81BE3979A9DC81D17B2E3107BB8  : public RuntimeObject
 {
 	UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3* ___U3CU3E4__this;
 	String_t* ___deviceAddress;
@@ -12457,6 +12457,7 @@ struct UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3  : public MonoBehavio
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___deviceListPanel;
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___deviceItemPrefab;
 	List_1_tF470A3BE5C1B5B68E1325EF3F109D172E60BD7CD* ___discoveredDevices;
+	String_t* ___targetDeviceAddress;
 };
 struct UIMultiplyEffect_tDB9E57F0C92FF1F7B1A7C9AEB372489188EEAA74  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
 {
@@ -15851,10 +15852,10 @@ IL2CPP_EXTERN_C const int32_t g_FieldOffsetTable9639[3] =
 	static_cast<int32_t>(offsetof(TakePhotoAndUpload_t6928BBAF4C1F0F95A5E76043D1464F9458256D6B, ___cameraDisplay)),static_cast<int32_t>(offsetof(TakePhotoAndUpload_t6928BBAF4C1F0F95A5E76043D1464F9458256D6B, ___webCamTexture)),static_cast<int32_t>(offsetof(TakePhotoAndUpload_t6928BBAF4C1F0F95A5E76043D1464F9458256D6B, ___imgurClientID)),};
 IL2CPP_EXTERN_C const int32_t g_FieldOffsetTable9640[2] = 
 {
-	static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass17_0_t103745AA6A021B8A77309CA9460B708F61ED5F3A, ___U3CU3E4__this)),static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass17_0_t103745AA6A021B8A77309CA9460B708F61ED5F3A, ___deviceAddress)),};
-IL2CPP_EXTERN_C const int32_t g_FieldOffsetTable9641[8] = 
+	static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass18_0_t95EA849ED3F7F81BE3979A9DC81D17B2E3107BB8, ___U3CU3E4__this)),static_cast<int32_t>(offsetof(U3CU3Ec__DisplayClass18_0_t95EA849ED3F7F81BE3979A9DC81D17B2E3107BB8, ___deviceAddress)),};
+IL2CPP_EXTERN_C const int32_t g_FieldOffsetTable9641[9] = 
 {
-	static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___connectionTxt)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___bluetoothManager)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___recordingIndicator)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___recorder)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___takePhotoAndUpload)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___deviceListPanel)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___deviceItemPrefab)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___discoveredDevices)),};
+	static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___connectionTxt)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___bluetoothManager)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___recordingIndicator)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___recorder)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___takePhotoAndUpload)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___deviceListPanel)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___deviceItemPrefab)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___discoveredDevices)),static_cast<int32_t>(offsetof(UIManager_t16825A2483574F37D7D47AB939A6FA639678B1F3, ___targetDeviceAddress)),};
 IL2CPP_EXTERN_C const int32_t g_FieldOffsetTable9643[1] = 
 {
 	0,};
