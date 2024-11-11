@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
 {
     public TMP_Text connectionTxt;
     private AndroidJavaObject bluetoothManager;
+    private AndroidJavaObject mainActivity;
     public Image recordingIndicator;
     public RecordAudio recorder;
     public TakePhotoAndUpload takePhotoAndUpload;
@@ -23,27 +24,127 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
-#if UNITY_ANDROID
+
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        }
+
         using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         {
             AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
         }
-#endif
-        recordingIndicator.gameObject.SetActive(false);
 
-        // kiểm tra xem bluetooth đã được bật chưa, nếu chưa bật thì tự động yêu cầu bật
-        if (!IsBluetoothEnabled())
-        { 
-            EnableBluetooth();
+        recordingIndicator.gameObject.SetActive(false);
+         
+         
+        // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
+        if (AreAllPermissionsGranted())
+        {
+            Debug.Log("Tất cả các quyền đã được cấp");
+            // Thực hiện các thao tác tiếp theo, ví dụ bắt đầu kết nối Bluetooth
+            if (!IsBluetoothEnabled())
+            {
+                EnableBluetooth();
+            }
+            else
+            {
+                if (bluetoothManager != null)
+                {
+                    // Bắt đầu kiểm tra kết nối định kỳ 
+                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
+                    //bluetoothManager.Call("startConnectionCheck");
+                }
+            }
         }
         else
         {
-            // Bắt đầu kiểm tra kết nối định kỳ 
-            bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
-            //bluetoothManager.Call("startConnectionCheck");
+            Debug.Log("Chưa có đủ quyền, yêu cầu quyền");
+            StartCoroutine(RequestPermissionsSequentially());
+        } 
+    }
+    private bool AreAllPermissionsGranted()
+    {
+#if UNITY_ANDROID
+        string[] permissions = new string[] {
+            "android.permission.BLUETOOTH_CONNECT",
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.ACCESS_FINE_LOCATION"
+        };
+
+        using (AndroidJavaClass contextCompat = new AndroidJavaClass("androidx.core.content.ContextCompat"))
+        {
+            foreach (string permission in permissions)
+            {
+                int permissionCheck = contextCompat.CallStatic<int>("checkSelfPermission", mainActivity, permission);
+                if (permissionCheck != 0)
+                { // 0 là PackageManager.PERMISSION_GRANTED
+                    return false; // Quyền chưa được cấp
+                }
+            }
         }
-        
+#endif
+        return true; // Tất cả các quyền đã được cấp
+    }
+
+    private IEnumerator RequestPermissionsSequentially()
+    {
+#if UNITY_ANDROID
+        string[] permissions = new string[] {
+            "android.permission.BLUETOOTH_CONNECT",
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.ACCESS_FINE_LOCATION"
+        };
+
+        using (AndroidJavaClass activityCompat = new AndroidJavaClass("androidx.core.app.ActivityCompat"))
+        {
+            foreach (string permission in permissions)
+            {
+                int permissionCheck = mainActivity.Call<int>("checkSelfPermission", permission);
+                if (permissionCheck != 0)
+                { // Nếu quyền chưa được cấp, yêu cầu quyền
+                    activityCompat.CallStatic("requestPermissions", mainActivity, new string[] { permission }, 1);
+
+                    // Đợi đến khi người dùng cấp quyền
+                    bool granted = false;
+                    while (!granted)
+                    {
+                        permissionCheck = mainActivity.Call<int>("checkSelfPermission", permission);
+                        granted = (permissionCheck == 0);
+                        yield return null; // Đợi một frame rồi kiểm tra lại
+                    }
+                }
+            }
+        }
+#endif
+
+        // Sau khi yêu cầu xong tất cả các quyền, kiểm tra lại xem đã có đủ quyền hay chưa
+        if (AreAllPermissionsGranted())
+        {
+            if (!IsBluetoothEnabled())
+            {
+                EnableBluetooth();
+            }
+            else
+            {
+                if (bluetoothManager != null)
+                {
+                    // Bắt đầu kiểm tra kết nối định kỳ 
+                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
+                    //bluetoothManager.Call("startConnectionCheck");
+                }
+            }
+        }
+    }
+
+
+    public void RequestBluetoothPermissions()
+    {
+        if (bluetoothManager != null)
+        {
+            bluetoothManager.Call("requestBluetoothPermissions");
+        }
     }
 
     // Gọi phương thức bật Bluetooth từ Java
@@ -77,25 +178,18 @@ public class UIManager : MonoBehaviour
 
     public void BtnConnectClick()
     {
-        Debug.Log("click to connect");
-        // nếu bluetooth đã được bật
-        if (IsBluetoothEnabled())
-        {
-            DisableBluetooth(); 
-        }
-        else
-        {
-            EnableBluetooth();
-        }
+        Debug.Log("click to connect"); 
     }
     // Nhận trạng thái Bluetooth từ Java
+    bool isFirsttime = true;
     public void OnBluetoothStateChanged(string state)
     {
         Debug.Log("Bluetooth State Changed: " + state);
 
         // Thực hiện hành động khác tùy theo trạng thái
-        if (state == "ON")
+        if (state == "ON" && isFirsttime)
         {
+            isFirsttime = false;
             Debug.Log("Bluetooth đã được bật!");
             connectionTxt.text = "bluetooth is enable";
             // sau khi bluetooth đã được bật, bắt đầu kiểm tra kết nối định kỳ
@@ -114,19 +208,15 @@ public class UIManager : MonoBehaviour
     public void StartScanning()
     {
         if (IsBluetoothEnabled())
-        { 
-            connectionTxt.text = "Start scan";
-            // Xóa danh sách cũ
-            ClearDeviceList();
-
-            // Gọi phương thức quét thiết bị trên BluetoothManager
-            bluetoothManager.Call("startDiscovery");
-            Debug.Log("Đang quét thiết bị Bluetooth...");
+        {
+            isFirsttime = true;
+            connectionTxt.text = "Start scan"; 
+            bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress); 
         }
         else
         {
-            connectionTxt.text = "Bluetooth chưa được bật";
-            Debug.Log("Bluetooth chưa được bật!");
+            connectionTxt.text = "Bluetooth chưa được bật"; 
+            EnableBluetooth(); 
         }
     }
 
@@ -221,7 +311,11 @@ public class UIManager : MonoBehaviour
     {
         if (bluetoothManager != null)
         {
+
+            Debug.Log("Bluetooth đã unregisterReceiver!");
             bluetoothManager.Call("unregisterReceiver");
+            bluetoothManager.Call("disconnect");
+
         }
     }
      

@@ -174,7 +174,7 @@ public class UnityPlayerActivity extends Activity implements IUnityPlayerLifecyc
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, BluetoothManager.REQUEST_BLUETOOTH_PERMISSION);
         } else {
             // Nếu quyền đã được cấp, tiếp tục xử lý Bluetooth
-            bluetoothManager.enableBluetoothAndScan();
+            // bluetoothManager.enableBluetooth();
         }
     }
 

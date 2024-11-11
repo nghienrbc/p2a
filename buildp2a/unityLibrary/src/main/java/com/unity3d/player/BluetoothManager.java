@@ -47,9 +47,9 @@ public class BluetoothManager {
             @Override
             public void onReceive(Context context, Intent intent) {
                 final String action = intent.getAction();
-                if (BluetoothAdapter.ACTION_REQUEST_ENABLE.equals(action)) {
-
-                }
+//                if (BluetoothAdapter.ACTION_REQUEST_ENABLE.equals(action)) {
+//
+//                }
                 if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                     final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                     switch (state) {
@@ -92,7 +92,9 @@ public class BluetoothManager {
                 ActivityCompat.requestPermissions(activity,
                         new String[]{android.Manifest.permission.BLUETOOTH_CONNECT},
                         REQUEST_BLUETOOTH_PERMISSION);
-            } else {
+                return;
+            }
+//            else {
                 // Quyền đã được cấp, bật Bluetooth
                 if (!bluetoothAdapter.isEnabled()) {
                     Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -100,8 +102,17 @@ public class BluetoothManager {
                 } else {
                     Toast.makeText(activity, "Bluetooth đã được bật", Toast.LENGTH_SHORT).show();
                     autoConnectToDevice(targetDeviceAddress);
+
+//                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+//                            ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//                        ActivityCompat.requestPermissions(activity,
+//                                new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION},
+//                                REQUEST_BLUETOOTH_PERMISSION);
+//                        return;
+//                    }
                 }
-            }
+//            }
         }
     }
 
@@ -129,62 +140,41 @@ public class BluetoothManager {
         if (requestCode == REQUEST_BLUETOOTH_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Quyền đã được cấp, bật Bluetooth
-                if (!bluetoothAdapter.isEnabled()) {
-                    enableBluetooth();
-                } else {
-                    disableBluetooth();
-                }
+                //if (!bluetoothAdapter.isEnabled()) {
+                //    enableBluetooth();
+                //}
+//                else {
+//                    disableBluetooth();
+//                }
+
             } else {
                 Toast.makeText(activity, "Yêu cầu quyền Bluetooth bị từ chối", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    public void enableBluetoothAndScan() {
-        if (bluetoothAdapter == null) {
-            Toast.makeText(activity, "Thiết bị không hỗ trợ Bluetooth", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            activity.startActivityForResult(enableBtIntent, 1);
-        } else {
-            startDiscovery();
-        }
-    }
-
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == REQUEST_BLUETOOTH_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Nếu quyền đã được cấp, bật Bluetooth và bắt đầu quét
-                enableBluetoothAndScan();
-            } else {
-                Toast.makeText(activity, "Yêu cầu quyền Bluetooth bị từ chối", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-    public void startConnectionCheck() {
-        connectionCheckerThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
-                        // Đã kết nối, không cần làm gì
-                    } else {
-                        // Nếu mất kết nối, thử tự động kết nối lại
-                        UnityPlayer.UnitySendMessage("UIManager", "OnDeviceConnected", "Reconnecting...");
-                        autoConnectToDevice(targetDeviceAddress);//
-                    }
-                    try {
-                        Thread.sleep(5000); // Kiểm tra mỗi 5 giây
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            }
-        });
-        connectionCheckerThread.start();
-    }
+//    public void startConnectionCheck() {
+//        connectionCheckerThread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    if (bluetoothSocket != null && bluetoothSocket.isConnected()) {
+//                        // Đã kết nối, không cần làm gì
+//                    } else {
+//                        // Nếu mất kết nối, thử tự động kết nối lại
+//                        UnityPlayer.UnitySendMessage("UIManager", "OnDeviceConnected", "Reconnecting...");
+//                        autoConnectToDevice(targetDeviceAddress);//
+//                    }
+//                    try {
+//                        Thread.sleep(5000); // Kiểm tra mỗi 5 giây
+//                    } catch (InterruptedException e) {
+//                        break;
+//                    }
+//                }
+//            }
+//        });
+//        connectionCheckerThread.start();
+//    }
 
     public void autoConnectToDevice(final String targetAddress) {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
@@ -196,11 +186,11 @@ public class BluetoothManager {
             return;
         }
         this.targetDeviceAddress = targetAddress;
-        // Kiểm tra và bật Bluetooth nếu chưa bật
-        if (!isBluetoothEnabled()) {
-            enableBluetooth();
-        }
 
+        if (deviceReceiver != null) {
+            activity.unregisterReceiver(deviceReceiver);
+            deviceReceiver = null;
+        }
         // Đăng ký receiver để quét các thiết bị
         deviceReceiver = new BroadcastReceiver() {
             @Override

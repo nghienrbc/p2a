@@ -131,6 +131,9 @@ extern void U3CUpdateImageU3Ed__4_System_Collections_Generic_IEnumeratorU3CSyste
 extern void U3CUpdateImageU3Ed__4_System_Collections_IEnumerator_Reset_m3CA0D56FD46E58B09CF6D284F452C2133410C05A (void);
 extern void U3CUpdateImageU3Ed__4_System_Collections_IEnumerator_get_Current_m3E8E7786E092BDFEACC09FE4E1BCB79B97576C24 (void);
 extern void UIManager_Start_m113F392674AB08A26877728CD36F06332E869080 (void);
+extern void UIManager_AreAllPermissionsGranted_mFEC61E48ECC880C54AC4D712E0BD002A46178192 (void);
+extern void UIManager_RequestPermissionsSequentially_m9545F9179A7418AB3A6AD8F277DA1868D951F9EF (void);
+extern void UIManager_RequestBluetoothPermissions_mA0509EADCBB57A0A22E25F5F6FCB9EA57F7F3297 (void);
 extern void UIManager_EnableBluetooth_mD31F1EE3C86E288E05F1FE6D224795B3490A772F (void);
 extern void UIManager_DisableBluetooth_mD54A1B3BA59452190842888B4B1FF38CE09EDBE8 (void);
 extern void UIManager_IsBluetoothEnabled_m4702E79B2B2D3122CF43BC9E41BC9C19A22AF03A (void);
@@ -153,8 +156,15 @@ extern void UIManager_BtnSavePhotoClick_m3A59F1287D54BD5B7DC65AD1BE535233C90693C
 extern void UIManager_BtnUploadPhotoClick_mF1EC07400CB9168992F6D83F6D4684E4A2C935D5 (void);
 extern void UIManager_BtnBackClick_mEF5B6BD38219B0E56A1CECD40B6251F7168C7DEA (void);
 extern void UIManager__ctor_mC9DC2B8984E76F424E73C1860AD4BD3DEBF6573F (void);
-extern void U3CU3Ec__DisplayClass18_0__ctor_mB90E8B5A6C8302975BDB84E3D330EDEB1674A5B4 (void);
-extern void U3CU3Ec__DisplayClass18_0_U3CDisplayDeviceU3Eb__0_m5D39B67D731737192EE8F03B97F6AFEF8C14861E (void);
+extern void U3CU3Ec__DisplayClass23_0__ctor_m0E1033095D64C157BE2182B9E2B2C8451064929C (void);
+extern void U3CU3Ec__DisplayClass23_0_U3CDisplayDeviceU3Eb__0_m8444A0FBCF9E7D7ADBAF86945A9F1D386443F151 (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12__ctor_mAE506115070C337770F626145E5E9458B15CCCA0 (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_System_IDisposable_Dispose_mA9A86785DD6745A8CE4BD3C8DAE425044204BB6B (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_MoveNext_m38F9C0B338183D5EA308A68E1FEA9DF58BA9471F (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_U3CU3Em__Finally1_m99C77BCB5A8A9A6FB28A04A879DD3F3207EBE353 (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m0F8A661CECBBBEDC9908179F6ED27E178DA9192C (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_IEnumerator_Reset_mEE2E80FDFAC1F90D51764C8CBF612930F531FCF2 (void);
+extern void U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_IEnumerator_get_Current_m4CDC7B2E9DCD53B520D3EBD83ADC3E2551277C19 (void);
 extern void WebviewTest_ShowUrlFullScreen_m1C38076B02E50A7F12309BF6D3E209EC0659D397 (void);
 extern void WebviewTest_ShowUrlPopupDefault_m29CE5386D5AC79832FBABD8EC724009498188D24 (void);
 extern void WebviewTest_ShowUrlPopupPositionSize_mFFEC37FAEBD3CF17B5005F2C0C7421DEC420AAEA (void);
@@ -1125,7 +1135,7 @@ extern void FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB (vo
 extern void FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201 (void);
 extern void FloatTweenCallback__ctor_mBB77E804F955348A83EE0FF58DCDFD5B46AC42B6 (void);
 extern void FloatFinishCallback__ctor_m04DBEE2575918C6E9C7195C4A0ED89FFBA3D871D (void);
-static Il2CppMethodPointer s_methodPointers[1140] = 
+static Il2CppMethodPointer s_methodPointers[1150] = 
 {
 	EarthSpinScript_Update_m09FD0418EA174B20C5EDEF20722A0D448F4F8A67,
 	EarthSpinScript__ctor_m84481738C5700B7BC924A85E3B31C69A2C74E15A,
@@ -1246,6 +1256,9 @@ static Il2CppMethodPointer s_methodPointers[1140] =
 	U3CUpdateImageU3Ed__4_System_Collections_IEnumerator_Reset_m3CA0D56FD46E58B09CF6D284F452C2133410C05A,
 	U3CUpdateImageU3Ed__4_System_Collections_IEnumerator_get_Current_m3E8E7786E092BDFEACC09FE4E1BCB79B97576C24,
 	UIManager_Start_m113F392674AB08A26877728CD36F06332E869080,
+	UIManager_AreAllPermissionsGranted_mFEC61E48ECC880C54AC4D712E0BD002A46178192,
+	UIManager_RequestPermissionsSequentially_m9545F9179A7418AB3A6AD8F277DA1868D951F9EF,
+	UIManager_RequestBluetoothPermissions_mA0509EADCBB57A0A22E25F5F6FCB9EA57F7F3297,
 	UIManager_EnableBluetooth_mD31F1EE3C86E288E05F1FE6D224795B3490A772F,
 	UIManager_DisableBluetooth_mD54A1B3BA59452190842888B4B1FF38CE09EDBE8,
 	UIManager_IsBluetoothEnabled_m4702E79B2B2D3122CF43BC9E41BC9C19A22AF03A,
@@ -1268,8 +1281,15 @@ static Il2CppMethodPointer s_methodPointers[1140] =
 	UIManager_BtnUploadPhotoClick_mF1EC07400CB9168992F6D83F6D4684E4A2C935D5,
 	UIManager_BtnBackClick_mEF5B6BD38219B0E56A1CECD40B6251F7168C7DEA,
 	UIManager__ctor_mC9DC2B8984E76F424E73C1860AD4BD3DEBF6573F,
-	U3CU3Ec__DisplayClass18_0__ctor_mB90E8B5A6C8302975BDB84E3D330EDEB1674A5B4,
-	U3CU3Ec__DisplayClass18_0_U3CDisplayDeviceU3Eb__0_m5D39B67D731737192EE8F03B97F6AFEF8C14861E,
+	U3CU3Ec__DisplayClass23_0__ctor_m0E1033095D64C157BE2182B9E2B2C8451064929C,
+	U3CU3Ec__DisplayClass23_0_U3CDisplayDeviceU3Eb__0_m8444A0FBCF9E7D7ADBAF86945A9F1D386443F151,
+	U3CRequestPermissionsSequentiallyU3Ed__12__ctor_mAE506115070C337770F626145E5E9458B15CCCA0,
+	U3CRequestPermissionsSequentiallyU3Ed__12_System_IDisposable_Dispose_mA9A86785DD6745A8CE4BD3C8DAE425044204BB6B,
+	U3CRequestPermissionsSequentiallyU3Ed__12_MoveNext_m38F9C0B338183D5EA308A68E1FEA9DF58BA9471F,
+	U3CRequestPermissionsSequentiallyU3Ed__12_U3CU3Em__Finally1_m99C77BCB5A8A9A6FB28A04A879DD3F3207EBE353,
+	U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_m0F8A661CECBBBEDC9908179F6ED27E178DA9192C,
+	U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_IEnumerator_Reset_mEE2E80FDFAC1F90D51764C8CBF612930F531FCF2,
+	U3CRequestPermissionsSequentiallyU3Ed__12_System_Collections_IEnumerator_get_Current_m4CDC7B2E9DCD53B520D3EBD83ADC3E2551277C19,
 	WebviewTest_ShowUrlFullScreen_m1C38076B02E50A7F12309BF6D3E209EC0659D397,
 	WebviewTest_ShowUrlPopupDefault_m29CE5386D5AC79832FBABD8EC724009498188D24,
 	WebviewTest_ShowUrlPopupPositionSize_mFFEC37FAEBD3CF17B5005F2C0C7421DEC420AAEA,
@@ -2293,31 +2313,31 @@ extern void FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_Adj
 extern void FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk (void);
 static Il2CppTokenAdjustorThunkPair s_adjustorThunks[23] = 
 {
-	{ 0x06000444, HsvColor_get_NormalizedH_mBEF0296FD8D8F343B8CADED675275050D98D6B74_AdjustorThunk },
-	{ 0x06000445, HsvColor_set_NormalizedH_mB80112AD8E2ED425026FDB567263A725DF17CFD0_AdjustorThunk },
-	{ 0x06000446, HsvColor_get_NormalizedS_m1AF38B899ABDCDE1CB6BB10D74F20C2EC91E78FC_AdjustorThunk },
-	{ 0x06000447, HsvColor_set_NormalizedS_m63711AB18F048875A97C782DA9613D349B0D4096_AdjustorThunk },
-	{ 0x06000448, HsvColor_get_NormalizedV_m97D23C0851723BF797FC162992D9CD5DD3D4B395_AdjustorThunk },
-	{ 0x06000449, HsvColor_set_NormalizedV_m24DE369903322D39C5DB36C496DD5AF03FA6FA31_AdjustorThunk },
-	{ 0x0600044A, HsvColor__ctor_mDBE69A4991E5553E4E4D42F05A407140A2CAC652_AdjustorThunk },
-	{ 0x0600044B, HsvColor_ToString_m70B1449864611F0B247F3AFB742CF53D45156F3A_AdjustorThunk },
-	{ 0x06000455, FloatTween_get_startFloat_m9A7F4BC62EA9B02EE82C313C79EF468CB671A500_AdjustorThunk },
-	{ 0x06000456, FloatTween_set_startFloat_m39F7FACECAA3A485AC4A7B1D01998EB5E9F6CAA4_AdjustorThunk },
-	{ 0x06000457, FloatTween_get_targetFloat_m0FFD1C85696C18943937025D55A45D4D8EC90F32_AdjustorThunk },
-	{ 0x06000458, FloatTween_set_targetFloat_m70BAF0E81D11D5ACDC1791BC81F1872F5F6B9D3F_AdjustorThunk },
-	{ 0x06000459, FloatTween_get_duration_m5EBD52251A5E7517FEA479C98D388EC3A1073B57_AdjustorThunk },
-	{ 0x0600045A, FloatTween_set_duration_m360C1B2B8C0CDA0C2DC5B85B2EC5B404A5DBCFAA_AdjustorThunk },
-	{ 0x0600045B, FloatTween_get_ignoreTimeScale_mB030BF93E22DF9B8453BCA27CE9A08FDA32E035A_AdjustorThunk },
-	{ 0x0600045C, FloatTween_set_ignoreTimeScale_m13BD60C70D7BEA885452B9AD3BB545D585C7183B_AdjustorThunk },
-	{ 0x0600045D, FloatTween_TweenValue_m3E8D8DE6F8E0AAB072E76AF4AF5EE762ACA3CC85_AdjustorThunk },
-	{ 0x0600045E, FloatTween_AddOnChangedCallback_m12B3F58BD054E3D510964DA64654EE358833C648_AdjustorThunk },
-	{ 0x0600045F, FloatTween_AddOnFinishCallback_m1BD0EB2F2878F4142162CE7851E3EA942A48B06D_AdjustorThunk },
-	{ 0x06000460, FloatTween_GetIgnoreTimescale_mFB3F7CFD3CB4F084AACC1AD69C2F54ED745FF0EA_AdjustorThunk },
-	{ 0x06000461, FloatTween_GetDuration_mEAD41CA30857F77B22690A8A99B949313BA7493B_AdjustorThunk },
-	{ 0x06000462, FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_AdjustorThunk },
-	{ 0x06000463, FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk },
+	{ 0x0600044E, HsvColor_get_NormalizedH_mBEF0296FD8D8F343B8CADED675275050D98D6B74_AdjustorThunk },
+	{ 0x0600044F, HsvColor_set_NormalizedH_mB80112AD8E2ED425026FDB567263A725DF17CFD0_AdjustorThunk },
+	{ 0x06000450, HsvColor_get_NormalizedS_m1AF38B899ABDCDE1CB6BB10D74F20C2EC91E78FC_AdjustorThunk },
+	{ 0x06000451, HsvColor_set_NormalizedS_m63711AB18F048875A97C782DA9613D349B0D4096_AdjustorThunk },
+	{ 0x06000452, HsvColor_get_NormalizedV_m97D23C0851723BF797FC162992D9CD5DD3D4B395_AdjustorThunk },
+	{ 0x06000453, HsvColor_set_NormalizedV_m24DE369903322D39C5DB36C496DD5AF03FA6FA31_AdjustorThunk },
+	{ 0x06000454, HsvColor__ctor_mDBE69A4991E5553E4E4D42F05A407140A2CAC652_AdjustorThunk },
+	{ 0x06000455, HsvColor_ToString_m70B1449864611F0B247F3AFB742CF53D45156F3A_AdjustorThunk },
+	{ 0x0600045F, FloatTween_get_startFloat_m9A7F4BC62EA9B02EE82C313C79EF468CB671A500_AdjustorThunk },
+	{ 0x06000460, FloatTween_set_startFloat_m39F7FACECAA3A485AC4A7B1D01998EB5E9F6CAA4_AdjustorThunk },
+	{ 0x06000461, FloatTween_get_targetFloat_m0FFD1C85696C18943937025D55A45D4D8EC90F32_AdjustorThunk },
+	{ 0x06000462, FloatTween_set_targetFloat_m70BAF0E81D11D5ACDC1791BC81F1872F5F6B9D3F_AdjustorThunk },
+	{ 0x06000463, FloatTween_get_duration_m5EBD52251A5E7517FEA479C98D388EC3A1073B57_AdjustorThunk },
+	{ 0x06000464, FloatTween_set_duration_m360C1B2B8C0CDA0C2DC5B85B2EC5B404A5DBCFAA_AdjustorThunk },
+	{ 0x06000465, FloatTween_get_ignoreTimeScale_mB030BF93E22DF9B8453BCA27CE9A08FDA32E035A_AdjustorThunk },
+	{ 0x06000466, FloatTween_set_ignoreTimeScale_m13BD60C70D7BEA885452B9AD3BB545D585C7183B_AdjustorThunk },
+	{ 0x06000467, FloatTween_TweenValue_m3E8D8DE6F8E0AAB072E76AF4AF5EE762ACA3CC85_AdjustorThunk },
+	{ 0x06000468, FloatTween_AddOnChangedCallback_m12B3F58BD054E3D510964DA64654EE358833C648_AdjustorThunk },
+	{ 0x06000469, FloatTween_AddOnFinishCallback_m1BD0EB2F2878F4142162CE7851E3EA942A48B06D_AdjustorThunk },
+	{ 0x0600046A, FloatTween_GetIgnoreTimescale_mFB3F7CFD3CB4F084AACC1AD69C2F54ED745FF0EA_AdjustorThunk },
+	{ 0x0600046B, FloatTween_GetDuration_mEAD41CA30857F77B22690A8A99B949313BA7493B_AdjustorThunk },
+	{ 0x0600046C, FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_AdjustorThunk },
+	{ 0x0600046D, FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[1140] = 
+static const int32_t s_InvokerIndices[1150] = 
 {
 	9547,
 	9547,
@@ -2438,6 +2458,9 @@ static const int32_t s_InvokerIndices[1140] =
 	9547,
 	9424,
 	9547,
+	9321,
+	9424,
+	9547,
 	9547,
 	9547,
 	9321,
@@ -2462,6 +2485,13 @@ static const int32_t s_InvokerIndices[1140] =
 	9547,
 	9547,
 	9547,
+	7569,
+	9547,
+	9321,
+	9547,
+	9424,
+	9547,
+	9424,
 	9547,
 	9547,
 	9547,
@@ -3462,14 +3492,14 @@ static const int32_t s_InvokerIndices[1140] =
 };
 static const Il2CppTokenRangePair s_rgctxIndices[8] = 
 {
-	{ 0x0200001E, { 0, 4 } },
-	{ 0x020000CF, { 19, 7 } },
-	{ 0x020000D0, { 26, 7 } },
-	{ 0x06000112, { 4, 3 } },
-	{ 0x06000113, { 7, 3 } },
-	{ 0x0600035C, { 10, 3 } },
-	{ 0x060003BE, { 13, 3 } },
-	{ 0x060003BF, { 16, 3 } },
+	{ 0x0200001F, { 0, 4 } },
+	{ 0x020000D0, { 19, 7 } },
+	{ 0x020000D1, { 26, 7 } },
+	{ 0x0600011C, { 4, 3 } },
+	{ 0x0600011D, { 7, 3 } },
+	{ 0x06000366, { 10, 3 } },
+	{ 0x060003C8, { 13, 3 } },
+	{ 0x060003C9, { 16, 3 } },
 };
 extern const uint32_t g_rgctx_Singleton_1_tEB10BC7581192E8DC4004CC6A80E88A3E42C3444;
 extern const uint32_t g_rgctx_T_t2337B8A22C295A41D129CA0B4B104663AAC37B94;
@@ -3544,7 +3574,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	1140,
+	1150,
 	s_methodPointers,
 	23,
 	s_adjustorThunks,
