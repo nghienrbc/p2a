@@ -25,16 +25,16 @@ public class UIManager : MonoBehaviour
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
 
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        }
+        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        //{
+        //    mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        //}
 
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
-        }
+        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        //{
+        //    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        //    bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
+        //}
 
         recordingIndicator.gameObject.SetActive(false);
          
@@ -131,8 +131,7 @@ public class UIManager : MonoBehaviour
                 if (bluetoothManager != null)
                 {
                     // Bắt đầu kiểm tra kết nối định kỳ 
-                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
-                    //bluetoothManager.Call("startConnectionCheck");
+                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress); 
                 }
             }
         }
@@ -191,9 +190,7 @@ public class UIManager : MonoBehaviour
         {
             isFirsttime = false;
             Debug.Log("Bluetooth đã được bật!");
-            connectionTxt.text = "bluetooth is enable";
-            // sau khi bluetooth đã được bật, bắt đầu kiểm tra kết nối định kỳ
-            //bluetoothManager.Call("startConnectionCheck"); 
+            connectionTxt.text = "bluetooth is enable"; 
             bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
 
         }
@@ -310,8 +307,7 @@ public class UIManager : MonoBehaviour
     void OnDestroy()
     {
         if (bluetoothManager != null)
-        {
-
+        { 
             Debug.Log("Bluetooth đã unregisterReceiver!");
             bluetoothManager.Call("unregisterReceiver");
             bluetoothManager.Call("disconnect");
