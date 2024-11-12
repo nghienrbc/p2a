@@ -8,6 +8,8 @@ using System;
 
 public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance { get; private set; }
+
     public TMP_Text connectionTxt;
     private AndroidJavaObject bluetoothManager;
     private AndroidJavaObject mainActivity;
@@ -21,6 +23,25 @@ public class UIManager : MonoBehaviour
 
     private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
     // Start is called before the first frame update
+
+
+    private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
+
+    private void Awake()
+    {
+        // Đảm bảo rằng chỉ có một thể hiện UIManager duy nhất
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // Giữ lại UIManager khi load scene mới
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+
     void Start()
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
@@ -37,8 +58,6 @@ public class UIManager : MonoBehaviour
         //}
 
         recordingIndicator.gameObject.SetActive(false);
-         
-         
         // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
         if (AreAllPermissionsGranted())
         {
@@ -53,8 +72,7 @@ public class UIManager : MonoBehaviour
                 if (bluetoothManager != null)
                 {
                     // Bắt đầu kiểm tra kết nối định kỳ 
-                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress);
-                    //bluetoothManager.Call("startConnectionCheck");
+                    bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress); 
                 }
             }
         }
@@ -62,8 +80,13 @@ public class UIManager : MonoBehaviour
         {
             Debug.Log("Chưa có đủ quyền, yêu cầu quyền");
             StartCoroutine(RequestPermissionsSequentially());
-        } 
+        }
+
+        // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
+        BaseToogleButton[] buttons = FindObjectsOfType<BaseToogleButton>();
+        toggleButtons.AddRange(buttons);
     }
+
     private bool AreAllPermissionsGranted()
     {
 #if UNITY_ANDROID
@@ -136,7 +159,6 @@ public class UIManager : MonoBehaviour
             }
         }
     }
-
 
     public void RequestBluetoothPermissions()
     {
@@ -292,6 +314,19 @@ public class UIManager : MonoBehaviour
     }
 
 
+    // Hàm gọi khi một nút BaseToggleButton được nhấn
+    public void OnButtonClicked(BaseToogleButton clickedButton)
+    {
+        // Đặt lại tất cả các nút về trạng thái mặc định, trừ nút đang được nhấn
+        foreach (BaseToogleButton button in toggleButtons)
+        {
+            if (button != clickedButton)
+            {
+                button.ResetToDefault();
+            }
+        }
+    }
+
     // Xóa danh sách hiển thị cũ
     private void ClearDeviceList()
     {
@@ -351,6 +386,9 @@ public class UIManager : MonoBehaviour
 
     public void BtnBackClick()
     {
-        SceneManager.LoadScene("PlayGameScene");
+        //SceneManager.LoadScene("PlayGameScene");
     }
+
+
+
 }

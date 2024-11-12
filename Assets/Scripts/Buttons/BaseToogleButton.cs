@@ -41,6 +41,14 @@ public class BaseToogleButton : MonoBehaviour
     // Hàm được gọi khi nhấn nút, có thể được override trong lớp con
     protected virtual void OnButtonClick()
     {
+        // Gọi UIManager để xử lý click cho nút này
+        UIManager.Instance.OnButtonClicked(this);
         ToggleImage();
+    } 
+    // Hàm để đặt lại nút về hình ảnh mặc định
+    public void ResetToDefault()
+    {
+        button.image.sprite = defaultImage;
+        isToggled = false;
     }
 }
