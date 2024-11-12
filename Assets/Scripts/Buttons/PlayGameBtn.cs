@@ -6,7 +6,7 @@ public class PlayGameBtn : BaseToogleButton
 { 
     protected override void OnButtonClick()
     {
-        // Gọi hàm ToggleImage từ lớp cơ bản
-        ToggleImage(); 
+        base.OnButtonClick();
+        // Gọi hàm ToggleImage từ lớp cơ bản 
     }
 }

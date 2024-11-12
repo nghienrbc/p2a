@@ -302,12 +302,17 @@ public class UIManager : MonoBehaviour
         if (receivedData.Trim() == "1")
         {
             // Xử lý khi nhận được true, ví dụ bật một đối tượng
+            recorder.StartRecording();
+            recordingIndicator.gameObject.SetActive(true);
             Debug.Log("Button is pressed");
         }
         else if (receivedData.Trim() == "0")
         {
             // Xử lý khi nhận được false, ví dụ tắt đối tượng
             Debug.Log("Button is released");
+
+            recorder.StopRecording();
+            recordingIndicator.gameObject.SetActive(false);
         }
 
         connectionTxt.text = receivedData.Trim();

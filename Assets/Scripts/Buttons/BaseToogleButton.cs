@@ -25,25 +25,21 @@ public class BaseToogleButton : MonoBehaviour
     // Hàm thay đổi hình ảnh khi nhấn nút
     protected virtual void ToggleImage()
     {
-        if (isToggled)
+        if (!isToggled)
         {
-            button.image.sprite = defaultImage;
+            button.image.sprite = toggledImage; 
+            isToggled = true;
         }
-        else
-        {
-            button.image.sprite = toggledImage;
-        }
-
-        // Đảo trạng thái
-        isToggled = !isToggled;
+        
     }
 
     // Hàm được gọi khi nhấn nút, có thể được override trong lớp con
     protected virtual void OnButtonClick()
     {
+        ToggleImage();
         // Gọi UIManager để xử lý click cho nút này
         UIManager.Instance.OnButtonClicked(this);
-        ToggleImage();
+        
     } 
     // Hàm để đặt lại nút về hình ảnh mặc định
     public void ResetToDefault()

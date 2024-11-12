@@ -7,8 +7,7 @@ public class SettingBtn : BaseToogleButton
 
     protected override void OnButtonClick()
     {
-        // Gọi hàm ToggleImage từ lớp cơ bản
-        ToggleImage();
+        base.OnButtonClick();
 
     }
 }

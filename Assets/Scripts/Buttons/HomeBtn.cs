@@ -7,8 +7,12 @@ public class HomeBtn : BaseToogleButton
 
     protected override void OnButtonClick()
     {
-        // Gọi hàm ToggleImage từ lớp cơ bản
-        ToggleImage();
+        base.OnButtonClick();
+        // Gọi hàm ToggleImage từ lớp cơ bản 
+        if (isToggled)
+        {
+            Debug.Log("Home button toogle is:" + isToggled);
+        }
 
     }
 }
