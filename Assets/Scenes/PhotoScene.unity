@@ -286,6 +286,7 @@ GameObject:
   - component: {fileID: 123705405}
   - component: {fileID: 123705404}
   - component: {fileID: 123705403}
+  - component: {fileID: 123705406}
   m_Layer: 5
   m_Name: ImageScrollView
   m_TagString: Untagged
@@ -382,6 +383,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 123705401}
   m_CullTransparentMesh: 1
+--- !u!114 &123705406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123705401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8a7949e91414224e8c3a9bc40ddbbf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveDirection: 1
+  isOffScreen: 0
+  moveSpeed: 3000
 --- !u!1001 &172348829
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -752,8 +768,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1926225729}
-  - {fileID: 1073341108}
+  - {fileID: 1890577567}
   - {fileID: 1212517666}
   - {fileID: 1397351787}
   - {fileID: 778690374}
@@ -2114,6 +2129,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultImage: {fileID: 21300000, guid: a6b7b92380d094d43ac166c79bb958bb, type: 3}
   toggledImage: {fileID: 21300000, guid: 3ffe75d0a781c9d449cdca9c05c9b807, type: 3}
+  panelsToMove:
+  - {fileID: 1890577568}
+  - {fileID: 123705406}
 --- !u!1 &957839685
 GameObject:
   m_ObjectHideFlags: 0
@@ -2503,16 +2521,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1073341107}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 368038750}
+  m_Father: {fileID: 1890577567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -578, y: 103}
+  m_AnchoredPosition: {x: -2.8900146, y: 0}
   m_SizeDelta: {x: 984.4512, y: 984.4512}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1073341109
@@ -4055,6 +4073,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d4454b885dce1a49aba1755acf71fd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  panelsToMove:
+  - {fileID: 1890577568}
+  - {fileID: 123705406}
   connectionTxt: {fileID: 2076933151}
   recordingIndicator: {fileID: 309478440}
   recorder: {fileID: 514614366}
@@ -4362,6 +4383,99 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869717519}
   m_CullTransparentMesh: 1
+--- !u!1 &1890577566
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1890577567}
+  - component: {fileID: 1890577570}
+  - component: {fileID: 1890577569}
+  - component: {fileID: 1890577568}
+  m_Layer: 5
+  m_Name: CameraPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1890577567
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890577566}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1926225729}
+  - {fileID: 1073341108}
+  m_Father: {fileID: 368038750}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -575.11, y: 103}
+  m_SizeDelta: {x: -1569.8, y: -615.5499}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1890577568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890577566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8a7949e91414224e8c3a9bc40ddbbf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveDirection: 0
+  isOffScreen: 0
+  moveSpeed: 3000
+--- !u!114 &1890577569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890577566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1890577570
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890577566}
+  m_CullTransparentMesh: 1
 --- !u!1 &1926225726
 GameObject:
   m_ObjectHideFlags: 0
@@ -4426,16 +4540,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1926225726}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 368038750}
+  m_Father: {fileID: 1890577567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -578, y: 103}
+  m_AnchoredPosition: {x: -2.8900146, y: 0}
   m_SizeDelta: {x: 984.4512, y: 984.4512}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1926225730
@@ -4768,6 +4882,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultImage: {fileID: 21300000, guid: a0222aee160a99e4f9aa15b97202220b, type: 3}
   toggledImage: {fileID: 21300000, guid: 6d97631877e488f44bd0f66c50828772, type: 3}
+  panelsToMove:
+  - {fileID: 1890577568}
+  - {fileID: 123705406}
 --- !u!1 &2060822847
 GameObject:
   m_ObjectHideFlags: 0

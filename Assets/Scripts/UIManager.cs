@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    public List<PanelMover> panelsToMove;
     public TMP_Text connectionTxt;
     private AndroidJavaObject bluetoothManager;
     private AndroidJavaObject mainActivity;
@@ -85,8 +86,15 @@ public class UIManager : MonoBehaviour
         // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
         BaseToogleButton[] buttons = FindObjectsOfType<BaseToogleButton>();
         toggleButtons.AddRange(buttons);
+        ToggleAllPanels();
+    } 
+    private void ToggleAllPanels()
+    {
+        foreach (PanelMover panelMover in panelsToMove)
+        {
+            panelMover.TogglePanelPosition();
+        }
     }
-
     private bool AreAllPermissionsGranted()
     {
 #if UNITY_ANDROID
