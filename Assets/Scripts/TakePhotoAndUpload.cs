@@ -13,7 +13,18 @@ public class TakePhotoAndUpload : MonoBehaviour
     private WebCamTexture webCamTexture;
     private string imgurClientID = "b8f7b1442771d95"; // Thay bằng Client ID từ Imgur
 
-     
+    public GameObject imagePrefab;  // Prefab cho mỗi hình ảnh trong ScrollView
+    public Transform content;       // Content của ScrollView để chứa các Image
+    public List<Texture2D> loadedTexture;
+
+    public Image largeImage; // UI Image lớn hiển thị ảnh
+    private int currentImageIndex; // Chỉ số của ảnh hiện tại trong danh sách
+    private List<Sprite> imageSprites = new List<Sprite>(); // Danh sách các sprite từ DB
+
+    private void Start()
+    {
+        DisplayImages(loadedTexture);
+    }
     public void StartTakePhoto()
     {
         // Lấy danh sách các camera
@@ -120,14 +131,13 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (cameraDisplay.sprite != null)
         {
             // Lấy Texture2D từ sprite
-            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
-
+            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite); 
 
             // Xoay trái 90 độ
-            Texture2D rotatedTexture = RotateTexture90DegreesRight(texture);
+            //Texture2D rotatedTexture = RotateTexture90DegreesRight(texture);
 
             // Chuyển Texture2D thành PNG
-            byte[] imageBytes = rotatedTexture.EncodeToPNG();
+            byte[] imageBytes = texture.EncodeToPNG();
 
             // Đường dẫn lưu trữ
             DateTime currentDateTime = DateTime.Now;
@@ -136,9 +146,7 @@ public class TakePhotoAndUpload : MonoBehaviour
             string filePath = Path.Combine(Application.persistentDataPath, filename);
 
             // Lưu file PNG
-            File.WriteAllBytes(filePath, imageBytes);
-
-
+            File.WriteAllBytes(filePath, imageBytes); 
         }
         else
         {
@@ -227,6 +235,69 @@ public class TakePhotoAndUpload : MonoBehaviour
             Debug.LogError("Error parsing JSON: " + e.Message);
             return null;
         }
+    }
+
+    // Hàm hiển thị các hình ảnh trong ScrollView
+    void DisplayImages(List<Texture2D> imageTextures)
+    {
+        int i = 0;
+        foreach (Texture2D imageTexture in imageTextures)
+        {
+            // Load texture từ file hình ảnh 
+
+            if (imageTexture != null)
+            {
+                // Tạo đối tượng Image từ prefab
+                GameObject newImageObj = Instantiate(imagePrefab, content);
+
+                // Lấy component Image của đối tượng và gán sprite cho nó
+                Image imageComponent = newImageObj.GetComponent<Image>();
+
+                // Lấy tỷ lệ của ảnh (width/height)
+                float imageRatio = (float)imageTexture.width / imageTexture.height;
+
+                // Cắt texture để thành hình vuông
+                int squareSize = Mathf.Min(imageTexture.width, imageTexture.height);
+                Rect squareRect = new Rect(
+                    (imageTexture.width - squareSize) / 2, // Cắt ở giữa nếu chiều rộng lớn hơn
+                    (imageTexture.height - squareSize) / 2, // Cắt ở giữa nếu chiều cao lớn hơn
+                    squareSize, squareSize);
+
+                // Chuyển Texture2D thành Sprite hình vuông
+                Sprite newSprite = Sprite.Create(imageTexture, squareRect, new Vector2(0.5f, 0.5f));
+                Sprite newSpriteOriginal = Sprite.Create(imageTexture, new Rect(0, 0, imageTexture.width, imageTexture.height), new Vector2(0.5f, 0.5f));
+
+                // Gán sprite cho Image
+                imageComponent.sprite = newSprite;
+
+                // Lấy RectTransform của đối tượng Image mới
+                RectTransform imageRectTransform = newImageObj.GetComponent<RectTransform>();
+
+                // Lấy chiều cao của ScrollView
+                float scrollViewHeight = ((RectTransform)content).rect.height;
+
+                // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
+                imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
+
+                imageSprites.Add(newSprite); // Thêm sprite vào danh sách 
+                //imageSpritesOriginal.Add(newSpriteOriginal);
+                int localIndex = i;
+                newImageObj.GetComponent<Button>().onClick.AddListener(() => OnImageClick(localIndex)); 
+                i++; 
+            } 
+        }
+    }
+
+    public void OnImageClick(int imageIndex)
+    {
+        // Hiển thị ảnh lớn và panel nền tối
+        currentImageIndex = imageIndex;
+        largeImage.sprite = imageSprites[imageIndex];
+        largeImage.GetComponent<Image>().preserveAspect = true; 
+
+        // Reset vị trí và alpha của ảnh
+        //largeImageRectTransform.anchoredPosition = Vector2.zero;
+        //largeImageCanvasGroup.alpha = originalAlpha;
     }
 
     // Class đại diện cho JSON response từ Imgur

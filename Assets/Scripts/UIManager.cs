@@ -350,14 +350,13 @@ public class UIManager : MonoBehaviour
         { 
             Debug.Log("Bluetooth đã unregisterReceiver!");
             bluetoothManager.Call("unregisterReceiver");
-            bluetoothManager.Call("disconnect");
-
+            bluetoothManager.Call("disconnect"); 
         }
     }
      
 
     public void BtnStartRecordClick()
-    {
+    { 
         recorder.StartRecording();
         recordingIndicator.gameObject.SetActive(true);
     }

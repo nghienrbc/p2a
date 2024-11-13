@@ -8,6 +8,6 @@ public class CameraBtn : BaseToogleButton
     protected override void OnButtonClick()
     {
         base.OnButtonClick();
-
+        UIManager.Instance.BtnTakePhotoClick();
     }
 }
