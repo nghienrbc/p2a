@@ -4,23 +4,15 @@ using UnityEngine;
 
 public class CameraBtn : BaseToogleButton
 {
-    public List<PanelMover> panelsToMove;
     protected override void OnButtonClick()
     {
         if (!isToggled)
         { 
-            UIManager.Instance.BtnTakePhotoClick();
-            ToggleAllPanels();
+            UIManager.Instance.BtnTakePhotoClick(); 
         }
         base.OnButtonClick();
+        
+        UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
     }
-
-    private void ToggleAllPanels()
-    {
-        foreach (PanelMover panelMover in panelsToMove)
-        {
-            if(panelMover.isOffScreen)
-            panelMover.TogglePanelPosition();
-        }
-    }
+     
 }

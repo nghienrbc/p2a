@@ -11,6 +11,19 @@ public class BaseToogleButton : MonoBehaviour
 
     protected Button button;
 
+    [System.Serializable]
+    public class PanelSettings
+    {
+        public PanelMover panelMover;  // PanelMover của từng panel
+        public PanelMover.Direction moveDirection; // Hướng di chuyển của panel
+        public bool enable_move;       // Cho phép di chuyển panel này hay không
+        public bool moveOutOrIn;       // true nếu muốn move ra, false nếu muốn move vào
+        public float moveSpeed;
+    }
+
+    public List<PanelSettings> panelsToControl; // Danh sách các panel và thiết lập di chuyển
+
+
     protected virtual void Start()
     {
         button = GetComponent<Button>();
@@ -39,7 +52,16 @@ public class BaseToogleButton : MonoBehaviour
         ToggleImage();
         // Gọi UIManager để xử lý click cho nút này
         UIManager.Instance.OnButtonClicked(this);
-        
+
+        foreach (PanelSettings settings in panelsToControl)
+        {
+            // Kiểm tra nếu enable_move được bật
+            if (settings.enable_move && settings.panelMover != null)
+            {
+                // Di chuyển panel theo hướng và trạng thái moveOutOrIn
+                settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
+            }
+        }
     } 
     // Hàm để đặt lại nút về hình ảnh mặc định
     public void ResetToDefault()

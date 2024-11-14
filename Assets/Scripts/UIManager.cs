@@ -10,7 +10,6 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
-    public List<PanelMover> panelsToMove;
     public TMP_Text connectionTxt;
     private AndroidJavaObject bluetoothManager;
     private AndroidJavaObject mainActivity;
@@ -27,6 +26,17 @@ public class UIManager : MonoBehaviour
 
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
+
+    [System.Serializable]
+    public class PanelSettings
+    {
+        public PanelMover panelMover;  // PanelMover của từng panel
+        public PanelMover.Direction moveDirection; // Hướng di chuyển của panel
+        public bool enable_move;       // Cho phép di chuyển panel này hay không
+        public bool moveOutOrIn;       // true nếu muốn move ra, false nếu muốn move vào
+        public float moveSpeed;
+    }
+    public List<PanelSettings> panelsToControl; // Danh sách các panel và thiết lập di chuyển
 
     private void Awake()
     {
@@ -86,15 +96,26 @@ public class UIManager : MonoBehaviour
         // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
         BaseToogleButton[] buttons = FindObjectsOfType<BaseToogleButton>();
         toggleButtons.AddRange(buttons);
-        ToggleAllPanels();
-    } 
-    private void ToggleAllPanels()
+
+        StartCoroutine(MovePanelsAfterInitialization()); 
+    }
+
+    private IEnumerator MovePanelsAfterInitialization()
     {
-        foreach (PanelMover panelMover in panelsToMove)
+        // Đợi cho đến khi frame đầu tiên kết thúc để đảm bảo tất cả panel đã khởi tạo
+        yield return new WaitForEndOfFrame();
+        foreach (PanelSettings settings in panelsToControl)
         {
-            panelMover.TogglePanelPosition();
+            // Kiểm tra nếu enable_move được bật
+            if (settings.enable_move && settings.panelMover != null)
+            {
+                // Di chuyển panel theo hướng và trạng thái moveOutOrIn
+                settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
+            }
         }
     }
+
+
     private bool AreAllPermissionsGranted()
     {
 #if UNITY_ANDROID

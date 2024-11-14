@@ -10,6 +10,7 @@ using BestHTTP;
 public class TakePhotoAndUpload : MonoBehaviour
 {
     public Image cameraDisplay; // Tham chiếu tới RawImage trong Canvas
+    public Image photoSave; 
     private WebCamTexture webCamTexture;
     private string imgurClientID = "b8f7b1442771d95"; // Thay bằng Client ID từ Imgur
 
@@ -24,6 +25,9 @@ public class TakePhotoAndUpload : MonoBehaviour
     private void Start()
     {
         DisplayImages(loadedTexture);
+        currentImageIndex = 0;
+        largeImage.sprite = imageSprites[0];
+        largeImage.GetComponent<Image>().preserveAspect = true;
     }
     public void StartTakePhoto()
     {
@@ -33,12 +37,12 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (devices.Length > 0)
         {
             // Sử dụng camera đầu tiên
-            for (int i = 1; i < devices.Length; i++)
+            for (int i = 0; i < devices.Length; i++)
             {
                 if (devices[i].isFrontFacing)
                 {
                     webCamTexture = new WebCamTexture(devices[i].name);
-                    cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
+                   // cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
                     webCamTexture.Play(); // Bắt đầu camera
                     StartCoroutine(UpdateImage(webCamTexture));
                     break;
@@ -131,27 +135,43 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (cameraDisplay.sprite != null)
         {
             // Lấy Texture2D từ sprite
-            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite); 
+            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
+
+            Texture2D capturedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+            capturedTexture.SetPixels(texture.GetPixels());
+            capturedTexture.Apply();
 
             // Xoay trái 90 độ
             //Texture2D rotatedTexture = RotateTexture90DegreesRight(texture);
 
             // Chuyển Texture2D thành PNG
-            byte[] imageBytes = texture.EncodeToPNG();
+            //byte[] imageBytes = texture.EncodeToPNG();
 
-            // Đường dẫn lưu trữ
-            DateTime currentDateTime = DateTime.Now;
-            string filename = "Photo" + currentDateTime.ToString("dd-MM-yyyy-HH-mm-ss") + ".png";
+            //// Đường dẫn lưu trữ
+            //DateTime currentDateTime = DateTime.Now;
+            //string filename = "Photo" + currentDateTime.ToString("dd-MM-yyyy-HH-mm-ss") + ".png";
 
-            string filePath = Path.Combine(Application.persistentDataPath, filename);
+            //string filePath = Path.Combine(Application.persistentDataPath, filename);
 
-            // Lưu file PNG
-            File.WriteAllBytes(filePath, imageBytes); 
+            //// Lưu file PNG
+            //File.WriteAllBytes(filePath, imageBytes);
+            photoSave.gameObject.SetActive(true);
+            cameraDisplay.gameObject.SetActive(false);
+            Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
+            photoSave.sprite = savedSprite;
+            photoSave.preserveAspect = true;
+
         }
         else
         {
             Debug.LogError("No sprite found in cameraDisplay.");
         }
+    }
+
+    public void ReshootPhotoBtn()
+    { 
+        photoSave.gameObject.SetActive(false);
+        cameraDisplay.gameObject.SetActive(true);
     }
 
     public void UploadPhoto()

@@ -4,77 +4,82 @@ using UnityEngine;
 public class PanelMover : MonoBehaviour
 {
     public enum Direction { Up, Down, Left, Right }
-    public Direction moveDirection;   // Hướng di chuyển của panel
 
     private RectTransform panelRect;
-    private Vector3 originalPosition;
-    private Vector3 targetPosition;
-    public bool isOffScreen = false; // Trạng thái của panel (trên màn hình hoặc đã di chuyển ra khỏi màn hình)
-
-    public float moveSpeed = 500f;    // Tốc độ di chuyển của panel
+    private Vector3 originalPosition; // Vị trí ban đầu của panel
+    private Vector3 targetPosition;   // Vị trí di chuyển ngoài màn hình
+    private bool isOffScreen = false; // Trạng thái của panel (trong hoặc ngoài màn hình)
+  
 
     void Start()
     {
         // Lưu vị trí ban đầu và lấy RectTransform của panel
         panelRect = GetComponent<RectTransform>();
         originalPosition = panelRect.position;
-
-        // Tính toán vị trí mục tiêu dựa trên kích thước màn hình và hướng di chuyển
-        CalculateOffScreenPosition();
     }
 
-    // Tính toán vị trí ngoài màn hình theo hướng chỉ định
-    private void CalculateOffScreenPosition()
+    // Hàm gọi để di chuyển Panel theo hướng và trạng thái moveOut/moveIn
+    public void MovePanel(Direction direction, bool moveOut, float spped)
+    {
+        if (moveOut && isOffScreen)
+        {
+            Debug.Log("Panel is already off-screen, cannot move out further.");
+            return;
+        }
+
+        if (!moveOut && !isOffScreen)
+        {
+            Debug.Log("Panel is already on-screen, cannot move in further.");
+            return;
+        }
+
+        // Tính toán vị trí ngoài màn hình dựa trên hướng di chuyển
+        CalculateOffScreenPosition(direction);
+
+        // Bắt đầu di chuyển tới vị trí mục tiêu
+        StopAllCoroutines();
+        StartCoroutine(MovePanelToPosition(moveOut ? targetPosition : originalPosition, spped));
+        isOffScreen = moveOut;
+    }
+
+    // Tính toán vị trí ngoài màn hình cho panel theo hướng chỉ định
+    private void CalculateOffScreenPosition(Direction direction)
     {
         float screenWidth = Screen.width;
         float screenHeight = Screen.height;
 
-        // Lấy kích thước của Panel (RectTransform)
-        RectTransform rectTransform = GetComponent<RectTransform>();
-        float panelWidth = rectTransform.rect.width;
-        float panelHeight = rectTransform.rect.height;
+        float panelWidth = panelRect.rect.width;
+        float panelHeight = panelRect.rect.height;
 
-        // Tính toán vị trí mục tiêu dựa trên kích thước của Panel và hướng di chuyển
-        switch (moveDirection)
+        // Tính toán vị trí ngoài màn hình dựa trên hướng
+        switch (direction)
         {
             case Direction.Up:
-                targetPosition = originalPosition + Vector3.up * (screenHeight / 2 + panelHeight / 2);
+                targetPosition = originalPosition + Vector3.up * (screenHeight / 2 + panelHeight);
                 break;
             case Direction.Down:
-                targetPosition = originalPosition + Vector3.down * (screenHeight / 2 + panelHeight / 2);
+                targetPosition = originalPosition + Vector3.down * (screenHeight / 2 + panelHeight);
                 break;
             case Direction.Left:
-                targetPosition = originalPosition + Vector3.left * (screenWidth / 2 + panelWidth / 2);
+                targetPosition = originalPosition + Vector3.left * (screenWidth / 2 + panelWidth);
                 break;
             case Direction.Right:
-                targetPosition = originalPosition + Vector3.right * (screenWidth / 2 + panelWidth / 2);
+                targetPosition = originalPosition + Vector3.right * (screenWidth / 2 + panelWidth);
                 break;
         }
-    }
-
-    // Hàm để di chuyển panel ra khỏi hoặc trở lại màn hình
-    public void TogglePanelPosition()
-    {
-        StopAllCoroutines(); // Dừng mọi hoạt động di chuyển trước đó
-        if (isOffScreen)
-        {
-            // Panel đang ngoài màn hình, di chuyển trở lại vị trí ban đầu
-            StartCoroutine(MovePanel(originalPosition));
-        }
-        else
-        {
-            // Panel đang trên màn hình, di chuyển ra khỏi màn hình
-            StartCoroutine(MovePanel(targetPosition));
-        }
-        isOffScreen = !isOffScreen;
     }
 
     // Coroutine để di chuyển panel tới vị trí mục tiêu
-    private IEnumerator MovePanel(Vector3 target)
+    private IEnumerator MovePanelToPosition(Vector3 target, float speed)
     {
+        if (speed == 0)
+        {
+            panelRect.position = target;
+            yield return null;
+        }
         while (Vector3.Distance(panelRect.position, target) > 0.01f)
         {
-            panelRect.position = Vector3.MoveTowards(panelRect.position, target, moveSpeed * Time.deltaTime);
+            panelRect.position = Vector3.MoveTowards(panelRect.position, target, speed * Time.deltaTime);
             yield return null;
         }
         panelRect.position = target; // Đảm bảo panel ở đúng vị trí mục tiêu khi kết thúc

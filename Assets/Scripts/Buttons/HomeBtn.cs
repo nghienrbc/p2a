@@ -4,30 +4,18 @@ using UnityEngine;
 
 public class HomeBtn : BaseToogleButton
 {
-
-    public List<PanelMover> panelsToMove;
-    protected override void OnButtonClick()
+        protected override void OnButtonClick()
     {
+        base.OnButtonClick();
         if (!isToggled)
         {
-            UIManager.Instance.BtnTakePhotoClick();
-            ToggleAllPanels();
-        }
-
-        base.OnButtonClick();
+            UIManager.Instance.BtnTakePhotoClick(); 
+        } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)
         {
             Debug.Log("Home button toogle is:" + isToggled);
-        }
-
+        } 
     }
-
-    private void ToggleAllPanels()
-    {
-        foreach (PanelMover panelMover in panelsToMove)
-        { 
-                panelMover.TogglePanelPosition();
-        }
-    }
+     
 }
