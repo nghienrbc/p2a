@@ -38,27 +38,37 @@ public class RecordAudio : MonoBehaviour
 
     public void UploadAndProcessAudio()
     {
-        if (!HasRecordedAudio())
+        //if (!HasRecordedAudio())
+        //{
+        //    Debug.LogError("No recorded audio available to upload.");
+        //    return;
+        //}
+
+        string  audioFilePath = Path.Combine(Application.streamingAssetsPath, "audio_sample.mp3");
+
+        if (!File.Exists(audioFilePath))
         {
-            Debug.LogError("No recorded audio available to upload.");
+            Debug.LogError("Audio file not found at path: " + audioFilePath);
             return;
         }
-
         // Lấy file audio đã ghi âm từ RecordAudio
-        byte[] audioData = GetAudioData();
+        //byte[] audioData = GetAudioData();
+
+        byte[] audioData = File.ReadAllBytes(audioFilePath);
         string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
 
         // Tạo yêu cầu POST
         HTTPRequest request = new HTTPRequest(new Uri(serverUrl), HTTPMethods.Post, OnRequestFinished);
 
         // Đặt content type là audio/mpeg
-        request.SetHeader("Content-Type", "audio/mpeg");
+        //request.SetHeader("Content-Type", "audio/mpeg");
+        request.SetHeader("Content-Type", "multipart/form-data");
 
         // Tạo form data
         request.AddField("conversation_id", "4b97d8d1-7182-496b-894f-26f477bf9db5");
 
         // Đặt audio file
-        request.AddBinaryData("audio_file", audioData, "recorded_audio.mp3", "audio/mpeg");
+        request.AddBinaryData("audio_file", audioData, "audio_sample.mp3", "audio/mpeg");
 
         Debug.Log("Uploading audio...");
         request.Send();
@@ -69,10 +79,12 @@ public class RecordAudio : MonoBehaviour
         if (resp == null || !resp.IsSuccess)
         {
             Debug.LogError("Error uploading audio: " + (resp != null ? resp.Message : "Unknown error"));
+            req.Dispose(); // Giải phóng tài nguyên
             return;
         }
 
-        Debug.Log("Audio uploaded successfully. Processing response...");
+        Debug.Log("Audio uploaded successfully. Processing response..."); 
+        req.Dispose(); // Giải phóng tài nguyên
 
         // Nhận file audio trả về từ server
         byte[] responseAudioData = resp.Data;

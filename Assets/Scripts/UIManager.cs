@@ -62,16 +62,16 @@ public class UIManager : MonoBehaviour
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
 
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        }
+        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        //{
+        //    mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        //}
 
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
-        }
+        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        //{
+        //    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        //    bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
+        //}
 
         recordingIndicator.gameObject.SetActive(false);
         // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
@@ -356,7 +356,7 @@ public class UIManager : MonoBehaviour
                 recorder.StopRecording();
                 recordingIndicator.gameObject.SetActive(false);
                 // xữ lý gửi audio lên API để nhận lại một audio
-                recorder.UploadAndProcessAudio();
+                
             }
         }
 
@@ -414,7 +414,8 @@ public class UIManager : MonoBehaviour
 
     public void BtnPlayRecordClick()
     {
-        recorder.PlayRecording();
+        recorder.UploadAndProcessAudio();
+       // recorder.PlayRecording();
     }
 
     public void BtnTakePhotoClick()

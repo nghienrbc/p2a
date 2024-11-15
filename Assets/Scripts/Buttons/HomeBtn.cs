@@ -9,8 +9,9 @@ public class HomeBtn : BaseToogleButton
         base.OnButtonClick();
         if (!isToggled)
         {
+            Debug.Log("Home button click");
             UIManager.Instance.BtnStopCameraClick();
-            UIManager.Instance.functionName = "home";
+            UIManager.Instance.functionName = "home"; 
         } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)

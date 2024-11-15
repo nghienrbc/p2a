@@ -25,12 +25,14 @@ public class TakePhotoAndUpload : MonoBehaviour
     private int currentImageIndex; // Chỉ số của ảnh hiện tại trong danh sách
     private List<Sprite> imageSprites = new List<Sprite>(); // Danh sách các sprite từ DB
 
+    private Coroutine updateImageCoroutine; // Tham chiếu đến Coroutine đang chạy
+
     private void Start()
     {
         DisplayImages(loadedTexture);
         currentImageIndex = 0;
         largeImage.sprite = imageSprites[0];
-        largeImage.GetComponent<Image>().preserveAspect = true;
+        largeImage.preserveAspect = true;
     }
     public void StartTakePhoto()
     {
@@ -47,7 +49,7 @@ public class TakePhotoAndUpload : MonoBehaviour
                     webCamTexture = new WebCamTexture(devices[i].name);
                    // cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
                     webCamTexture.Play(); // Bắt đầu camera
-                    StartCoroutine(UpdateImage(webCamTexture));
+                    updateImageCoroutine = StartCoroutine(UpdateImage(webCamTexture));
                     break;
                 }
             }
@@ -75,6 +77,7 @@ public class TakePhotoAndUpload : MonoBehaviour
             cameraDisplay.sprite = null; // Xóa hình ảnh hiện tại trong cameraDisplay
         }
 
+        StopCoroutine(updateImageCoroutine);
         Debug.Log("Camera stopped and resources released.");
     }
 
@@ -152,12 +155,14 @@ public class TakePhotoAndUpload : MonoBehaviour
         rotatedTexture.Apply();
         return rotatedTexture;
     }
+
     public void SaveImage()
     {
         // Lấy ảnh từ camera
         //Texture2D capturedImage = CaptureImage();
         if (cameraDisplay.sprite != null)
         {
+
             // Lấy Texture2D từ sprite
             Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
 
@@ -185,7 +190,7 @@ public class TakePhotoAndUpload : MonoBehaviour
             Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
             photoSave.sprite = savedSprite;
             photoSave.preserveAspect = true;
-
+            StopCamera();
         }
         else
         {
@@ -198,11 +203,12 @@ public class TakePhotoAndUpload : MonoBehaviour
         photoSave.gameObject.SetActive(false);
         cameraDisplay.gameObject.SetActive(true);
         qrCodeImage.gameObject.SetActive(false);
+        StartTakePhoto();
     }
 
     public void UploadPhoto()
     {
-        if (cameraDisplay.sprite != null)
+        if (photoSave.sprite != null)
         {
             // Lấy Texture2D từ sprite
             Texture2D photoTexture = SpriteToTexture2D(photoSave.sprite);
@@ -218,38 +224,48 @@ public class TakePhotoAndUpload : MonoBehaviour
         }
     }
 
+    private Texture2D ResizeTexture(Texture2D originalTexture, int targetWidth, int targetHeight)
+    {
+        Texture2D resizedTexture = new Texture2D(targetWidth, targetHeight);
+        for (int y = 0; y < targetHeight; y++)
+        {
+            for (int x = 0; x < targetWidth; x++)
+            {
+                float xRatio = (float)x / targetWidth;
+                float yRatio = (float)y / targetHeight;
+                Color pixelColor = originalTexture.GetPixelBilinear(xRatio, yRatio);
+                resizedTexture.SetPixel(x, y, pixelColor);
+            }
+        }
+        resizedTexture.Apply();
+        return resizedTexture;
+    }
     public Texture2D MergeTextures(Texture2D baseTexture, Texture2D frameTexture)
     {
-        // Đảm bảo hai texture có cùng kích thước
-        int width = Mathf.Max(baseTexture.width, frameTexture.width);
-        int height = Mathf.Max(baseTexture.height, frameTexture.height);
+        // Lấy kích thước lớn hơn giữa hai texture
+        int targetWidth = Mathf.Max(baseTexture.width, frameTexture.width);
+        int targetHeight = Mathf.Max(baseTexture.height, frameTexture.height);
 
-        // Tạo một Texture2D mới với kích thước tối đa giữa hai texture
-        Texture2D mergedTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        // Resize cả hai texture về cùng kích thước
+        Texture2D resizedBaseTexture = ResizeTexture(baseTexture, targetWidth, targetHeight);
+        Texture2D resizedFrameTexture = ResizeTexture(frameTexture, targetWidth, targetHeight);
 
-        // Sao chép pixel từ baseTexture (ảnh từ camera) vào mergedTexture
-        mergedTexture.SetPixels(0, 0, baseTexture.width, baseTexture.height, baseTexture.GetPixels());
+        // Tạo Texture2D mới để gộp
+        Texture2D mergedTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
 
-        // Chồng frameTexture lên baseTexture
-        Color[] framePixels = frameTexture.GetPixels();
-        for (int y = 0; y < frameTexture.height; y++)
+        // Sao chép pixel từ resizedBaseTexture
+        mergedTexture.SetPixels(resizedBaseTexture.GetPixels());
+
+        // Chồng resizedFrameTexture lên
+        Color[] framePixels = resizedFrameTexture.GetPixels();
+        for (int i = 0; i < framePixels.Length; i++)
         {
-            for (int x = 0; x < frameTexture.width; x++)
+            if (framePixels[i].a > 0.1) // Chỉ chồng những pixel không trong suốt
             {
-                int index = y * frameTexture.width + x;
-
-                // Tính toán vị trí trên mergedTexture
-                int mergedX = x;
-                int mergedY = y;
-
-                if (framePixels[index].a > 0) // Nếu pixel có alpha > 0 (không trong suốt)
-                {
-                    mergedTexture.SetPixel(mergedX, mergedY, framePixels[index]);
-                }
+                mergedTexture.SetPixel(i % targetWidth, i / targetWidth, framePixels[i]);
             }
         }
 
-        // Áp dụng thay đổi cho mergedTexture
         mergedTexture.Apply();
         return mergedTexture;
     }
@@ -258,6 +274,7 @@ public class TakePhotoAndUpload : MonoBehaviour
     {
         // Lấy kích thước của Sprite
         Texture2D texture = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
+        Debug.Log(texture);
         Rect rect = sprite.rect;
         Color[] pixels = sprite.texture.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
         texture.SetPixels(pixels);
@@ -405,7 +422,7 @@ public class TakePhotoAndUpload : MonoBehaviour
         // Hiển thị ảnh lớn và panel nền tối
         currentImageIndex = imageIndex;
         largeImage.sprite = imageSprites[imageIndex];
-        largeImage.GetComponent<Image>().preserveAspect = true; 
+        largeImage.preserveAspect = true; 
 
         // Reset vị trí và alpha của ảnh
         //largeImageRectTransform.anchoredPosition = Vector2.zero;
