@@ -8,7 +8,9 @@ public class CameraBtn : BaseToogleButton
     {
         if (!isToggled)
         { 
-            UIManager.Instance.BtnTakePhotoClick(); 
+            UIManager.Instance.BtnTakePhotoClick();
+            UIManager.Instance.functionName = "camera";
+
         }
         base.OnButtonClick();
         

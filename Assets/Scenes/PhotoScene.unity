@@ -222,12 +222,13 @@ RectTransform:
   - {fileID: 1534889454}
   - {fileID: 1398070079}
   - {fileID: 1357843142}
+  - {fileID: 2060822848}
   m_Father: {fileID: 368038750}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -565.99036, y: -49.000977}
-  m_SizeDelta: {x: -1547.7, y: -186.36}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 693.85, y: -850.18}
+  m_SizeDelta: {x: 1012.30005, y: 1413.64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &96030703
 MonoBehaviour:
@@ -894,7 +895,6 @@ RectTransform:
   - {fileID: 821930451}
   - {fileID: 630285607}
   - {fileID: 1383472780}
-  - {fileID: 2060822848}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1475,7 +1475,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &778690374
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1493,8 +1493,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 17}
-  m_SizeDelta: {x: 160, y: 30}
+  m_AnchoredPosition: {x: 934, y: 112}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &778690375
 MonoBehaviour:
@@ -1832,13 +1832,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 856551751}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.1553101, y: -0.3724562, z: -0.07911288, w: 0.9115352}
+  m_LocalRotation: {x: -0.2980638, y: -0.51924664, z: -0.0040669744, w: 0.8009522}
   m_LocalPosition: {x: 1.73, y: -2.17, z: -5.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -20.003, y: -44.143, z: -1.74}
+  m_LocalEulerAnglesHint: {x: -28.796, y: -71.154, z: 20.23}
 --- !u!1 &880720527
 GameObject:
   m_ObjectHideFlags: 0
@@ -2800,6 +2800,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47dd27e9f4c17041b851388fc26326a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MessagePanel: {fileID: 1383472779}
+  qrCodeImage: {fileID: 2060822849}
   cameraDisplay: {fileID: 1926225727}
   photoSave: {fileID: 1239682236}
   imagePrefab: {fileID: 900608249480703765, guid: 02b7d93b76e788245a989fba54311534, type: 3}
@@ -3226,7 +3228,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1357843144}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1188212370}
+        m_TargetAssemblyTypeName: TakePhotoAndUpload, Assembly-CSharp
+        m_MethodName: ReshootPhotoBtn
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1357843144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3555,7 +3569,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1398070081}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1817049415}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: BtnUploadPhotoClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1398070081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4154,13 +4180,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1188212369}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 1188212370}
+        m_TargetAssemblyTypeName: TakePhotoAndUpload, Assembly-CSharp
+        m_MethodName: SaveImage
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -4663,6 +4689,7 @@ MonoBehaviour:
   takePhotoAndUpload: {fileID: 1188212370}
   deviceListPanel: {fileID: 406256278}
   deviceItemPrefab: {fileID: 8466677792333813884, guid: 4139cae2f8d803247b4e571add96d084, type: 3}
+  functionName: home
   panelsToControl:
   - panelMover: {fileID: 96030703}
     moveDirection: 0
@@ -5443,12 +5470,12 @@ RectTransform:
   m_LocalScale: {x: 2.9397376, y: 2.9397376, z: 2.9397376}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 368038750}
+  m_Father: {fileID: 96030702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 818.07, y: 81.517}
-  m_SizeDelta: {x: 163.0343, y: 163.0343}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0.00067139, y: -512}
+  m_SizeDelta: {x: 326.56, y: 326.56}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2060822849
 MonoBehaviour:

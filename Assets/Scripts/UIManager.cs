@@ -5,6 +5,8 @@ using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
+using System.IO;
+using BestHTTP;
 
 public class UIManager : MonoBehaviour
 {
@@ -21,6 +23,9 @@ public class UIManager : MonoBehaviour
     public GameObject deviceItemPrefab; // Prefab cho mỗi thiết bị
     private List<string> discoveredDevices = new List<string>();
 
+    public string functionName = "home";
+
+    private string serverUrl = "http://145.223.21.25:8001/audio-to-audio";
     private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
     // Start is called before the first frame update
 
@@ -57,16 +62,16 @@ public class UIManager : MonoBehaviour
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
 
-        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        //{
-        //    mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        //}
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        }
 
-        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        //{
-        //    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        //    bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
-        //}
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
+        }
 
         recordingIndicator.gameObject.SetActive(false);
         // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
@@ -331,22 +336,33 @@ public class UIManager : MonoBehaviour
         if (receivedData.Trim() == "1")
         {
             // Xử lý khi nhận được true, ví dụ bật một đối tượng
-            recorder.StartRecording();
-            recordingIndicator.gameObject.SetActive(true);
+            if (UIManager.Instance.functionName == "home")
+            {
+                recorder.StartRecording();
+                recordingIndicator.gameObject.SetActive(true);
+            }
+            else if (UIManager.Instance.functionName == "camera")
+            {
+                takePhotoAndUpload.SaveImage();
+            }
             Debug.Log("Button is pressed");
         }
         else if (receivedData.Trim() == "0")
         {
             // Xử lý khi nhận được false, ví dụ tắt đối tượng
             Debug.Log("Button is released");
-
-            recorder.StopRecording();
-            recordingIndicator.gameObject.SetActive(false);
+            if (UIManager.Instance.functionName == "home")
+            {
+                recorder.StopRecording();
+                recordingIndicator.gameObject.SetActive(false);
+                // xữ lý gửi audio lên API để nhận lại một audio
+                recorder.UploadAndProcessAudio();
+            }
         }
 
         connectionTxt.text = receivedData.Trim();
     }
-
+    
 
     // Hàm gọi khi một nút BaseToggleButton được nhấn
     public void OnButtonClicked(BaseToogleButton clickedButton)
@@ -404,6 +420,11 @@ public class UIManager : MonoBehaviour
     public void BtnTakePhotoClick()
     {
         takePhotoAndUpload.StartTakePhoto();
+    }
+
+    public void BtnStopCameraClick()
+    {
+        takePhotoAndUpload.StopCamera();
     }
 
     public void BtnSavePhotoClick()

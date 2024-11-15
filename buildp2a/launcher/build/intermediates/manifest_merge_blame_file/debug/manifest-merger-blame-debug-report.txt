@@ -24,39 +24,39 @@
 17        android:xlargeScreens="true" />
 17-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:106-134
 18
-19    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-19-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-76
-19-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:22-73
-20    <uses-permission
-20-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-13:38
-21        android:name="android.permission.BLUETOOTH_ADMIN"
-21-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:9-58
-22        android:maxSdkVersion="30" />
-22-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:9-35
-23    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-23-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:5-73
-23-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:22-70
-24    <uses-permission android:name="android.permission.INTERNET" />
-24-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:5-67
-24-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:22-64
-25    <uses-permission android:name="android.permission.CAMERA" />
-25-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:5-65
-25-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:22-62
-26    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-26-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:5-71
-26-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:22-68
-27    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-27-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:5-80
-27-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:22-77
-28    <uses-permission android:name="android.permission.BLUETOOTH" />
-28-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:5-68
-28-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:22-65
-29    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-29-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:5-79
-29-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:22-76
-30    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-30-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:5-81
-30-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:22-78
+19    <uses-permission
+19-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-12:38
+20        android:name="android.permission.BLUETOOTH_ADMIN"
+20-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:9-58
+21        android:maxSdkVersion="30" />
+21-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:9-35
+22    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+22-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:5-79
+22-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:22-76
+23    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+23-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:5-81
+23-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:22-78
+24    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+24-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:5-76
+24-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:22-73
+25    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+25-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:5-73
+25-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:22-70
+26    <uses-permission android:name="android.permission.INTERNET" />
+26-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:5-67
+26-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:22-64
+27    <uses-permission android:name="android.permission.CAMERA" />
+27-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:5-65
+27-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:22-62
+28    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+28-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:5-71
+28-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:22-68
+29    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+29-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:5-80
+29-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:22-77
+30    <uses-permission android:name="android.permission.BLUETOOTH" />
+30-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:5-68
+30-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:22-65
 31
 32    <uses-feature android:glEsVersion="0x00030000" />
 32-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:23:5-54

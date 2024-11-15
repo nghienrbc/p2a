@@ -110,50 +110,50 @@ INJECTED from D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml
 		INJECTED from D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml
 		ADDED from D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml
 		INJECTED from D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml
-uses-permission#android.permission.BLUETOOTH_CONNECT
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-76
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:22-73
 uses-permission#android.permission.BLUETOOTH_ADMIN
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-13:38
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-12:38
 	android:maxSdkVersion
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:9-35
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:9-35
 	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:9-58
-uses-permission#android.permission.BLUETOOTH_SCAN
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:5-73
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:22-70
-uses-permission#android.permission.INTERNET
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:5-67
-MERGED from [:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:11:5-67
-MERGED from [:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:11:5-67
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:22-64
-uses-permission#android.permission.CAMERA
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:5-65
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:22-62
-uses-permission#android.permission.RECORD_AUDIO
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:5-71
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:22-68
-uses-permission#android.permission.MODIFY_AUDIO_SETTINGS
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:5-80
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:22-77
-uses-permission#android.permission.BLUETOOTH
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:5-68
-	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:22-65
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:9-58
 uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:5-79
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:5-79
 	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:22-76
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:13:22-76
 uses-permission#android.permission.ACCESS_COARSE_LOCATION
-ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:5-81
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:5-81
 	android:name
-		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:22-78
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:22-78
+uses-permission#android.permission.BLUETOOTH_CONNECT
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:5-76
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:22-73
+uses-permission#android.permission.BLUETOOTH_SCAN
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:5-73
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:16:22-70
+uses-permission#android.permission.INTERNET
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:5-67
+MERGED from [:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:11:5-67
+MERGED from [:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:11:5-67
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:17:22-64
+uses-permission#android.permission.CAMERA
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:5-65
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:18:22-62
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:5-71
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:19:22-68
+uses-permission#android.permission.MODIFY_AUDIO_SETTINGS
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:5-80
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:20:22-77
+uses-permission#android.permission.BLUETOOTH
+ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:5-68
+	android:name
+		ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:21:22-65
 uses-feature#0x00030000
 ADDED from [:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:23:5-54
 	android:glEsVersion

@@ -6,9 +6,12 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using BestHTTP;
+using TMPro;
 
 public class TakePhotoAndUpload : MonoBehaviour
 {
+    public GameObject MessagePanel;
+    public Image qrCodeImage; // UI Image để hiển thị mã QR
     public Image cameraDisplay; // Tham chiếu tới RawImage trong Canvas
     public Image photoSave; 
     private WebCamTexture webCamTexture;
@@ -54,6 +57,27 @@ public class TakePhotoAndUpload : MonoBehaviour
             Debug.LogError("No camera found on this device!");
         }
     }
+
+    public void StopCamera()
+    {
+        if (webCamTexture != null)
+        {
+            if (webCamTexture.isPlaying)
+            {
+                webCamTexture.Stop(); // Dừng camera
+            }
+            webCamTexture = null; // Giải phóng tài nguyên
+        }
+
+        // Xóa hình ảnh hiện tại trên UI (nếu cần)
+        if (cameraDisplay != null)
+        {
+            cameraDisplay.sprite = null; // Xóa hình ảnh hiện tại trong cameraDisplay
+        }
+
+        Debug.Log("Camera stopped and resources released.");
+    }
+
     IEnumerator UpdateImage(WebCamTexture webCamTexture)
     {
         while (true)
@@ -157,6 +181,7 @@ public class TakePhotoAndUpload : MonoBehaviour
             //File.WriteAllBytes(filePath, imageBytes);
             photoSave.gameObject.SetActive(true);
             cameraDisplay.gameObject.SetActive(false);
+            qrCodeImage.gameObject.SetActive(false);
             Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
             photoSave.sprite = savedSprite;
             photoSave.preserveAspect = true;
@@ -172,6 +197,7 @@ public class TakePhotoAndUpload : MonoBehaviour
     { 
         photoSave.gameObject.SetActive(false);
         cameraDisplay.gameObject.SetActive(true);
+        qrCodeImage.gameObject.SetActive(false);
     }
 
     public void UploadPhoto()
@@ -179,18 +205,53 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (cameraDisplay.sprite != null)
         {
             // Lấy Texture2D từ sprite
-            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite); 
-            // Xoay trái 90 độ
-            Texture2D rotatedTexture = RotateTexture90DegreesRight(texture);
-
+            Texture2D photoTexture = SpriteToTexture2D(photoSave.sprite);
+            Texture2D frameTexture = SpriteToTexture2D(largeImage.sprite);
+            Texture2D mergeTextures = MergeTextures(photoTexture, frameTexture);
             // Chuyển Texture2D thành PNG
-            byte[] imageBytes = rotatedTexture.EncodeToPNG();
+            byte[] imageBytes = mergeTextures.EncodeToPNG();
             UploadToImgur(imageBytes);
         }
         else
         {
             Debug.LogError("No sprite found in cameraDisplay.");
         }
+    }
+
+    public Texture2D MergeTextures(Texture2D baseTexture, Texture2D frameTexture)
+    {
+        // Đảm bảo hai texture có cùng kích thước
+        int width = Mathf.Max(baseTexture.width, frameTexture.width);
+        int height = Mathf.Max(baseTexture.height, frameTexture.height);
+
+        // Tạo một Texture2D mới với kích thước tối đa giữa hai texture
+        Texture2D mergedTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+
+        // Sao chép pixel từ baseTexture (ảnh từ camera) vào mergedTexture
+        mergedTexture.SetPixels(0, 0, baseTexture.width, baseTexture.height, baseTexture.GetPixels());
+
+        // Chồng frameTexture lên baseTexture
+        Color[] framePixels = frameTexture.GetPixels();
+        for (int y = 0; y < frameTexture.height; y++)
+        {
+            for (int x = 0; x < frameTexture.width; x++)
+            {
+                int index = y * frameTexture.width + x;
+
+                // Tính toán vị trí trên mergedTexture
+                int mergedX = x;
+                int mergedY = y;
+
+                if (framePixels[index].a > 0) // Nếu pixel có alpha > 0 (không trong suốt)
+                {
+                    mergedTexture.SetPixel(mergedX, mergedY, framePixels[index]);
+                }
+            }
+        }
+
+        // Áp dụng thay đổi cho mergedTexture
+        mergedTexture.Apply();
+        return mergedTexture;
     }
 
     private Texture2D SpriteToTexture2D(Sprite sprite)
@@ -240,7 +301,38 @@ public class TakePhotoAndUpload : MonoBehaviour
         if (!string.IsNullOrEmpty(uploadedImageUrl))
         {
             Debug.Log("Image uploaded successfully! URL: " + uploadedImageUrl);
+            // có link rồi thì tạo mã QR tại đây
+            GenerateQRCode(uploadedImageUrl);
         }
+    }
+    public void GenerateQRCode(string url)
+    {
+        // URL API tạo mã QR
+        string qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + url;
+        Debug.Log(qrCodeUrl);
+        // Gửi yêu cầu tải mã QR từ API bằng BestHTTP
+        HTTPRequest request = new HTTPRequest(new Uri(qrCodeUrl), HTTPMethods.Get, OnRequestFinished1);
+        request.Send();
+    }
+
+    private void OnRequestFinished1(HTTPRequest req, HTTPResponse resp)
+    {
+        if (resp == null || !resp.IsSuccess)
+        {
+            Debug.LogError("Error downloading QR code: " + (resp != null ? resp.Message : "Unknown error"));
+            return;
+        }
+
+        // Chuyển đổi từ byte array thành Texture2D
+        Texture2D qrCodeTexture = new Texture2D(1, 1);
+        qrCodeTexture.LoadImage(resp.Data); // Load image từ dữ liệu phản hồi của HTTPResponse
+
+        // Chuyển đổi Texture2D thành Sprite để hiển thị trên UI Image
+        Sprite qrCodeSprite = Sprite.Create(qrCodeTexture, new Rect(0, 0, qrCodeTexture.width, qrCodeTexture.height), new Vector2(0.5f, 0.5f));
+
+        // Gán Sprite cho UI Image
+        qrCodeImage.gameObject.SetActive(true);
+        qrCodeImage.sprite = qrCodeSprite;
     }
 
     private string ExtractImageUrlFromResponse(string jsonResponse)
@@ -318,6 +410,22 @@ public class TakePhotoAndUpload : MonoBehaviour
         // Reset vị trí và alpha của ảnh
         //largeImageRectTransform.anchoredPosition = Vector2.zero;
         //largeImageCanvasGroup.alpha = originalAlpha;
+    }
+
+    private void ShowMessageBox(string mes)
+    {
+        foreach (Transform eachChild in MessagePanel.transform)
+        {
+            if (eachChild.name == "MesContent")
+            {
+                Debug.Log("Child found. ...");
+                TMP_Text b = eachChild.GetComponent<TMP_Text>();
+                b.text = mes;
+                break;
+            }
+        }
+        // thông báo nhập username và password 
+        MessagePanel.transform.parent.gameObject.SetActive(true);
     }
 
     // Class đại diện cho JSON response từ Imgur
