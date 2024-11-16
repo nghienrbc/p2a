@@ -16177,7 +16177,7 @@ IL_0009:
 	{
 		NetworkStream_tF39C3684B6D572BF47F518AD1DB1F4B12CEE4AE0* L_4 = V_0;
 		NullCheck(L_4);
-		VirtualActionInvoker0::Invoke(18, L_4);
+		VirtualActionInvoker0::Invoke(19, L_4);
 		__this->___active = (bool)0;
 		V_0 = (NetworkStream_tF39C3684B6D572BF47F518AD1DB1F4B12CEE4AE0*)NULL;
 		return;
@@ -19607,7 +19607,7 @@ FINALLY_0055:
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_16 = V_1;
 			int32_t L_17 = V_0;
 			NullCheck(L_15);
-			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_15, L_16, 0, L_17);
+			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_15, L_16, 0, L_17);
 			Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_18 = __this->___fileStream;
 			il2cpp_codegen_runtime_class_init_inline(Extensions_t17B0B2ADA54572D09294EFD3D474C9F4119C3503_il2cpp_TypeInfo_var);
 			Extensions_WriteLine_m71F9D53264285063B77A1CA1A65BD16EAB0C81C4(L_18, NULL);
@@ -19623,7 +19623,7 @@ IL_005c:
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_19 = __this->___fileStream;
 		NullCheck(L_19);
-		VirtualActionInvoker0::Invoke(20, L_19);
+		VirtualActionInvoker0::Invoke(21, L_19);
 	}
 
 IL_0067:
@@ -19649,7 +19649,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FileOutput_Dispose_m878D50A965486ECD5408
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_1 = __this->___fileStream;
 		NullCheck(L_1);
-		VirtualActionInvoker0::Invoke(18, L_1);
+		VirtualActionInvoker0::Invoke(19, L_1);
 		__this->___fileStream = (Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___fileStream), (void*)(Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE*)NULL);
 	}

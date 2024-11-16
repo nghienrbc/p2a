@@ -62,16 +62,16 @@ public class UIManager : MonoBehaviour
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
 
-        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        //{
-        //    mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        //}
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            mainActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        }
 
-        //using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        //{
-        //    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        //    bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
-        //}
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
+        }
 
         recordingIndicator.gameObject.SetActive(false);
         // Kiểm tra xem tất cả các quyền đã được cấp hay chưa

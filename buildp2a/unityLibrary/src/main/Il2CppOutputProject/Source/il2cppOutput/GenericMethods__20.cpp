@@ -375,8 +375,6 @@ struct IStyleValue_1_t60B64B8F2AABFE93E9F980903FA235A25EEE6AC2;
 struct IStyleValue_1_t1DB43353EC06ED52600D61657BBD26EF81CE5B6D;
 struct IStyleValue_1_tA3635C4407421A9C31ECDFD4F63804EE7D57AF43;
 struct IStyleValue_1_t824116821CB88294640F85D02E205AC5F157F4FF;
-struct IStyleValue_1_t75C345274538150C05DDA28E113AD0B691730A17;
-struct IStyleValue_1_t0807BFB3B6427E5EA21E4D85C41469BE44C00920;
 struct KeyCollection_tAE1CD1CE327D07F072532A89E6854F2C33EB014A;
 struct KeyValuePairProperty_tE883A6048C21550261A3176050C59520BBE08A85;
 struct KeyValuePairProperty_t1FD0D2BA91EB5ACD2513F7960E2C302BD70E47FA;
@@ -387,7 +385,6 @@ struct List_1_t8C03D59AE9CBDEDECDE563570171B47DCB063CF4;
 struct List_1_t60F39D768DAD2345527AD3EE73FAB2667DF4F260;
 struct List_1_t4A27DCC9A4080D8DA642DEA4EFFEBA72D6471715;
 struct List_1_tB2308B0E9951D05CB7B0115F13DED88E37C77E86;
-struct List_1_t2CDCA768E7F493F5EDEBC75AEB200FD621354E35;
 struct List_1_tE7FB077B3CEA6371A27F72CC60962491AB71490B;
 struct List_1_t96E9133B70FB6765E6B138E810D33E18901715DA;
 struct List_1_tA239CB83DE5615F348BB0507E45F490F4F7C9A8D;
@@ -402,7 +399,6 @@ struct List_1_t97D0A67F265D228A3A3BC6F28653FDC330864E10;
 struct List_1_t8E88137DBF3559DC2CF17853F82E9C24C134B291;
 struct List_1_t405551BC25C5A755A46D979954FF60A2A22A0A51;
 struct List_1_t491E344573B9D6F61E36AF56132B7412453928C9;
-struct List_1_tA7EEECF976A6B4957450A4D235070C9324ED1A97;
 struct Predicate_1_t8342C85FF4E41CD1F7024AC0CDC3E5312A32CB12;
 struct Predicate_1_t7F48518B008C1472339EEEBABA3DE203FE1F26ED;
 struct PropertyBag_1_tD413081183D831D5FD1DB047C6388E9EA8522318;
@@ -454,7 +450,6 @@ struct TransitionEventsFrameState_t3F9A8EB2B33780D3F2037BFEED0A3C6A03B03FEC;
 struct TransitionEventsFrameState_tC8B489FD9737C08216D56BB2AE4D35215BDED5AB;
 struct Tuple_3_t2D4C29E74A6A48C954C54F2C5156BD19C434BA40;
 struct Tuple_3_tA9629AB90A9BD8C1E0490927A977DF122A277ACF;
-struct TweenRunner_1_tF277B20625C8B1939DC85508C4679C690757395E;
 struct UnsafeList_1_t3A26A222433F7993EC942046A500D6EA3DCB97E6;
 struct ValueCollection_t04D5F77EBC72D81BB7FE7199D6C9DC65DEB60064;
 struct Values_1_t19A1E2B4752BCDF06B5D68597FF7E74704C6F99F;
@@ -545,7 +540,6 @@ struct ObjectU5BU5D_tD4BF1BEC72A31DF6611C0B8FA3112AF128FC3F8A;
 struct RotateU5BU5D_tD482C518713DEC5763C34C827A9B6DB565776772;
 struct ScalableImageU5BU5D_t8C989174900062AED19A057FDCF0529F8C594A52;
 struct ScaleU5BU5D_tE608175710457D7343DD849244BF59B58157F0EF;
-struct SelectableU5BU5D_t4160E135F02A40F75A63F787D36F31FEC6FE91A9;
 struct SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C;
 struct StackTraceU5BU5D_t32FBCB20930EAF5BAE3F450FF75228E5450DA0DF;
 struct StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248;
@@ -565,7 +559,6 @@ struct SortedColumnStateU5BU5D_tD76039072018E258494F81C8D50F35EAC97118E6;
 struct ValuesU5BU5D_t5332999C48416329B2A447FCD8C71113DDB459EA;
 struct ImportStructU5BU5D_t42D231FD5BB4B620965D7BED87D56D531B4C7AE9;
 struct ColumnU5BU5D_t9DCE2F909EAC73C1AAD4A80CE8A402CF2544A64B;
-struct AnimationTriggers_tA0DC06F89C5280C6DD972F6F4C8A56D7F4F79074;
 struct ArgumentException_tAD90411542A20A9C72D5CDA3A84181D8B947A263;
 struct ArgumentNullException_t327031E412FAB2351B0022DD5DAD47E67E597129;
 struct ArgumentOutOfRangeException_tEA2822DAF62B10EEED00E0E3A341D4BAF78CF85F;
@@ -579,7 +572,6 @@ struct CancellationTokenSource_tAAE1E0033BCFC233801F8CB4CED5C852B350CB7B;
 struct CompareInfo_t1B1A6AC3486B570C76ABA52149C9BD4CD82F9E57;
 struct Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3;
 struct ContextCallback_tE8AFBDBFCC040FDA8DA8C1EEFE9BD66B16BDA007;
-struct Coroutine_t85EA685566A254C23F3FD77AB5BDFFFF8799596B;
 struct CultureData_tEEFDCF4ECA1BBF6C0C8C94EB3541657245598F9D;
 struct CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0;
 struct DateTimeFormatInfo_t0457520F9FA7B5C8EAAEB3AD50413B6AEEB7458A;
@@ -592,14 +584,11 @@ struct Expression_t70AA908ECBD33E94249BF235E4EBB0F831AD8785;
 struct FieldInfo_t;
 struct Font_tC95270EA3198038970422D78B74A7F2E218A96B6;
 struct FontAsset_t61A6446D934E582651044E33D250EA8D306AB958;
-struct GameObject_t76FEDD663AB33C991A9C9A23129337651094216F;
-struct Graphic_tCBFCA4585A19E2B75465AECFEAC43F4016BF7931;
 struct IDictionary_t6D03155AF1FA9083817AA5B6AD7DEEACC26AB220;
 struct IFormatProvider_tC202922D43BFF3525109ABF3FB79625F5646AB52;
 struct IFormatterResolver_tD7210B164AB0ACDF8764878AC9ECFC67BB5686E7;
 struct IMemberInfo_tE969885901ACDD1986A2E40FCAA9B6ECF6E052E9;
 struct IPropertyBag_t602D45F19F9BFA3E370929AC5023258AAF62E8C2;
-struct Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E;
 struct InlineStyleAccess_t5CA7877999C9442491A220AE50D605C84D09A165;
 struct InvalidOperationException_t5DDE4D49B7405FAAB1E4576F4715A42A3FAD4BAB;
 struct LambdaExpression_tD26FB6AEAD01B2EBB668CDEAFAAFA4948697300E;
@@ -653,7 +642,6 @@ struct String_t;
 struct StringBuilder_t;
 struct StylePropertyAnimationSystem_tB499821AFC54DE61DC54CFDCD392C337F5097718;
 struct StyleVariableContext_tF74F2787CE1F6BEBBFBFF0771CF493AC9E403527;
-struct TMP_Text_tE8D677872D43AD4B2AAF0D6101692A17D0B251A9;
 struct TableMapping_t82B0997865321647714FA36F3AE3C9FA533024BB;
 struct TaskFactory_tF781BD37BE23917412AD83424D1497C7C1509DF0;
 struct TaskScheduler_t3F0550EBEF7C41F74EC8C08FF4BED0D8CE66006E;
@@ -690,9 +678,6 @@ struct ValuesScale_t21E6FC5B09789CB4974FC2ED15C3F83B863FCF8A;
 struct ValuesTextShadow_t50CB05DF0E7770164252616605C61B37DB4A966C;
 struct ValuesTransformOrigin_tB46EC0F073E360E1431CCD4E580BA675D716823F;
 struct ValuesTranslate_tFB5B432755E0DAA7DD8C95E78FDCC78C4885940B;
-struct DropdownEvent_tFD4609E80240BC887A6D31F9F3C252A8A6843E91;
-struct OptionData_tFDFBCB4A5FB860E95AE46FDAC112DB4140A8525E;
-struct OptionDataList_tF66EA4801BFA499F010E6EFF89ED760BF4F0BEE1;
 struct Column_tD1A41058DB45A17F5EE2A441249895FA3EA01321;
 struct ContingentProperties_t3FA59480914505CEA917B1002EC675F29D0CB540;
 struct CustomStyleAccess_t170C852102B4D09FB478B620A75B14D096F9F2B1;
@@ -940,6 +925,9 @@ struct EqualityComparer_1_tF74A06E4DA351FE016FE9BD76C2A66524D685C24  : public Ru
 struct EqualityComparer_1_t458C8DC3748A89A213F4738B57D3742C4896ABE9  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t0518E9BE51440589E611865F70FB44AB0BA31307  : public RuntimeObject
+{
+};
 struct FormatterCache_1_tDBB1F12D023416C43AAD7A178980EB17318E8F31  : public RuntimeObject
 {
 };
@@ -950,6 +938,9 @@ struct FormatterCache_1_t3ADE7798B658F519CC1F99D1BC0DC1C083F075CC  : public Runt
 {
 };
 struct FormatterCache_1_t0BB1C5AC68CB25EDD74668036432E779A59B8339  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t89FB6EAB5BA3496257F0FC483E5625DDAA9A9DA9  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t0839F0E50DF590045B42A3ADF2269F65B253DF88  : public RuntimeObject
@@ -964,6 +955,9 @@ struct FormatterCache_1_tA3B575EA166E9540E114591F258294BB3066889A  : public Runt
 struct FormatterCache_1_t5E5F3F3DC8B92B1BBD14695493F0B2D53AD00B77  : public RuntimeObject
 {
 };
+struct FormatterCache_1_tAA82DE7BC8FABBE527F405B116505B28980E053E  : public RuntimeObject
+{
+};
 struct FormatterCache_1_tFD847075991385B3446E5837131D0F325F0C1A44  : public RuntimeObject
 {
 };
@@ -974,6 +968,9 @@ struct FormatterCache_1_t5DB1D9F5CF74425DC62DAF6460FCA18CF59FB496  : public Runt
 {
 };
 struct FormatterCache_1_t923D1837CB9EEC9F1A919B2B5422004ED1000001  : public RuntimeObject
+{
+};
+struct FormatterCache_1_tDB468FC52535C354CA0E001BF2382FCA6A6565BF  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t0A3AD3CF61D58AA19AABC914234A645B995B3521  : public RuntimeObject
@@ -988,6 +985,9 @@ struct FormatterCache_1_tE83270190A60E8F257F93030B2F66543F4C23251  : public Runt
 struct FormatterCache_1_tD3FBF4A7A75D1EF3C98E1E5C94E1BB6E29617AF7  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t65ACD4FA9990B216DE069CEE4A6CD103556A6E39  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t89A3CAFA33EB10F5B4FADCC914CBDAE3A91F2FB8  : public RuntimeObject
 {
 };
@@ -998,6 +998,9 @@ struct FormatterCache_1_t30DB8918395E46EABD9ADAF65B1C8F80728D23CE  : public Runt
 {
 };
 struct FormatterCache_1_tE5F291D3651610E5F7FE7E00A12A873305B50DB5  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t181EB62AD6BF09E4E8D5481BF8190D53898A45F8  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t205AE4D1C266B6392D900ADE733AF72AAB2CF55E  : public RuntimeObject
@@ -1012,6 +1015,9 @@ struct FormatterCache_1_tCA593F072617E885D8BA4E6C935F039BCEBA72D1  : public Runt
 struct FormatterCache_1_tE8E958F5754267D35292431FD56D841B5A612ACC  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t6D7D10AB88DB4FAA36A1184BCE0CC4D95DF65BDD  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t9EC97C643B224E2CF1FC447800A15FC4B8282C89  : public RuntimeObject
 {
 };
@@ -1022,6 +1028,9 @@ struct FormatterCache_1_t486F880840804EC371AA99C9D7281A7FFFE9C3F6  : public Runt
 {
 };
 struct FormatterCache_1_tF93C2D646C244D2855C660C3A6BB3E0DB455AFF9  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t561386BE099DC1EE824F11EC45C77AB59F65BDBD  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t6D3FB663EB82805B89526CF4F854FBAA9968450C  : public RuntimeObject
@@ -1036,6 +1045,9 @@ struct FormatterCache_1_tEC242BB9D04AEE6E30A4B9A86735371522950192  : public Runt
 struct FormatterCache_1_tEC01DBE325B79C3EADA61E1BA989A8F01285E1B1  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t5680CCA6E8706891A9357D83255478D4E72F64AA  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t455F7855B30336D2FCF907D26306EF81031FBE2F  : public RuntimeObject
 {
 };
@@ -1046,6 +1058,9 @@ struct FormatterCache_1_t01F6A13A7DAB354B2A6CE93ED76DDD09E76662B2  : public Runt
 {
 };
 struct FormatterCache_1_t5195E248B4CE850037060426F9DBC9FDB62744B9  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t142BD7BF8B33B7D751D237DC36E4624C9FD92787  : public RuntimeObject
 {
 };
 struct FormatterCache_1_tC55FF2DE57546A72CE03126D6644E81BC9D98A4F  : public RuntimeObject
@@ -1060,6 +1075,9 @@ struct FormatterCache_1_tE4BD23A3E2E62654B389EADFA9AF7E4509B01A65  : public Runt
 struct FormatterCache_1_t718BE210BB2794F428DE2A0A40DE72E4A9DF9C23  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t80465770B68335F87C740241811006A7365BCF92  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t420BB5A19FFDA5A8F16976B65A2F72F68A902989  : public RuntimeObject
 {
 };
@@ -1070,6 +1088,9 @@ struct FormatterCache_1_t585D42DF7F9BAFC3E67E35376E59B785C07D2B40  : public Runt
 {
 };
 struct FormatterCache_1_tFC76D7AEF05E9792C3B849567432D98B6751CD06  : public RuntimeObject
+{
+};
+struct FormatterCache_1_tF27934FAA68FF562A048F0CCDE2EC7476CC8E9A0  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t80BDFFE6BB0C659FE7E4D80699A19B10EDF24659  : public RuntimeObject
@@ -1084,6 +1105,9 @@ struct FormatterCache_1_t7AC5704163F4113015A2D98D05C3951E67444496  : public Runt
 struct FormatterCache_1_tD4ADE8A69C6B3F1FBB4B7D8D4C1B5FE297E9EB68  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t836247AF851C5C6C6736202806B341CAF649298C  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t429F9A12D441A77B33FE0D36F9A3626627FF7A6D  : public RuntimeObject
 {
 };
@@ -1094,6 +1118,9 @@ struct FormatterCache_1_t1860F0802DB4A13807E2ED1D493719A3985124C4  : public Runt
 {
 };
 struct FormatterCache_1_t42E00982A4A1490B22DCD883426D25586BF5E9A7  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t64C2CD86DD5867098024945599A8FC289F695757  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t93F1B4E356F447D9FB618A84BFD9561EC36D3674  : public RuntimeObject
@@ -1108,6 +1135,9 @@ struct FormatterCache_1_t32AFBFA13009BD14B1781A17666183F91F99D120  : public Runt
 struct FormatterCache_1_t012214D3A7996FD50EC95462AD6F0CBB62680302  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t9C1A84E3F58F1482B3DF186638E0470AADB18A07  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t4E7990680C0AD4048ABFB987B1B5CD79EA21586F  : public RuntimeObject
 {
 };
@@ -1118,6 +1148,9 @@ struct FormatterCache_1_t3B7E8D76F9D620909699A32482AB8FA32B4107DB  : public Runt
 {
 };
 struct FormatterCache_1_t65C964FB050F519B5D57DA81FCEBCE0734B3D805  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t124591C5A333808804A7938B04734311EC8A3F0E  : public RuntimeObject
 {
 };
 struct FormatterCache_1_tFDB1AD964511F979C33ABB1FEC85FEC41BE15F84  : public RuntimeObject
@@ -1132,6 +1165,9 @@ struct FormatterCache_1_t7A36D71D07C4E8A8774E63D8CEE568C4089218C0  : public Runt
 struct FormatterCache_1_tE4D378746BC4DF944B435EF8609BC67D315F9F10  : public RuntimeObject
 {
 };
+struct FormatterCache_1_tD2AF2E1819E834A1B3BB3CBD1AE54F555E2916DD  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t33699EBCBD389ADA4E95C833EEE6E527337676FC  : public RuntimeObject
 {
 };
@@ -1142,6 +1178,9 @@ struct FormatterCache_1_tC34976D8F980C8B346E860E7DD1356AA56F38442  : public Runt
 {
 };
 struct FormatterCache_1_t00FE0CF850437DAA89BA04F790B4E4F2670DD84A  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t3A9B08C9BA3305704A7F711063E4463D827461E7  : public RuntimeObject
 {
 };
 struct FormatterCache_1_tA50D8DE124090D8A3ABA23F460474CBCBD373912  : public RuntimeObject
@@ -1156,6 +1195,9 @@ struct FormatterCache_1_tF8432FDF088797A2C859AE8DFB4DCA8F4BD2C874  : public Runt
 struct FormatterCache_1_t658EEE3590B26732DC41B0140A8B9C57056FC993  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t473041043584576A9DB54D6A9146BF4E539CB441  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t83565F6174CE63FC0FC530F26F6E6EDDAAD9CDFD  : public RuntimeObject
 {
 };
@@ -1166,6 +1208,9 @@ struct FormatterCache_1_t60D81852B2280357C6F806F7AFEF926B36DAEE2F  : public Runt
 {
 };
 struct FormatterCache_1_t113E3BB62063AE4A91B1FDE86463C8AC7E3AB16A  : public RuntimeObject
+{
+};
+struct FormatterCache_1_tD8AC66AC3C0C919139CE8187B6E223411270C3DF  : public RuntimeObject
 {
 };
 struct FormatterCache_1_tE29EDD521DA59BAF352A987C5F9C21F9C14339BB  : public RuntimeObject
@@ -1180,6 +1225,9 @@ struct FormatterCache_1_tE6B66197F515068FA1715844BA6DEACD22C4AB8A  : public Runt
 struct FormatterCache_1_tD10A578093683E4E8EEFE298519E5C6B711D77C5  : public RuntimeObject
 {
 };
+struct FormatterCache_1_t467E35F840D19C447D9448805D74CF04DAE43A41  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t2DAB2CE7A73D43537124F20CF78B2C86BC5B3A87  : public RuntimeObject
 {
 };
@@ -1190,6 +1238,9 @@ struct FormatterCache_1_t7505AC57A1530B1230B585B942B38878A9B9A9AB  : public Runt
 {
 };
 struct FormatterCache_1_tC337DE72FF20D954FF6C5112521C7D27FFA477EF  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t8BB78A3943D46E72FE7D6878BFF34A851177CA44  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t3BDE034877576F077B05A5219A4F39E46E7B4073  : public RuntimeObject
@@ -1204,6 +1255,9 @@ struct FormatterCache_1_t0766254FEDDBD425985916B33616F08580E77C8E  : public Runt
 struct FormatterCache_1_t3421AFCF5DA7BB260542BB19AD74A49E2F6804B6  : public RuntimeObject
 {
 };
+struct FormatterCache_1_tCBEC6EA7578E492CE70E236FF71F352A7F3ED377  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t3C8C2A5093EBE8B807BF8C6E202985EC0E454387  : public RuntimeObject
 {
 };
@@ -1216,6 +1270,9 @@ struct FormatterCache_1_t6611530433BBC30447C2A1934976A84FD9082659  : public Runt
 struct FormatterCache_1_t7AFCF59DBCB878DFC9BFCFDB7A86B3A1EF11CA57  : public RuntimeObject
 {
 };
+struct FormatterCache_1_tAF825B0C657505CAC680370CAABC5188B48CF287  : public RuntimeObject
+{
+};
 struct FormatterCache_1_t03DFCB965212A018E007C842DE20034D1F0D26DD  : public RuntimeObject
 {
 };
@@ -1226,6 +1283,9 @@ struct FormatterCache_1_tC77FF529B1B010731504B058C16052F0B546DD9D  : public Runt
 {
 };
 struct FormatterCache_1_t62A59793EB83130BE97FC1762F5E09296FCB393E  : public RuntimeObject
+{
+};
+struct FormatterCache_1_t1B173220E105BF6E1C3534B78434FB61A645F8CD  : public RuntimeObject
 {
 };
 struct FormatterCache_1_t8C0E31657577DE87C7AFB56ED06E96B119F4E176  : public RuntimeObject
@@ -3789,9 +3849,6 @@ struct Span_1_tEDDF15FCF9EC6DEBA0F696BAACDDBAB9D92C252D
 struct Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3  : public Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C
 {
 };
-struct GameObject_t76FEDD663AB33C991A9C9A23129337651094216F  : public Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C
-{
-};
 struct MulticastDelegate_t  : public Delegate_t
 {
 	DelegateU5BU5D_tC5AB7E8F745616680F337909D3A8E6C722CDF771* ___delegates;
@@ -4075,45 +4132,9 @@ struct ScrollRect_t17D2F2939CA8953110180DF53164CFC3DC88D70E  : public UIBehaviou
 	DrivenRectTransformTracker_tFB0706C933E3C68E4F377C204FCEEF091F1EE0B1 ___m_Tracker;
 	Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* ___m_Corners;
 };
-struct Selectable_t3251808068A17B8E92FB33590A4C2FA66D456712  : public UIBehaviour_tB9D4295827BD2EEDEF0749200C6CA7090C742A9D
-{
-	bool ___m_EnableCalled;
-	Navigation_t4D2E201D65749CF4E104E8AC1232CF1D6F14795C ___m_Navigation;
-	int32_t ___m_Transition;
-	ColorBlock_tDD7C62E7AFE442652FC98F8D058CE8AE6BFD7C11 ___m_Colors;
-	SpriteState_tC8199570BE6337FB5C49347C97892B4222E5AACD ___m_SpriteState;
-	AnimationTriggers_tA0DC06F89C5280C6DD972F6F4C8A56D7F4F79074* ___m_AnimationTriggers;
-	bool ___m_Interactable;
-	Graphic_tCBFCA4585A19E2B75465AECFEAC43F4016BF7931* ___m_TargetGraphic;
-	bool ___m_GroupsAllowInteraction;
-	int32_t ___m_CurrentIndex;
-	bool ___U3CisPointerInsideU3Ek__BackingField;
-	bool ___U3CisPointerDownU3Ek__BackingField;
-	bool ___U3ChasSelectionU3Ek__BackingField;
-	List_1_t2CDCA768E7F493F5EDEBC75AEB200FD621354E35* ___m_CanvasGroupCache;
-};
 struct ScrollRectEx_t007EC608CD46AD019E4E6C03BA7C480C7322691C  : public ScrollRect_t17D2F2939CA8953110180DF53164CFC3DC88D70E
 {
 	bool ___routeToParent;
-};
-struct TMP_Dropdown_t73B37BFDA0D005451C7B750938AFB1748E5EA504  : public Selectable_t3251808068A17B8E92FB33590A4C2FA66D456712
-{
-	RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* ___m_Template;
-	TMP_Text_tE8D677872D43AD4B2AAF0D6101692A17D0B251A9* ___m_CaptionText;
-	Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___m_CaptionImage;
-	Graphic_tCBFCA4585A19E2B75465AECFEAC43F4016BF7931* ___m_Placeholder;
-	TMP_Text_tE8D677872D43AD4B2AAF0D6101692A17D0B251A9* ___m_ItemText;
-	Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___m_ItemImage;
-	int32_t ___m_Value;
-	OptionDataList_tF66EA4801BFA499F010E6EFF89ED760BF4F0BEE1* ___m_Options;
-	DropdownEvent_tFD4609E80240BC887A6D31F9F3C252A8A6843E91* ___m_OnValueChanged;
-	float ___m_AlphaFadeSpeed;
-	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___m_Dropdown;
-	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___m_Blocker;
-	List_1_tA7EEECF976A6B4957450A4D235070C9324ED1A97* ___m_Items;
-	TweenRunner_1_tF277B20625C8B1939DC85508C4679C690757395E* ___m_AlphaTweenRunner;
-	bool ___validTemplate;
-	Coroutine_t85EA685566A254C23F3FD77AB5BDFFFF8799596B* ___m_Coroutine;
 };
 struct U3CU3Ec__3_2_t8BD15A7D1BB2AB7E6EBEF645A1DFC8C5BDF3C3C1_StaticFields
 {
@@ -4169,6 +4190,10 @@ struct EqualityComparer_1_t458C8DC3748A89A213F4738B57D3742C4896ABE9_StaticFields
 {
 	EqualityComparer_1_t458C8DC3748A89A213F4738B57D3742C4896ABE9* ___defaultComparer;
 };
+struct FormatterCache_1_t0518E9BE51440589E611865F70FB44AB0BA31307_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_tDBB1F12D023416C43AAD7A178980EB17318E8F31_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4182,6 +4207,10 @@ struct FormatterCache_1_t3ADE7798B658F519CC1F99D1BC0DC1C083F075CC_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t0BB1C5AC68CB25EDD74668036432E779A59B8339_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t89FB6EAB5BA3496257F0FC483E5625DDAA9A9DA9_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4201,6 +4230,10 @@ struct FormatterCache_1_t5E5F3F3DC8B92B1BBD14695493F0B2D53AD00B77_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_tAA82DE7BC8FABBE527F405B116505B28980E053E_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_tFD847075991385B3446E5837131D0F325F0C1A44_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4214,6 +4247,10 @@ struct FormatterCache_1_t5DB1D9F5CF74425DC62DAF6460FCA18CF59FB496_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t923D1837CB9EEC9F1A919B2B5422004ED1000001_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_tDB468FC52535C354CA0E001BF2382FCA6A6565BF_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4233,6 +4270,10 @@ struct FormatterCache_1_tD3FBF4A7A75D1EF3C98E1E5C94E1BB6E29617AF7_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t65ACD4FA9990B216DE069CEE4A6CD103556A6E39_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t89A3CAFA33EB10F5B4FADCC914CBDAE3A91F2FB8_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4246,6 +4287,10 @@ struct FormatterCache_1_t30DB8918395E46EABD9ADAF65B1C8F80728D23CE_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_tE5F291D3651610E5F7FE7E00A12A873305B50DB5_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t181EB62AD6BF09E4E8D5481BF8190D53898A45F8_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4265,6 +4310,10 @@ struct FormatterCache_1_tE8E958F5754267D35292431FD56D841B5A612ACC_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t6D7D10AB88DB4FAA36A1184BCE0CC4D95DF65BDD_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t9EC97C643B224E2CF1FC447800A15FC4B8282C89_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4278,6 +4327,10 @@ struct FormatterCache_1_t486F880840804EC371AA99C9D7281A7FFFE9C3F6_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_tF93C2D646C244D2855C660C3A6BB3E0DB455AFF9_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t561386BE099DC1EE824F11EC45C77AB59F65BDBD_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4297,6 +4350,10 @@ struct FormatterCache_1_tEC01DBE325B79C3EADA61E1BA989A8F01285E1B1_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t5680CCA6E8706891A9357D83255478D4E72F64AA_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t455F7855B30336D2FCF907D26306EF81031FBE2F_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4310,6 +4367,10 @@ struct FormatterCache_1_t01F6A13A7DAB354B2A6CE93ED76DDD09E76662B2_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t5195E248B4CE850037060426F9DBC9FDB62744B9_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t142BD7BF8B33B7D751D237DC36E4624C9FD92787_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4329,6 +4390,10 @@ struct FormatterCache_1_t718BE210BB2794F428DE2A0A40DE72E4A9DF9C23_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t80465770B68335F87C740241811006A7365BCF92_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t420BB5A19FFDA5A8F16976B65A2F72F68A902989_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4342,6 +4407,10 @@ struct FormatterCache_1_t585D42DF7F9BAFC3E67E35376E59B785C07D2B40_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_tFC76D7AEF05E9792C3B849567432D98B6751CD06_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_tF27934FAA68FF562A048F0CCDE2EC7476CC8E9A0_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4361,6 +4430,10 @@ struct FormatterCache_1_tD4ADE8A69C6B3F1FBB4B7D8D4C1B5FE297E9EB68_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t836247AF851C5C6C6736202806B341CAF649298C_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t429F9A12D441A77B33FE0D36F9A3626627FF7A6D_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4374,6 +4447,10 @@ struct FormatterCache_1_t1860F0802DB4A13807E2ED1D493719A3985124C4_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t42E00982A4A1490B22DCD883426D25586BF5E9A7_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t64C2CD86DD5867098024945599A8FC289F695757_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4393,6 +4470,10 @@ struct FormatterCache_1_t012214D3A7996FD50EC95462AD6F0CBB62680302_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t9C1A84E3F58F1482B3DF186638E0470AADB18A07_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t4E7990680C0AD4048ABFB987B1B5CD79EA21586F_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4406,6 +4487,10 @@ struct FormatterCache_1_t3B7E8D76F9D620909699A32482AB8FA32B4107DB_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t65C964FB050F519B5D57DA81FCEBCE0734B3D805_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t124591C5A333808804A7938B04734311EC8A3F0E_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4425,6 +4510,10 @@ struct FormatterCache_1_tE4D378746BC4DF944B435EF8609BC67D315F9F10_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_tD2AF2E1819E834A1B3BB3CBD1AE54F555E2916DD_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t33699EBCBD389ADA4E95C833EEE6E527337676FC_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4438,6 +4527,10 @@ struct FormatterCache_1_tC34976D8F980C8B346E860E7DD1356AA56F38442_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t00FE0CF850437DAA89BA04F790B4E4F2670DD84A_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t3A9B08C9BA3305704A7F711063E4463D827461E7_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4457,6 +4550,10 @@ struct FormatterCache_1_t658EEE3590B26732DC41B0140A8B9C57056FC993_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t473041043584576A9DB54D6A9146BF4E539CB441_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t83565F6174CE63FC0FC530F26F6E6EDDAAD9CDFD_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4470,6 +4567,10 @@ struct FormatterCache_1_t60D81852B2280357C6F806F7AFEF926B36DAEE2F_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t113E3BB62063AE4A91B1FDE86463C8AC7E3AB16A_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_tD8AC66AC3C0C919139CE8187B6E223411270C3DF_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4489,6 +4590,10 @@ struct FormatterCache_1_tD10A578093683E4E8EEFE298519E5C6B711D77C5_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_t467E35F840D19C447D9448805D74CF04DAE43A41_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t2DAB2CE7A73D43537124F20CF78B2C86BC5B3A87_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4502,6 +4607,10 @@ struct FormatterCache_1_t7505AC57A1530B1230B585B942B38878A9B9A9AB_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_tC337DE72FF20D954FF6C5112521C7D27FFA477EF_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t8BB78A3943D46E72FE7D6878BFF34A851177CA44_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -4521,6 +4630,10 @@ struct FormatterCache_1_t3421AFCF5DA7BB260542BB19AD74A49E2F6804B6_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_tCBEC6EA7578E492CE70E236FF71F352A7F3ED377_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t3C8C2A5093EBE8B807BF8C6E202985EC0E454387_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4537,6 +4650,10 @@ struct FormatterCache_1_t7AFCF59DBCB878DFC9BFCFDB7A86B3A1EF11CA57_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
+struct FormatterCache_1_tAF825B0C657505CAC680370CAABC5188B48CF287_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
 struct FormatterCache_1_t03DFCB965212A018E007C842DE20034D1F0D26DD_StaticFields
 {
 	RuntimeObject* ___formatter;
@@ -4550,6 +4667,10 @@ struct FormatterCache_1_tC77FF529B1B010731504B058C16052F0B546DD9D_StaticFields
 	RuntimeObject* ___formatter;
 };
 struct FormatterCache_1_t62A59793EB83130BE97FC1762F5E09296FCB393E_StaticFields
+{
+	RuntimeObject* ___formatter;
+};
+struct FormatterCache_1_t1B173220E105BF6E1C3534B78434FB61A645F8CD_StaticFields
 {
 	RuntimeObject* ___formatter;
 };
@@ -5545,10 +5666,6 @@ struct RuntimeType_tB1A69257E7A00D07AB0CABD8D5BA7D83E0DC9EC1_StaticFields
 	Func_3_t0787D839A577CB564A3192D4164941D5F3DCFBB5* ___MakeTypeBuilderInstantiation;
 	RuntimeType_tB1A69257E7A00D07AB0CABD8D5BA7D83E0DC9EC1* ___s_typedRef;
 };
-struct TMP_Dropdown_t73B37BFDA0D005451C7B750938AFB1748E5EA504_StaticFields
-{
-	OptionData_tFDFBCB4A5FB860E95AE46FDAC112DB4140A8525E* ___s_NoOptionData;
-};
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -6036,8 +6153,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void List_1_Clear_mEAD58F71FB6889
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void List_1_AddRange_m66D40F60D60CF3FA653432ABEBEBF703840689DB_gshared (List_1_t437B6C3879E969156A381BDC3C459CF809D39DDF* __this, RuntimeObject* ___0_collection, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void List_1_Clear_mB5AF57DDAB282E02FD5FC841F117092595304AC4_gshared_inline (List_1_t8E88137DBF3559DC2CF17853F82E9C24C134B291* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void List_1_AddRange_m66D30E028506AF952DBC51F353C6EAF83BD31F48_gshared (List_1_t8E88137DBF3559DC2CF17853F82E9C24C134B291* __this, RuntimeObject* ___0_collection, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* GameObject_GetComponent_TisRuntimeObject_m6EAED4AA356F0F48288F67899E5958792395563B_gshared (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* __this, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* GameObject_AddComponent_TisRuntimeObject_m69B93700FACCF372F5753371C6E8FB780800B824_gshared (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_NO_INLINE IL2CPP_METHOD_ATTR void List_1_AddWithResize_m79A9BF770BEF9C06BE40D5401E55E375F2726CC4_gshared (List_1_tA239CB83DE5615F348BB0507E45F490F4F7C9A8D* __this, RuntimeObject* ___0_item, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR EqualityComparer_1_t97160852989689D9543E2E1EA7D7196DBEA5AEE4* EqualityComparer_1_CreateComparer_m3BD7BED1F69ABEE55E320BA9CCFBB473E9F57C66_gshared (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR EqualityComparer_1_tCAA8B21BC7E1029BB1288DEAE6D8ACB730BC5D4B* EqualityComparer_1_CreateComparer_m8D41903BD474DD9CEBD9B11C2D89FF5798C63F93_gshared (const RuntimeMethod* method) ;
@@ -6675,15 +6790,6 @@ inline void List_1_AddRange_m66D30E028506AF952DBC51F353C6EAF83BD31F48 (List_1_t8
 {
 	((  void (*) (List_1_t8E88137DBF3559DC2CF17853F82E9C24C134B291*, RuntimeObject*, const RuntimeMethod*))List_1_AddRange_m66D30E028506AF952DBC51F353C6EAF83BD31F48_gshared)(__this, ___0_collection, method);
 }
-inline RuntimeObject* GameObject_GetComponent_TisRuntimeObject_m6EAED4AA356F0F48288F67899E5958792395563B (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* __this, const RuntimeMethod* method)
-{
-	return ((  RuntimeObject* (*) (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*, const RuntimeMethod*))GameObject_GetComponent_TisRuntimeObject_m6EAED4AA356F0F48288F67899E5958792395563B_gshared)(__this, method);
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Object_op_Implicit_m93896EF7D68FA113C42D3FE2BC6F661FC7EF514A (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C* ___0_exists, const RuntimeMethod* method) ;
-inline RuntimeObject* GameObject_AddComponent_TisRuntimeObject_m69B93700FACCF372F5753371C6E8FB780800B824 (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* __this, const RuntimeMethod* method)
-{
-	return ((  RuntimeObject* (*) (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*, const RuntimeMethod*))GameObject_AddComponent_TisRuntimeObject_m69B93700FACCF372F5753371C6E8FB780800B824_gshared)(__this, method);
-}
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool Vector2_Equals_mDF84D5ED14E018609C6A9C9BAE016C1B33BCFF4C_inline (Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7* __this, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___0_other, const RuntimeMethod* method) ;
 inline void List_1_AddWithResize_m79A9BF770BEF9C06BE40D5401E55E375F2726CC4 (List_1_tA239CB83DE5615F348BB0507E45F490F4F7C9A8D* __this, RuntimeObject* ___0_item, const RuntimeMethod* method)
 {
@@ -6722,6 +6828,231 @@ inline EqualityComparer_1_tF74A06E4DA351FE016FE9BD76C2A66524D685C24* EqualityCom
 	return ((  EqualityComparer_1_tF74A06E4DA351FE016FE9BD76C2A66524D685C24* (*) (const RuntimeMethod*))EqualityComparer_1_CreateComparer_m779CEAAA847760E44B83AED6B8E7A854F40754FF_gshared)(method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Array_Clear_m50BAA3751899858B097D3FF2ED31F284703FE5CB (RuntimeArray* ___0_array, int32_t ___1_index, int32_t ___2_length, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t02CE5E70DFA26EDBAB3AB261067AE257C96B822F_m6D43C3F427CE2E4DFF88AC320B74B6223B63DAC3_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t0518E9BE51440589E611865F70FB44AB0BA31307_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t1E8FCA7F88B2886768CC4F8B4300D8E52E084507_mCE8165776D4334FC96962786882D18C909C6144F_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t89FB6EAB5BA3496257F0FC483E5625DDAA9A9DA9_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tEE83D90B507D40B6C58B5EEF5B9D44D377B44F11_mF71C3269C048FD738A302DD4F542F6CD88024F7D_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tAA82DE7BC8FABBE527F405B116505B28980E053E_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tCD9239CD3E3695D86323FAA5C5D577A535E6FF06_m38E2195E8761145AC3BD6BA3D51461761DBD4A47_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tDB468FC52535C354CA0E001BF2382FCA6A6565BF_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tF11F76CDF31A5DBFF4FDA55075ABA9B1D2AB0DC3_mE98543C0CD2C940BFF7F57F3A2BB3D7E15D2B6D5_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t65ACD4FA9990B216DE069CEE4A6CD103556A6E39_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t94519AE1C5BE7A26EB89624ABFA2FEF9D936219A_m531A9067CE7D1E85C6028FDF26CDEBD5EA983AE3_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t181EB62AD6BF09E4E8D5481BF8190D53898A45F8_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t163D49A1147F217B7BD43BE8ACC8A5CC6B846D14_m8E45BF2E7CE329D63AAC14A6B90D650DDEFAB6E6_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t6D7D10AB88DB4FAA36A1184BCE0CC4D95DF65BDD_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tEB2E0058D1341341F8059BA4155AF8281EB23676_m506A4609C18432C32D99080F6971904375DFC164_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t561386BE099DC1EE824F11EC45C77AB59F65BDBD_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t5AE1CFB6D4723E234213EDB8C8F16E0531B4BDE7_m098225E53B1F7E1D4B989D9ADA82ED25F7D9B2E9_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t5680CCA6E8706891A9357D83255478D4E72F64AA_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t4DE2D2A1D2B73B95E813201AC08E1041435836AA_mBA027E5ECEADFA8711584045575D426817DBCDCB_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t142BD7BF8B33B7D751D237DC36E4624C9FD92787_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tC8106DB4DC621B5BCB8913A244640A1CEDF9DD25_mAF733DC528F28BE2AADC2F8337DAD3407985BD20_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t80465770B68335F87C740241811006A7365BCF92_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t7A93FF0C6AE8AB7BAFA9A13385CF0401DDEC87CC_mD3E6282407A8741BFB02FA8A03BFC856D463C178_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tF27934FAA68FF562A048F0CCDE2EC7476CC8E9A0_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t13F9968C978BAF968F02BA5B41ABB481321A5440_m55418443C7559EE9D521EC8518A24BA87A2A0A0D_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t836247AF851C5C6C6736202806B341CAF649298C_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tD06FC341A4349B08E943AD2AE0ACA31E62E4408D_mE45202B67CCCB212E843A770CA407DD11AFA8634_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t64C2CD86DD5867098024945599A8FC289F695757_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tAC9037ECF4C188DFFE614617119CAC19A784F9FD_m3797EC07B289C9F9FC9231EF235162B469455906_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t9C1A84E3F58F1482B3DF186638E0470AADB18A07_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t6ABD491AB047CA3F2EF9F1D89346A6A339003E35_mAA0D6F88F1A8D830C4BC9340FF186F613DC543AD_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t124591C5A333808804A7938B04734311EC8A3F0E_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t9C51B084784B716FFF4ED4575C63CFD8A71A86FE_m897268829FB26E183A7A3BA02844217214618B88_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tD2AF2E1819E834A1B3BB3CBD1AE54F555E2916DD_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_tFB4A56FF9A8D4E35AF50EF50D7B137C9B7AD717B_m13501C0777A026F96A7BA40F32F14F2DA9068404_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t3A9B08C9BA3305704A7F711063E4463D827461E7_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisNullable_1_t5070FF5B4129C859CA3EFC7B94E615A818E11144_mFC3FEE587EF23DFDF1C26AADBD3D09F87F3BA926_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t473041043584576A9DB54D6A9146BF4E539CB441_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisBoolean_t09A6377A54BE2F9E6985A8149F19234FD7DDFE22_mBCE4128FE4A2D81C1B048DD4DE470CD39CE72A06_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tD8AC66AC3C0C919139CE8187B6E223411270C3DF_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisBounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3_m250D6BA34A8F7171814A43AABF5747E9979B9E6E_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t467E35F840D19C447D9448805D74CF04DAE43A41_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisBoundsInt_t4E757DE5EFF9FCB42000F173360DDC63B5585485_m94F250D078FE4F0D60379C4514FE6BBE3F7E0E44_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t8BB78A3943D46E72FE7D6878BFF34A851177CA44_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisByte_t94D9231AC217BE4D2E004C4CD32DF6D099EA41A3_mD33F12974D9A5F1C494BB703375EE84FD1FA89A5_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tCBEC6EA7578E492CE70E236FF71F352A7F3ED377_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisChar_t521A6F19B456D956AF452D926C32709DC03D6B17_m7F9BBD58067F3A269B112EA8B378BC32805A7ED5_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_tAF825B0C657505CAC680370CAABC5188B48CF287_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisColor_tD001788D726C3A7F1379BEED0260B9591F440C1F_m2EFF85057AFDE01D61062A36D44A6E0E03303B79_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
+{
+	il2cpp_rgctx_method_init(method);
+	{
+		il2cpp_codegen_runtime_class_init_inline(il2cpp_rgctx_data(method->rgctx_data, 2));
+		RuntimeObject* L_0 = ((FormatterCache_1_t1B173220E105BF6E1C3534B78434FB61A645F8CD_StaticFields*)il2cpp_codegen_static_fields_for(il2cpp_rgctx_data(method->rgctx_data, 2)))->___formatter;
+		return L_0;
+	}
+}
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PrimitiveObjectResolver_GetFormatter_TisColor32_t73C5004937BF5BB8AD55323D51AAA40A898EF48B_m7304DC7D700B5940135CA708D20DDF1C4B9A7DD2_gshared (PrimitiveObjectResolver_tF93E895D607A28011D9B25E7D57F0636607D72D1* __this, const RuntimeMethod* method) 
 {
 	il2cpp_rgctx_method_init(method);
@@ -29194,159 +29525,6 @@ IL_0038:
 	{
 		String_t* L_12 = V_0;
 		return L_12;
-	}
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* StyleValueExtensions_DebugString_TisTranslate_t494F6E802F8A640D67819C9D26BE62DED1218A8E_mD15CD20D39E71BDF839B00EAF52DED38B42E5A1D_gshared (RuntimeObject* ___0_styleValue, const RuntimeMethod* method) 
-{
-	if (!il2cpp_rgctx_is_initialized(method))
-	{
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&StyleKeyword_t2812E72266C15CBA8927586972DC2FD27B10E705_il2cpp_TypeInfo_var);
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94);
-		il2cpp_rgctx_method_init(method);
-	}
-	String_t* V_0 = NULL;
-	String_t* G_B3_0 = NULL;
-	{
-		RuntimeObject* L_0 = ___0_styleValue;
-		NullCheck(L_0);
-		int32_t L_1;
-		L_1 = InterfaceFuncInvoker0< int32_t >::Invoke(1, il2cpp_rgctx_data(method->rgctx_data, 0), L_0);
-		if (L_1)
-		{
-			goto IL_0020;
-		}
-	}
-	{
-		RuntimeObject* L_2 = ___0_styleValue;
-		NullCheck(L_2);
-		Translate_t494F6E802F8A640D67819C9D26BE62DED1218A8E L_3;
-		L_3 = InterfaceFuncInvoker0< Translate_t494F6E802F8A640D67819C9D26BE62DED1218A8E >::Invoke(0, il2cpp_rgctx_data(method->rgctx_data, 0), L_2);
-		Translate_t494F6E802F8A640D67819C9D26BE62DED1218A8E L_4 = L_3;
-		RuntimeObject* L_5 = Box(il2cpp_rgctx_data_no_init(method->rgctx_data, 3), &L_4);
-		String_t* L_6;
-		L_6 = String_Format_mA8DBB4C2516B9723C5A41E6CB1E2FAF4BBE96DD8(_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94, L_5, NULL);
-		G_B3_0 = L_6;
-		goto IL_0035;
-	}
-
-IL_0020:
-	{
-		RuntimeObject* L_7 = ___0_styleValue;
-		NullCheck(L_7);
-		int32_t L_8;
-		L_8 = InterfaceFuncInvoker0< int32_t >::Invoke(1, il2cpp_rgctx_data(method->rgctx_data, 0), L_7);
-		int32_t L_9 = L_8;
-		RuntimeObject* L_10 = Box(StyleKeyword_t2812E72266C15CBA8927586972DC2FD27B10E705_il2cpp_TypeInfo_var, &L_9);
-		String_t* L_11;
-		L_11 = String_Format_mA8DBB4C2516B9723C5A41E6CB1E2FAF4BBE96DD8(_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94, L_10, NULL);
-		G_B3_0 = L_11;
-	}
-
-IL_0035:
-	{
-		V_0 = G_B3_0;
-		goto IL_0038;
-	}
-
-IL_0038:
-	{
-		String_t* L_12 = V_0;
-		return L_12;
-	}
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* StyleValueExtensions_DebugString_TisIl2CppFullySharedGenericAny_m32C5B0480E481BAF30480D44F79AC4F15A39FEF6_gshared (RuntimeObject* ___0_styleValue, const RuntimeMethod* method) 
-{
-	if (!il2cpp_rgctx_is_initialized(method))
-	{
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&StyleKeyword_t2812E72266C15CBA8927586972DC2FD27B10E705_il2cpp_TypeInfo_var);
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94);
-		il2cpp_rgctx_method_init(method);
-	}
-	const uint32_t SizeOf_T_tEA77DD9B0DBAE7651252AA93B6A0D8C50D6493F9 = il2cpp_codegen_sizeof(il2cpp_rgctx_data_no_init(method->rgctx_data, 3));
-	const Il2CppFullySharedGenericAny L_3 = alloca(SizeOf_T_tEA77DD9B0DBAE7651252AA93B6A0D8C50D6493F9);
-	String_t* V_0 = NULL;
-	String_t* G_B3_0 = NULL;
-	{
-		RuntimeObject* L_0 = ___0_styleValue;
-		NullCheck(L_0);
-		int32_t L_1;
-		L_1 = InterfaceFuncInvoker0< int32_t >::Invoke(1, il2cpp_rgctx_data(method->rgctx_data, 0), L_0);
-		if (L_1)
-		{
-			goto IL_0020;
-		}
-	}
-	{
-		RuntimeObject* L_2 = ___0_styleValue;
-		NullCheck(L_2);
-		InterfaceActionInvoker1Invoker< Il2CppFullySharedGenericAny* >::Invoke(0, il2cpp_rgctx_data(method->rgctx_data, 0), L_2, (Il2CppFullySharedGenericAny*)L_3);
-		RuntimeObject* L_4 = Box(il2cpp_rgctx_data_no_init(method->rgctx_data, 3), L_3);
-		String_t* L_5;
-		L_5 = String_Format_mA8DBB4C2516B9723C5A41E6CB1E2FAF4BBE96DD8(_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94, L_4, NULL);
-		G_B3_0 = L_5;
-		goto IL_0035;
-	}
-
-IL_0020:
-	{
-		RuntimeObject* L_6 = ___0_styleValue;
-		NullCheck(L_6);
-		int32_t L_7;
-		L_7 = InterfaceFuncInvoker0< int32_t >::Invoke(1, il2cpp_rgctx_data(method->rgctx_data, 0), L_6);
-		int32_t L_8 = L_7;
-		RuntimeObject* L_9 = Box(StyleKeyword_t2812E72266C15CBA8927586972DC2FD27B10E705_il2cpp_TypeInfo_var, &L_8);
-		String_t* L_10;
-		L_10 = String_Format_mA8DBB4C2516B9723C5A41E6CB1E2FAF4BBE96DD8(_stringLiteral23114468D04FA2B7A2DA455B545DB914D0A3ED94, L_9, NULL);
-		G_B3_0 = L_10;
-	}
-
-IL_0035:
-	{
-		V_0 = G_B3_0;
-		goto IL_0038;
-	}
-
-IL_0038:
-	{
-		String_t* L_11 = V_0;
-		return L_11;
-	}
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* TMP_Dropdown_GetOrAddComponent_TisRuntimeObject_mEE615131CB73F60A9F062D8532FA4157851DBD4D_gshared (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_go, const RuntimeMethod* method) 
-{
-	if (!il2cpp_rgctx_is_initialized(method))
-	{
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		il2cpp_rgctx_method_init(method);
-	}
-	RuntimeObject* V_0 = NULL;
-	{
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = ___0_go;
-		NullCheck(L_0);
-		RuntimeObject* L_1;
-		L_1 = GameObject_GetComponent_TisRuntimeObject_m6EAED4AA356F0F48288F67899E5958792395563B(L_0, il2cpp_rgctx_method(method->rgctx_data, 0));
-		V_0 = L_1;
-		RuntimeObject* L_2 = V_0;
-		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		bool L_3;
-		L_3 = Object_op_Implicit_m93896EF7D68FA113C42D3FE2BC6F661FC7EF514A((Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)L_2, NULL);
-		if (L_3)
-		{
-			goto IL_001b;
-		}
-	}
-	{
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_4 = ___0_go;
-		NullCheck(L_4);
-		RuntimeObject* L_5;
-		L_5 = GameObject_AddComponent_TisRuntimeObject_m69B93700FACCF372F5753371C6E8FB780800B824(L_4, il2cpp_rgctx_method(method->rgctx_data, 2));
-		V_0 = L_5;
-	}
-
-IL_001b:
-	{
-		RuntimeObject* L_6 = V_0;
-		return L_6;
 	}
 }
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void PropertyMember__ctor_m0B727AF7D87194ED8EA453CC4CF01A10563E2334_inline (PropertyMember_t4A07D86E6B1554D28A1679F276FA9F9A6E1FD984* __this, PropertyInfo_t* ___0_propertyInfo, const RuntimeMethod* method) 

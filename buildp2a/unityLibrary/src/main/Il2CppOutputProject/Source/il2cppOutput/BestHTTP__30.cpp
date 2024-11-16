@@ -7786,7 +7786,7 @@ IL_002c:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_18 = V_2;
 		NullCheck(L_18);
 		NullCheck(L_16);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_16, L_17, 0, ((int32_t)(((RuntimeArray*)L_18)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_16, L_17, 0, ((int32_t)(((RuntimeArray*)L_18)->max_length)));
 		goto IL_006e;
 	}
 
@@ -7808,7 +7808,7 @@ IL_004d:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_25 = V_3;
 		NullCheck(L_25);
 		NullCheck(L_23);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_23, L_24, 0, ((int32_t)(((RuntimeArray*)L_25)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_23, L_24, 0, ((int32_t)(((RuntimeArray*)L_25)->max_length)));
 	}
 
 IL_006e:
@@ -9066,7 +9066,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR EncryptedValue_t66CB0A4995187D8F0AD3EBAED68C8
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_7 = ___0_data;
 		NullCheck(L_7);
 		NullCheck(L_5);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_5, L_6, 0, ((int32_t)(((RuntimeArray*)L_7)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_5, L_6, 0, ((int32_t)(((RuntimeArray*)L_7)->max_length)));
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_8 = V_1;
 		il2cpp_codegen_runtime_class_init_inline(Platform_tC977DC2D832DA875FC4E0B00085E413B221ECCF2_il2cpp_TypeInfo_var);
 		Platform_Dispose_m8DC2FE7554311AD983C0C0CE2508C59A5CFDC4ED(L_8, NULL);
@@ -9167,7 +9167,7 @@ IL_00a2:
 		MemoryOutputStream_tB5868B4DFC15DC2901054CC025618E97ACFB9CE5* L_32 = V_0;
 		NullCheck(L_32);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_33;
-		L_33 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(42, L_32);
+		L_33 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_32);
 		DerBitString_t0E2FEBB275E10EE401C377C7C9CE0DC7B4893759* L_34 = (DerBitString_t0E2FEBB275E10EE401C377C7C9CE0DC7B4893759*)il2cpp_codegen_object_new(DerBitString_t0E2FEBB275E10EE401C377C7C9CE0DC7B4893759_il2cpp_TypeInfo_var);
 		DerBitString__ctor_m7FC48DE471D16C23FD9349A2712C7192DA5D4302(L_34, L_33, NULL);
 		V_7 = L_34;
@@ -9553,7 +9553,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* PKMacStreamCalculator_GetResul
 		MacSink_tFC5D280500573DD2D094199C2035F015DC53CDFA* L_0 = __this->____stream;
 		NullCheck(L_0);
 		RuntimeObject* L_1;
-		L_1 = VirtualFuncInvoker0< RuntimeObject* >::Invoke(39, L_0);
+		L_1 = VirtualFuncInvoker0< RuntimeObject* >::Invoke(40, L_0);
 		DefaultPKMacResult_t7791C1CEA5681D9CFDFAEFF247B218C48B799246* L_2 = (DefaultPKMacResult_t7791C1CEA5681D9CFDFAEFF247B218C48B799246*)il2cpp_codegen_object_new(DefaultPKMacResult_t7791C1CEA5681D9CFDFAEFF247B218C48B799246_il2cpp_TypeInfo_var);
 		DefaultPKMacResult__ctor_mF7CEB7A9E95500D22FE600936D3FF5B3253A7BA7(L_2, L_1, NULL);
 		return L_2;
@@ -10185,13 +10185,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR ProofOfPossessionSigningKeyBuilder_t471C0545C
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_10 = V_2;
 		NullCheck(L_10);
 		NullCheck(L_8);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_8, L_9, 0, ((int32_t)(((RuntimeArray*)L_10)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_8, L_9, 0, ((int32_t)(((RuntimeArray*)L_10)->max_length)));
 		RuntimeObject* L_11 = V_1;
 		NullCheck(L_11);
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_12;
 		L_12 = InterfaceFuncInvoker0< Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* >::Invoke(0, IStreamCalculator_t2760DC9DB20B94E6C7DA9215C23B6DD7BD28C58A_il2cpp_TypeInfo_var, L_11);
 		NullCheck(L_12);
-		VirtualActionInvoker0::Invoke(20, L_12);
+		VirtualActionInvoker0::Invoke(21, L_12);
 		RuntimeObject* L_13 = V_1;
 		NullCheck(L_13);
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_14;
@@ -10285,7 +10285,7 @@ IL_001b:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_11 = V_1;
 		NullCheck(L_11);
 		NullCheck(L_9);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_9, L_10, 0, ((int32_t)(((RuntimeArray*)L_11)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_9, L_10, 0, ((int32_t)(((RuntimeArray*)L_11)->max_length)));
 		goto IL_00a6;
 	}
 
@@ -10316,7 +10316,7 @@ IL_004a:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_21 = V_1;
 		NullCheck(L_21);
 		NullCheck(L_19);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_19, L_20, 0, ((int32_t)(((RuntimeArray*)L_21)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_19, L_20, 0, ((int32_t)(((RuntimeArray*)L_21)->max_length)));
 		goto IL_00a6;
 	}
 
@@ -10340,7 +10340,7 @@ IL_007d:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_30 = V_1;
 		NullCheck(L_30);
 		NullCheck(L_28);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_28, L_29, 0, ((int32_t)(((RuntimeArray*)L_30)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_28, L_29, 0, ((int32_t)(((RuntimeArray*)L_30)->max_length)));
 	}
 
 IL_00a6:
@@ -10350,7 +10350,7 @@ IL_00a6:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_32;
 		L_32 = InterfaceFuncInvoker0< Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* >::Invoke(0, IStreamCalculator_t2760DC9DB20B94E6C7DA9215C23B6DD7BD28C58A_il2cpp_TypeInfo_var, L_31);
 		NullCheck(L_32);
-		VirtualActionInvoker0::Invoke(20, L_32);
+		VirtualActionInvoker0::Invoke(21, L_32);
 		RuntimeObject* L_33 = V_2;
 		NullCheck(L_33);
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_34;
@@ -11654,7 +11654,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR CmsCompressedData_t39171C5DA5A38746064AD56DFA
 		V_0 = L_8;
 		NullCheck(L_1);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_9;
-		L_9 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(42, L_1);
+		L_9 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_1);
 		BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06* L_10 = (BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06*)il2cpp_codegen_object_new(BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06_il2cpp_TypeInfo_var);
 		BerOctetString__ctor_m7347F52F754D04484F5C0A11B404BD012EF6BD6C(L_10, L_9, NULL);
 		V_1 = L_10;
@@ -11963,7 +11963,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsCompressedOutputStream_WriteByte_mBBB
 		ZOutputStream_tCC78BDC24079E5F2B1D82602B4644AD193EB8A8F* L_0 = __this->____out;
 		uint8_t L_1 = ___0_b;
 		NullCheck(L_0);
-		VirtualActionInvoker1< uint8_t >::Invoke(37, L_0, L_1);
+		VirtualActionInvoker1< uint8_t >::Invoke(38, L_0, L_1);
 		return;
 	}
 }
@@ -11975,7 +11975,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsCompressedOutputStream_Write_m78112C6
 		int32_t L_2 = ___1_off;
 		int32_t L_3 = ___2_len;
 		NullCheck(L_0);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_0, L_1, L_2, L_3);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_0, L_1, L_2, L_3);
 		return;
 	}
 }
@@ -12433,7 +12433,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR CmsEnvelopedData_t6CC563712F1FCC12E0CF9DB12BB
 		Platform_Dispose_m8DC2FE7554311AD983C0C0CE2508C59A5CFDC4ED(L_24, NULL);
 		NullCheck(L_19);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_25;
-		L_25 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(42, L_19);
+		L_25 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_19);
 		BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06* L_26 = (BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06*)il2cpp_codegen_object_new(BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06_il2cpp_TypeInfo_var);
 		BerOctetString__ctor_m7347F52F754D04484F5C0A11B404BD012EF6BD6C(L_26, L_25, NULL);
 		V_2 = L_26;
@@ -12804,7 +12804,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR CmsEnvelopedData_t6CC563712F1FCC12E0CF9DB12BB
 		MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_10 = V_5;
 		NullCheck(L_10);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_11;
-		L_11 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(42, L_10);
+		L_11 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_10);
 		BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06* L_12 = (BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06*)il2cpp_codegen_object_new(BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06_il2cpp_TypeInfo_var);
 		BerOctetString__ctor_m7347F52F754D04484F5C0A11B404BD012EF6BD6C(L_12, L_11, NULL);
 		V_1 = L_12;
@@ -13998,7 +13998,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsEnvelopedDataOutputStream_WriteByte_m
 		CipherStream_tF17D1103F4B6A5B00991F78F45B36D513A09F121* L_0 = __this->____out;
 		uint8_t L_1 = ___0_b;
 		NullCheck(L_0);
-		VirtualActionInvoker1< uint8_t >::Invoke(37, L_0, L_1);
+		VirtualActionInvoker1< uint8_t >::Invoke(38, L_0, L_1);
 		return;
 	}
 }
@@ -14010,7 +14010,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsEnvelopedDataOutputStream_Write_m347F
 		int32_t L_2 = ___1_off;
 		int32_t L_3 = ___2_len;
 		NullCheck(L_0);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_0, L_1, L_2, L_3);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_0, L_1, L_2, L_3);
 		return;
 	}
 }
@@ -16109,7 +16109,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsProcessableByteArray_Write_m6CEEAD08D
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_2 = __this->___bytes;
 		NullCheck(L_2);
 		NullCheck(L_0);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_0, L_1, 0, ((int32_t)(((RuntimeArray*)L_2)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_0, L_1, 0, ((int32_t)(((RuntimeArray*)L_2)->max_length)));
 		return;
 	}
 }
@@ -18207,7 +18207,7 @@ IL_01b0:
 		MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_75 = V_17;
 		NullCheck(L_75);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_76;
-		L_76 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(42, L_75);
+		L_76 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_75);
 		BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06* L_77 = (BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06*)il2cpp_codegen_object_new(BerOctetString_t6F65859E01B84B953D8F3EFF6A367ED343424A06_il2cpp_TypeInfo_var);
 		BerOctetString__ctor_m7347F52F754D04484F5C0A11B404BD012EF6BD6C(L_77, L_76, NULL);
 		V_5 = L_77;
@@ -18729,7 +18729,7 @@ IL_0119:
 		DerOutputStream__ctor_mBB85A1E8A26AEBA27AFDBA1BFD1A1CBE1C7E2024(L_59, L_58, NULL);
 		Asn1Set_t01575814D7EBF8F9CD3D4A672B07903D1F9C0EE7* L_60 = V_4;
 		NullCheck(L_59);
-		VirtualActionInvoker1< Asn1Object_t6004E175C1A2DDE93EC7F826362BFB09D533D1FF* >::Invoke(40, L_59, L_60);
+		VirtualActionInvoker1< Asn1Object_t6004E175C1A2DDE93EC7F826362BFB09D533D1FF* >::Invoke(41, L_59, L_60);
 		G_B13_0 = G_B10_0;
 		G_B13_1 = G_B10_1;
 		goto IL_0141;
@@ -20786,7 +20786,7 @@ IL_00e1:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_43 = V_11;
 		NullCheck(L_43);
 		NullCheck(L_41);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_41, L_42, 0, ((int32_t)(((RuntimeArray*)L_43)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_41, L_42, 0, ((int32_t)(((RuntimeArray*)L_43)->max_length)));
 		BerSequenceGenerator_t1BFAFED610E6AEBCAB1ECA5848443907D95DA285* L_44 = V_1;
 		NullCheck(L_44);
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_45;
@@ -22171,7 +22171,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsSignedDataOutputStream_WriteByte_m821
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_0 = __this->____out;
 		uint8_t L_1 = ___0_b;
 		NullCheck(L_0);
-		VirtualActionInvoker1< uint8_t >::Invoke(37, L_0, L_1);
+		VirtualActionInvoker1< uint8_t >::Invoke(38, L_0, L_1);
 		return;
 	}
 }
@@ -22183,7 +22183,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsSignedDataOutputStream_Write_mD0B726B
 		int32_t L_2 = ___1_off;
 		int32_t L_3 = ___2_len;
 		NullCheck(L_0);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_0, L_1, L_2, L_3);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_0, L_1, L_2, L_3);
 		return;
 	}
 }
@@ -22667,7 +22667,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CmsSignedDataOutputStream_WriteToGenerat
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_5 = V_0;
 		NullCheck(L_5);
 		NullCheck(L_3);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_3, L_4, 0, ((int32_t)(((RuntimeArray*)L_5)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_3, L_4, 0, ((int32_t)(((RuntimeArray*)L_5)->max_length)));
 		return;
 	}
 }
