@@ -40,6 +40,7 @@ public class RecordAudio : MonoBehaviour
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
         WavUtility.Save(audioFilePath, recordedClip);
         Debug.Log("Recording saved as " + audioFilePath);
+        UploadAndProcessAudio();
     }
 
     public void PlayRecording()
@@ -63,19 +64,12 @@ public class RecordAudio : MonoBehaviour
     }
 
     public void UploadAndProcessAudio()
-    {
-        //if (!HasRecordedAudio())
-        //{
-        //    Debug.LogError("No recorded audio available to upload.");
-        //    return;
-        //}
-
+    { 
         if (isRequestInProgress)
         {
             Debug.LogWarning("A request is already in progress. Please wait.");
             return;
-        }
-
+        } 
 
         string  audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
@@ -84,90 +78,14 @@ public class RecordAudio : MonoBehaviour
             Debug.LogError("Audio file not found at path: " + audioFilePath);
             return;
         }
-        // Lấy file audio đã ghi âm từ RecordAudio
-        //byte[] audioData = GetAudioData();
+        // Lấy file audio đã ghi âm từ RecordAudio 
         byte[] audioData = File.ReadAllBytes(audioFilePath);
         string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
 
         StartCoroutine(WaitAndSendRequest(audioData, conversationId));  
     }
-
-    public void UploadAndProcessAudio2()
-    {
-        //if (!HasRecordedAudio())
-        //{
-        //    Debug.LogError("No recorded audio available to upload.");
-        //    return;
-        //}
-
-        if (isRequestInProgress)
-        {
-            Debug.LogWarning("A request is already in progress. Please wait.");
-            return;
-        }
-
-
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_sample.mp3");
-
-        if (!File.Exists(audioFilePath))
-        {
-            Debug.LogError("Audio file not found at path: " + audioFilePath);
-            return;
-        }
-        // Lấy file audio đã ghi âm từ RecordAudio
-        //byte[] audioData = GetAudioData();
-        byte[] audioData = File.ReadAllBytes(audioFilePath);
-        string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
-
-        StartCoroutine(WaitAndSendRequest(audioData, conversationId));
-    }
-
-    //public static void ConvertPCMToMP3(float[] samples, int sampleRate, int channels, string outputPath)
-    //{
-    //    // Tạo file WAV từ dữ liệu PCM
-    //    byte[] wavData = ConvertToWAV(samples, sampleRate, channels);
-
-    //    using (var mp3FileStream = new FileStream(outputPath, FileMode.Create))
-    //    using (var wavStream = new MemoryStream(wavData))
-    //    using (var reader = new RawSourceWaveStream(wavStream, new WaveFormat(sampleRate, 16, channels)))
-    //    using (var writer = new LameMP3FileWriter(mp3FileStream, reader.WaveFormat, LAMEPreset.VBR_90))
-    //    {
-    //        reader.CopyTo(writer);
-    //    }
-    //}
-
-    private static byte[] ConvertToWAV(float[] samples, int sampleRate, int channels)
-    {
-        using (var memoryStream = new MemoryStream())
-        {
-            using (var writer = new BinaryWriter(memoryStream))
-            {
-                // Ghi header WAV
-                writer.Write(new[] { 'R', 'I', 'F', 'F' });
-                writer.Write(36 + samples.Length * 2); // Chunk size
-                writer.Write(new[] { 'W', 'A', 'V', 'E' });
-                writer.Write(new[] { 'f', 'm', 't', ' ' });
-                writer.Write(16); // Subchunk size
-                writer.Write((short)1); // Audio format (PCM)
-                writer.Write((short)channels);
-                writer.Write(sampleRate);
-                writer.Write(sampleRate * channels * 2);
-                writer.Write((short)(channels * 2)); // Block align
-                writer.Write((short)16); // Bits per sample
-                writer.Write(new[] { 'd', 'a', 't', 'a' });
-                writer.Write(samples.Length * 2);
-
-                // Ghi dữ liệu PCM
-                foreach (float sample in samples)
-                {
-                    short pcmSample = (short)Mathf.Clamp(sample * 32767, -32768, 32767);
-                    writer.Write(pcmSample);
-                }
-            }
-            return memoryStream.ToArray();
-        }
-    } 
-
+     
+  
 
     private IEnumerator WaitAndSendRequest(byte[] audioData, string conversationId)
     {
@@ -238,43 +156,5 @@ public class RecordAudio : MonoBehaviour
     {
         return recordedClip != null;
     }
-
-    public byte[] GetAudioData()
-    {
-        if (recordedClip == null)
-        {
-            Debug.LogError("No recorded clip available.");
-            return null;
-        }
-        //float[] samples = new float[recordedClip.samples * recordedClip.channels];
-        //recordedClip.GetData(samples, 0);
-        //byte[] wavData = ConvertToWAV(samples, recordedClip.frequency, recordedClip.channels);
-
-        byte[] mp3 = WavToMp3.ConvertWavToMp3(recordedClip, 128);
-        //EncodeMP3.SaveMp3(recordedClip, $"{Application.streamingAssetsPath}/mp3File", 128);
-        // Trích xuất dữ liệu âm thanh từ AudioClip
-
-        // Chuyển đổi float[] thành byte[] (PCM 16-bit)
-        //byte[] audioData = ConvertFloatToPCM16(samples);
-
-        return mp3;
-    }
-
-    private byte[] ConvertFloatToPCM16(float[] samples)
-    {
-        // Tạo byte[] với kích thước gấp đôi float[] (2 byte cho mỗi mẫu PCM 16-bit)
-        byte[] pcm16Data = new byte[samples.Length * 2];
-        for (int i = 0; i < samples.Length; i++)
-        {
-            // Giới hạn giá trị float từ -1.0 đến 1.0 trong dải PCM 16-bit (-32768 đến 32767)
-            short pcmSample = (short)Mathf.Clamp(samples[i] * 32767, -32768, 32767);
-
-            // Chuyển đổi short thành 2 byte (Little Endian)
-            pcm16Data[i * 2] = (byte)(pcmSample & 0xFF);
-            pcm16Data[i * 2 + 1] = (byte)((pcmSample >> 8) & 0xFF);
-        }
-
-        return pcm16Data;
-    }
-
+     
 }
