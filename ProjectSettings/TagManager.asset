@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Pin
   - ToggleButton
+  - reshoot
+  - shoot
+  - download
   layers:
   - Default
   - TransparentFX

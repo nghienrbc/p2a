@@ -61,6 +61,13 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
+        recordingIndicator.gameObject.SetActive(false);
+        // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
+        BaseToogleButton[] buttons = FindObjectsOfType<BaseToogleButton>();
+        toggleButtons.AddRange(buttons);
+
+        StartCoroutine(MovePanelsAfterInitialization());
+        // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
 
         using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         {
@@ -72,9 +79,6 @@ public class UIManager : MonoBehaviour
             AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             bluetoothManager = new AndroidJavaObject("com.unity3d.player.BluetoothManager", activity);
         }
-
-        recordingIndicator.gameObject.SetActive(false);
-        // Kiểm tra xem tất cả các quyền đã được cấp hay chưa
         if (AreAllPermissionsGranted())
         {
             Debug.Log("Tất cả các quyền đã được cấp");
@@ -98,11 +102,7 @@ public class UIManager : MonoBehaviour
             StartCoroutine(RequestPermissionsSequentially());
         }
 
-        // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
-        BaseToogleButton[] buttons = FindObjectsOfType<BaseToogleButton>();
-        toggleButtons.AddRange(buttons);
-
-        StartCoroutine(MovePanelsAfterInitialization()); 
+        
     }
 
     private IEnumerator MovePanelsAfterInitialization()
@@ -401,7 +401,8 @@ public class UIManager : MonoBehaviour
      
 
     public void BtnStartRecordClick()
-    { 
+    {
+        UIManager.Instance.connectionTxt.text = "";
         recorder.StartRecording();
         recordingIndicator.gameObject.SetActive(true);
     }

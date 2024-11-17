@@ -12,9 +12,7 @@ public class CameraBtn : BaseToogleButton
             UIManager.Instance.functionName = "camera";
 
         }
-        base.OnButtonClick();
-        
-        UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
+        base.OnButtonClick(); 
     }
      
 }

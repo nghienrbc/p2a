@@ -26,6 +26,17 @@ public class TakePhotoAndUpload : MonoBehaviour
     private List<Sprite> imageSprites = new List<Sprite>(); // Danh sách các sprite từ DB
 
     private Coroutine updateImageCoroutine; // Tham chiếu đến Coroutine đang chạy
+     
+    public GameObject countdownPanel; //  
+    public TMP_Text countdownText; // Tham chiếu tới Text UI
+    private int countdownStart = 3; // Giá trị bắt đầu đếm ngược
+    private float interval = 1f; // Khoảng thời gian giữa mỗi lần đếm (tính bằng giây)
+
+    private Button shootBtn;
+    private Button reshootBtn;
+    private Button downloadBtn;
+
+
 
     private void Start()
     {
@@ -33,9 +44,16 @@ public class TakePhotoAndUpload : MonoBehaviour
         currentImageIndex = 0;
         largeImage.sprite = imageSprites[0];
         largeImage.preserveAspect = true;
+        shootBtn = GameObject.FindWithTag("shoot").GetComponent<Button>();
+        reshootBtn = GameObject.FindWithTag("reshoot").GetComponent<Button>();
+        downloadBtn = GameObject.FindWithTag("download").GetComponent<Button>();
     }
     public void StartTakePhoto()
     {
+        UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
+        shootBtn.interactable = true;
+        reshootBtn.interactable = false;
+        downloadBtn.interactable = false;
         // Lấy danh sách các camera
         WebCamDevice[] devices = WebCamTexture.devices;
 
@@ -77,7 +95,7 @@ public class TakePhotoAndUpload : MonoBehaviour
             cameraDisplay.sprite = null; // Xóa hình ảnh hiện tại trong cameraDisplay
         }
 
-        StopCoroutine(updateImageCoroutine);
+        if(updateImageCoroutine != null) StopCoroutine(updateImageCoroutine);
         Debug.Log("Camera stopped and resources released.");
     }
 
@@ -115,87 +133,56 @@ public class TakePhotoAndUpload : MonoBehaviour
 
         return photo;
     }
-    private Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
-    {
-        int originalWidth = originalTexture.width;
-        int originalHeight = originalTexture.height;
+    //private Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
+    //{
+    //    int originalWidth = originalTexture.width;
+    //    int originalHeight = originalTexture.height;
 
-        // Tạo texture mới với chiều rộng và chiều cao hoán đổi
-        Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
+    //    // Tạo texture mới với chiều rộng và chiều cao hoán đổi
+    //    Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
 
-        // Xoay ảnh bằng cách hoán đổi tọa độ pixel
-        for (int x = 0; x < originalWidth; x++)
-        {
-            for (int y = 0; y < originalHeight; y++)
-            {
-                rotatedTexture.SetPixel(y, originalWidth - x - 1, originalTexture.GetPixel(x, y));
-            }
-        }
+    //    // Xoay ảnh bằng cách hoán đổi tọa độ pixel
+    //    for (int x = 0; x < originalWidth; x++)
+    //    {
+    //        for (int y = 0; y < originalHeight; y++)
+    //        {
+    //            rotatedTexture.SetPixel(y, originalWidth - x - 1, originalTexture.GetPixel(x, y));
+    //        }
+    //    }
 
-        rotatedTexture.Apply();
-        return rotatedTexture;
-    }
-    private Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
-    {
-        int originalWidth = originalTexture.width;
-        int originalHeight = originalTexture.height;
+    //    rotatedTexture.Apply();
+    //    return rotatedTexture;
+    //}
+    //private Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
+    //{
+    //    int originalWidth = originalTexture.width;
+    //    int originalHeight = originalTexture.height;
 
-        // Tạo texture mới với chiều rộng và chiều cao hoán đổi
-        Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
+    //    // Tạo texture mới với chiều rộng và chiều cao hoán đổi
+    //    Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
 
-        // Xoay ảnh bằng cách hoán đổi tọa độ pixel
-        for (int x = 0; x < originalWidth; x++)
-        {
-            for (int y = 0; y < originalHeight; y++)
-            {
-                rotatedTexture.SetPixel(originalHeight - y - 1, x, originalTexture.GetPixel(x, y));
-            }
-        }
+    //    // Xoay ảnh bằng cách hoán đổi tọa độ pixel
+    //    for (int x = 0; x < originalWidth; x++)
+    //    {
+    //        for (int y = 0; y < originalHeight; y++)
+    //        {
+    //            rotatedTexture.SetPixel(originalHeight - y - 1, x, originalTexture.GetPixel(x, y));
+    //        }
+    //    }
 
-        rotatedTexture.Apply();
-        return rotatedTexture;
-    }
+    //    rotatedTexture.Apply();
+    //    return rotatedTexture;
+    //}
 
     public void SaveImage()
-    {
-        // Lấy ảnh từ camera
-        //Texture2D capturedImage = CaptureImage();
-        if (cameraDisplay.sprite != null)
-        {
+    { 
+        countdownPanel.SetActive(true);
 
-            // Lấy Texture2D từ sprite
-            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
+        shootBtn.interactable = false;
+        reshootBtn.interactable = false;
+        downloadBtn.interactable = false;
 
-            Texture2D capturedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
-            capturedTexture.SetPixels(texture.GetPixels());
-            capturedTexture.Apply();
-
-            // Xoay trái 90 độ
-            //Texture2D rotatedTexture = RotateTexture90DegreesRight(texture);
-
-            // Chuyển Texture2D thành PNG
-            //byte[] imageBytes = texture.EncodeToPNG();
-
-            //// Đường dẫn lưu trữ
-            //DateTime currentDateTime = DateTime.Now;
-            //string filename = "Photo" + currentDateTime.ToString("dd-MM-yyyy-HH-mm-ss") + ".png";
-
-            //string filePath = Path.Combine(Application.persistentDataPath, filename);
-
-            //// Lưu file PNG
-            //File.WriteAllBytes(filePath, imageBytes);
-            photoSave.gameObject.SetActive(true);
-            cameraDisplay.gameObject.SetActive(false);
-            qrCodeImage.gameObject.SetActive(false);
-            Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
-            photoSave.sprite = savedSprite;
-            photoSave.preserveAspect = true;
-            StopCamera();
-        }
-        else
-        {
-            Debug.LogError("No sprite found in cameraDisplay.");
-        }
+        StartCoroutine(CountdownCoroutine()); 
     }
 
     public void ReshootPhotoBtn()
@@ -203,13 +190,22 @@ public class TakePhotoAndUpload : MonoBehaviour
         photoSave.gameObject.SetActive(false);
         cameraDisplay.gameObject.SetActive(true);
         qrCodeImage.gameObject.SetActive(false);
+
+        shootBtn.interactable = true;
+        reshootBtn.interactable = false;
+        downloadBtn.interactable = false;
         StartTakePhoto();
     }
 
     public void UploadPhoto()
     {
+
         if (photoSave.sprite != null)
         {
+            UIManager.Instance.connectionTxt.text = "I'm uploading photo to server and will get the QR code for download!";
+            shootBtn.interactable = false;
+            reshootBtn.interactable = false;
+            downloadBtn.interactable = false;
             // Lấy Texture2D từ sprite
             Texture2D photoTexture = SpriteToTexture2D(photoSave.sprite);
             Texture2D frameTexture = SpriteToTexture2D(largeImage.sprite);
@@ -284,6 +280,7 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     private void UploadToImgur(byte[] imageBytes)
     {
+        
         // URL API của Imgur
         string imgurUrl = "https://api.imgur.com/3/image";
 
@@ -350,6 +347,10 @@ public class TakePhotoAndUpload : MonoBehaviour
         // Gán Sprite cho UI Image
         qrCodeImage.gameObject.SetActive(true);
         qrCodeImage.sprite = qrCodeSprite;
+
+        shootBtn.interactable = false;
+        reshootBtn.interactable = true;
+        downloadBtn.interactable = false;
     }
 
     private string ExtractImageUrlFromResponse(string jsonResponse)
@@ -422,11 +423,54 @@ public class TakePhotoAndUpload : MonoBehaviour
         // Hiển thị ảnh lớn và panel nền tối
         currentImageIndex = imageIndex;
         largeImage.sprite = imageSprites[imageIndex];
-        largeImage.preserveAspect = true; 
+        largeImage.preserveAspect = true;  
+    }
 
-        // Reset vị trí và alpha của ảnh
-        //largeImageRectTransform.anchoredPosition = Vector2.zero;
-        //largeImageCanvasGroup.alpha = originalAlpha;
+    private IEnumerator CountdownCoroutine()
+    {
+        // Đếm ngược từ giá trị bắt đầu
+        for (int i = countdownStart; i > 0; i--)
+        {
+            countdownText.text = i.ToString(); // Hiển thị số đếm
+            yield return new WaitForSeconds(interval); // Chờ theo khoảng thời gian
+        }
+         
+
+        // Thực hiện tác vụ khác sau khi countdown hoàn thành
+        OnCountdownComplete();
+    }
+
+    private void OnCountdownComplete()
+    {
+        // Tác vụ thực hiện sau countdown (ví dụ: chuyển cảnh, bắt đầu trò chơi, v.v.)
+        Debug.Log("Countdown Complete! Starting next action...");
+        countdownPanel.SetActive(false);
+        // Lấy ảnh từ camera 
+        if (cameraDisplay.sprite != null)
+        {
+            // Lấy Texture2D từ sprite
+            Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
+
+            Texture2D capturedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+            capturedTexture.SetPixels(texture.GetPixels());
+            capturedTexture.Apply();
+
+            photoSave.gameObject.SetActive(true);
+            cameraDisplay.gameObject.SetActive(false);
+            qrCodeImage.gameObject.SetActive(false);
+            Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
+            photoSave.sprite = savedSprite;
+            photoSave.preserveAspect = true;
+            StopCamera();
+
+            shootBtn.interactable = false;
+            reshootBtn.interactable = true;
+            downloadBtn.interactable = true;
+        }
+        else
+        {
+            Debug.LogError("No sprite found in cameraDisplay.");
+        }
     }
 
     private void ShowMessageBox(string mes)

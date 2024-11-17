@@ -6,18 +6,19 @@ public class HomeBtn : BaseToogleButton
 {
         protected override void OnButtonClick()
     {
-        base.OnButtonClick();
         if (!isToggled)
         {
             Debug.Log("Home button click");
             UIManager.Instance.BtnStopCameraClick();
-            UIManager.Instance.functionName = "home"; 
+            UIManager.Instance.functionName = "home";
+            UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
         } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)
         {
             Debug.Log("Home button toogle is:" + isToggled);
-        } 
+        }
+        base.OnButtonClick();
     }
      
 }
