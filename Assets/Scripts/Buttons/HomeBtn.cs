@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HomeBtn : BaseToogleButton
 {
-        protected override void OnButtonClick()
+    protected override void OnButtonClick()
     {
         if (!isToggled)
         {
@@ -12,6 +12,7 @@ public class HomeBtn : BaseToogleButton
             UIManager.Instance.BtnStopCameraClick();
             UIManager.Instance.functionName = "home";
             UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
+            myakuController.MoveMyakuToFarPossition();
         } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)

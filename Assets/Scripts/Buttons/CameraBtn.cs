@@ -10,7 +10,7 @@ public class CameraBtn : BaseToogleButton
         { 
             UIManager.Instance.BtnTakePhotoClick();
             UIManager.Instance.functionName = "camera";
-
+            myakuController.MoveMyakuToNearPossition();
         }
         base.OnButtonClick(); 
     }

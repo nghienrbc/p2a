@@ -4,11 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Networking;
 
 
 public class RecordAudio : MonoBehaviour
 {
+    public MyakuController myakuController;
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio"; // URL server xử lý
 
     private AudioClip recordedClip;
@@ -18,8 +20,16 @@ public class RecordAudio : MonoBehaviour
     private float startTime;
     private float recordingLength;
 
+    public UnityEvent onAudioFinished; // Sự kiện khi audio kết thúc
+
+    private void Start()
+    {
+        onAudioFinished.AddListener(OnAudioFinished);
+    }
+
     public void StartRecording()
     {
+        myakuController.MyakuListen();
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         if(device != "")
         { 
@@ -69,7 +79,9 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogWarning("A request is already in progress. Please wait.");
             return;
-        } 
+        }
+
+        myakuController.MyakuThinking();
 
         string  audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
@@ -146,15 +158,33 @@ public class RecordAudio : MonoBehaviour
 
             AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
 
+            myakuController.MyakuAnswer();
             // Phát audio nhận về
             audioSource.clip = audioClip;
             audioSource.Play();
             Debug.Log("Playing received audio.");
+            StartCoroutine(CheckAudioFinished());
         }
     }
+
+    private System.Collections.IEnumerator CheckAudioFinished()
+    {
+        while (audioSource.isPlaying)
+        {
+            yield return null;
+        } 
+        // Gọi sự kiện khi audio kết thúc
+        onAudioFinished.Invoke();
+    }
+
+    private void OnAudioFinished()
+    {
+        Debug.Log("Audio finished playing!");
+        myakuController.animator.SetBool("answer", false);
+    }
+
     public bool HasRecordedAudio()
     {
         return recordedClip != null;
-    }
-     
+    }     
 }

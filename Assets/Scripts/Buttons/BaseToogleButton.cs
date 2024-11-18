@@ -9,6 +9,7 @@ public class BaseToogleButton : MonoBehaviour
     public Sprite toggledImage;           // Hình ảnh khi nút được nhấn
     protected bool isToggled = false;     // Trạng thái của nút
 
+    public MyakuController myakuController;
     protected Button button;
 
     [System.Serializable]
@@ -32,7 +33,8 @@ public class BaseToogleButton : MonoBehaviour
         button.image.sprite = defaultImage;
 
         // Gắn sự kiện click cho nút
-        button.onClick.AddListener(OnButtonClick);
+        button.onClick.AddListener(OnButtonClick); 
+
     }
 
     // Hàm thay đổi hình ảnh khi nhấn nút
