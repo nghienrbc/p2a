@@ -445,6 +445,19 @@ public class UIManager : MonoBehaviour
         //SceneManager.LoadScene("PlayGameScene");
     }
 
-
+    public void BtnClosePanelClick()
+    {
+        // ẩn map và map detail panel
+        foreach (PanelSettings settings in panelsToControl)
+        {
+            Debug.Log("close button click");
+            // Kiểm tra nếu enable_move được bật
+            // if (settings.panelMover != null && settings.panelMover.gameObject.activeSelf == true)
+            //{
+            // Di chuyển panel theo hướng và trạng thái moveOutOrIn
+            settings.panelMover.FadeOut(0.5f);
+           // }
+        }
+    }
 
 }

@@ -9,13 +9,15 @@ public class PanelMover : MonoBehaviour
     private Vector3 originalPosition; // Vị trí ban đầu của panel
     private Vector3 targetPosition;   // Vị trí di chuyển ngoài màn hình
     private bool isOffScreen = false; // Trạng thái của panel (trong hoặc ngoài màn hình)
-  
+
+    private CanvasGroup canvasGroup;
 
     void Start()
     {
         // Lưu vị trí ban đầu và lấy RectTransform của panel
         panelRect = GetComponent<RectTransform>();
         originalPosition = panelRect.position;
+        canvasGroup = GetComponent<CanvasGroup>();
     }
 
     // Hàm gọi để di chuyển Panel theo hướng và trạng thái moveOut/moveIn
@@ -83,5 +85,46 @@ public class PanelMover : MonoBehaviour
             yield return null;
         }
         panelRect.position = target; // Đảm bảo panel ở đúng vị trí mục tiêu khi kết thúc
+    }
+
+    // Làm mờ panel
+    public void FadeOut(float duration)
+    {
+        StartCoroutine(Fade(0, duration)); // Làm mờ đến alpha = 0
+    }
+
+    // Hiển thị lại panel
+    public void FadeIn(float duration)
+    {
+        StartCoroutine(Fade(1, duration)); // Hiển thị lại alpha = 1
+    }
+    private IEnumerator Fade(float targetAlpha, float duration)
+    {
+        float startAlpha = canvasGroup.alpha;
+        canvasGroup.interactable = false; // Tắt tương tác khi mờ
+        canvasGroup.blocksRaycasts = false; // Chặn raycast khi mờ
+
+        float elapsedTime = 0;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / duration);
+            yield return null;
+        }
+
+        canvasGroup.alpha = targetAlpha;
+
+        // Bật lại tương tác nếu panel hiển thị
+        if (targetAlpha == 1)
+        {
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+        }
+    }
+    public void SetAlpha(float alpha)
+    {
+        canvasGroup.alpha = alpha;
+        canvasGroup.interactable = alpha > 0;
+        canvasGroup.blocksRaycasts = alpha > 0;
     }
 }

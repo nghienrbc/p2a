@@ -9,6 +9,8 @@ TagManager:
   - reshoot
   - shoot
   - download
+  - locationPin
+  - map
   layers:
   - Default
   - TransparentFX
