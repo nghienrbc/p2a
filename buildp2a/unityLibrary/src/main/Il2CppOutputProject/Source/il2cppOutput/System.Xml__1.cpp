@@ -7552,7 +7552,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ParsingState_Close_mA2ACDB0CCE0955A1C3B7
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_2 = __this->___stream;
 		NullCheck(L_2);
-		VirtualActionInvoker0::Invoke(19, L_2);
+		VirtualActionInvoker0::Invoke(18, L_2);
 		return;
 	}
 

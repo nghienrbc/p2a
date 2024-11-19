@@ -19,6 +19,7 @@ public class MyakuController : MonoBehaviour
     public float stoppingDistance = 0.1f; // Khoảng cách dừng lại
     private bool isMoving = false;    // Kiểm tra đối tượng có đang di chuyển không
 
+    public bool isPlaceInFarPossiton = false;
     private void Start()
     { 
         animator = GetComponent<Animator>();
@@ -89,6 +90,7 @@ public class MyakuController : MonoBehaviour
 
         // Di chuyển đối tượng về phía vị trí đích
         transform.position = Vector3.MoveTowards(transform.position, targetTransform.position, moveSpeed * Time.deltaTime);
+        isPlaceInFarPossiton = targetTransform == farTransform;
     }
 
     // Hàm kiểm tra đối tượng có đang di chuyển

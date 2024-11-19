@@ -13255,7 +13255,7 @@ IL_005c:
 		int32_t L_14 = ___2_count;
 		NullCheck(L_11);
 		int32_t L_15;
-		L_15 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(33, L_11, L_12, L_13, L_14);
+		L_15 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(32, L_11, L_12, L_13, L_14);
 		return L_15;
 	}
 
@@ -13380,7 +13380,7 @@ IL_00e7:
 			int32_t L_34 = ___2_count;
 			NullCheck(L_31);
 			int32_t L_35;
-			L_35 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(33, L_31, L_32, L_33, L_34);
+			L_35 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(32, L_31, L_32, L_33, L_34);
 			V_0 = L_35;
 			goto IL_00e8;
 		}
@@ -13452,7 +13452,7 @@ IL_0044:
 			int32_t L_8 = ___1_offset;
 			int32_t L_9 = ___2_count;
 			NullCheck(L_6);
-			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_6, L_7, L_8, L_9);
+			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_6, L_7, L_8, L_9);
 			bool L_10;
 			L_10 = UploadStream_SwitchBuffers_m26907AC90BE54A694184A88CD999BD6D9E8EA940(__this, NULL);
 			goto IL_0045;
@@ -13631,10 +13631,10 @@ IL_006e:
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_8 = __this->___WriteBuffer;
 				NullCheck(L_8);
 				int64_t L_9;
-				L_9 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_8, ((int64_t)0), 0);
+				L_9 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(30, L_8, ((int64_t)0), 0);
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_10 = __this->___ReadBuffer;
 				NullCheck(L_10);
-				VirtualActionInvoker1< int64_t >::Invoke(32, L_10, ((int64_t)0));
+				VirtualActionInvoker1< int64_t >::Invoke(31, L_10, ((int64_t)0));
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_11 = __this->___WriteBuffer;
 				V_2 = L_11;
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_12 = __this->___ReadBuffer;

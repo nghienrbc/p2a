@@ -7,16 +7,28 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using SQLite4Unity3d;
+//using SQLite4Unity3d;
 using System.Linq;
+using TMPro;
+using UnityEngine.Networking;
+using SQLite4Unity3d;
 
 public class Location
 {
     [PrimaryKey, AutoIncrement]
     public int id { get; set; }
-
     public string location_name { get; set; }
+    public string location_description { get; set; }
+    public string location_location { get; set; }
     public int nation_id { get; set; }  // Phải khớp với trường nation_id trong database
+}
+
+public class ImageTable {
+    [PrimaryKey, AutoIncrement]
+    public int id { get; set; }
+
+    public string image_name { get; set; }
+    public int location_id { get; set; }
 }
 
 public class P2ADataService
@@ -31,9 +43,15 @@ public class P2ADataService
     }
 
     // Phương thức để lấy tất cả Location theo nation_id
-    public IEnumerable<Location> GetLocationsByNationId(int nationId)
+    public IEnumerable<Location> GetLocationsByLocationId(int locationId)
     {
-        return _connection.Table<Location>().Where(loc => loc.nation_id == nationId).ToList();
+        return _connection.Table<Location>().Where(loc => loc.id == locationId).ToList();
+    }
+
+    // Phương thức để lấy tất cả Location theo nation_id
+    public IEnumerable<ImageTable> GetImageByLocationId(int locationId)
+    {
+        return _connection.Table<ImageTable>().Where(img => img.location_id == locationId).ToList();
     }
 }
 
@@ -42,11 +60,18 @@ public class LocationSceneManager : MonoBehaviour
     public GameObject imagePrefab;  // Prefab cho mỗi hình ảnh trong ScrollView
     public Transform content;       // Content của ScrollView để chứa các Image
 
+    public GameObject locationPanel;
+    public Image locationImage; // UI Image lớn hiển thị ảnh
+    public TMP_Text locationNameTxt;
+    public TMP_Text locationLocationTxt;
+    public TMP_Text locationInfoTxt;
+
     private List<Sprite> imageSprites = new List<Sprite>(); // Danh sách các sprite từ DB
     private List<Sprite> imageSpritesOriginal = new List<Sprite>(); // Danh sách các sprite từ DB chưa xữ lý cover
     private string dbPath;
 
     public GameObject largeImagePanel; // Panel bao quanh image lớn (nền tối)
+
     public Image largeImage; // UI Image lớn hiển thị ảnh
 
     private int currentImageIndex; // Chỉ số của ảnh hiện tại trong danh sách
@@ -66,6 +91,9 @@ public class LocationSceneManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Thiết lập đường dẫn tới database trong StreamingAssets
+        string dbPath = GetDatabasePath("p2a.db");
+        _dataService = new P2ADataService(dbPath);
         // Ẩn panel hiển thị ảnh lớn khi mới bắt đầu
         largeImagePanel.SetActive(false);
         // Lấy RectTransform của ảnh lớn
@@ -74,46 +102,65 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup = largeImage.gameObject.GetComponent<CanvasGroup>();
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
 
-        // Thiết lập đường dẫn tới database trong StreamingAssets
-        string dbPath = GetDatabasePath("p2a.db");
-        _dataService = new P2ADataService(dbPath);
 
-        // Gọi phương thức để lấy các Location có nation_id là 1 (có thể thay thế tùy theo yêu cầu)
-        int targetNationId = 1;
-        IEnumerable<Location> locations = _dataService.GetLocationsByNationId(targetNationId);
+        StartCoroutine(CopyFolderFromStreamingAssets("Images"));
+        //StartCoroutine(CopyAllStreamingAssetsToPersistentPath());
+    }
 
-        // In kết quả ra Console
-        foreach (var location in locations)
+    public void GetImageByLocationId(int locationId)
+    {
+        int targetLocationId = locationId;
+        IEnumerable<ImageTable> images = _dataService.GetImageByLocationId(targetLocationId);
+        IEnumerable<Location> locations = _dataService.GetLocationsByLocationId(targetLocationId);
+        if (locations.Count() > 0)
         {
-            Debug.Log($"Location ID: {location.id}, Name: {location.location_name}, Nation ID: {location.nation_id}");
+            Debug.Log("location nè");
+           // Location location = locations.First();
+            locationPanel.gameObject.SetActive(true);
+
+            UIManager.Instance.ShowHidePanel(UIManager.Instance.LocationPanel, MyGame.Enums.ShowHide.Show, 0.5f);
+
+            locationNameTxt.text = locations.First().location_name;
+            locationInfoTxt.text = locations.First().location_description;
+            locationLocationTxt.text = locations.First().location_location;
+            if (images.Count() > 0)
+            {
+                DisplaySmallImages(images.First().image_name);
+            }
+            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
         }
 
-        //// Đường dẫn tới file database trong thư mục StreamingAssets
-        //string filepath = Path.Combine(Application.streamingAssetsPath, "p2a.db");
+        List<string> imagePaths = new List<string>();
+        // In kết quả ra Console
+        foreach (var image in images)
+        {
+            Debug.Log($"Location ID: {image.id}, Name: {image.image_name}, Nation ID: {image.location_id}");
+            // Danh sách đường dẫn tới các hình ảnh
+            string imageName = image.image_name;
+            string imagePath = Path.Combine(Application.persistentDataPath, "Images", imageName) + ".jpg";
+            Debug.Log("imagePath"+ imagePath);
+            imagePaths.Add(imagePath);
+        }
+        DisplayImages(imagePaths);
 
-        //// Với Android, cần copy database từ StreamingAssets sang persistentDataPath để có quyền truy cập đọc/ghi
-        //if (Application.platform == RuntimePlatform.Android)
-        //{
-        //    string loadDb = Path.Combine(Application.persistentDataPath, "p2a.db");
+        if (imageSpritesOriginal.Count() > 0)
+        {
+            largeImage.sprite = imageSpritesOriginal[0];
+            largeImage.GetComponent<Image>().preserveAspect = true;
+            largeImagePanel.SetActive(true);
 
-        //    if (!File.Exists(loadDb))
-        //    {
-        //        WWW loadDbFile = new WWW(filepath);
-        //        while (!loadDbFile.isDone) { }
-
-        //        File.WriteAllBytes(loadDb, loadDbFile.bytes);
-        //    }
-
-        //    dbPath = loadDb;
-        //}
-        //else
-        //{
-        //    dbPath = filepath;
-        //}
-        //// Giả sử bạn lấy các hình ảnh thuộc location_id = 1
-        //LoadImagesByLocation(1);
+            // Reset vị trí và alpha của ảnh
+            largeImageRectTransform.anchoredPosition = Vector2.zero;
+            largeImageCanvasGroup.alpha = originalAlpha;
+        }
+        else
+        {
+            //Nếu không có ảnh thì xóa iamgelarge
+            largeImagePanel.SetActive(false);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+        }
     }
-    // Phương thức để lấy đường dẫn tới database
+
     private string GetDatabasePath(string dbName)
     {
         string path;
@@ -121,82 +168,113 @@ public class LocationSceneManager : MonoBehaviour
 #if UNITY_EDITOR
         path = Application.dataPath + "/StreamingAssets/" + dbName;
 #elif UNITY_ANDROID
-        path = Application.persistentDataPath + "/" + dbName;
-        if (!System.IO.File.Exists(path))
+    path = Application.persistentDataPath + "/" + dbName;
+    if (!System.IO.File.Exists(path))
+    {
+        string sourcePath = "jar:file://" + Application.dataPath + "!/assets/" + dbName;
+        UnityWebRequest request = UnityWebRequest.Get(sourcePath);
+        request.SendWebRequest();
+        while (!request.isDone) { }
+        if (request.result == UnityWebRequest.Result.Success)
         {
-            var loadDb = new WWW("jar:file://" + Application.dataPath + "!/assets/" + dbName);
-            while (!loadDb.isDone) { }
-            System.IO.File.WriteAllBytes(path, loadDb.bytes);
+            System.IO.File.WriteAllBytes(path, request.downloadHandler.data);
         }
+        else
+        {
+            Debug.LogError("Failed to copy database: " + request.error);
+        }
+    }
 #elif UNITY_IOS
-        path = Application.persistentDataPath + "/" + dbName;
-        if (!System.IO.File.Exists(path))
-        {
-            var loadDb = System.IO.Path.Combine(Application.dataPath + "/Raw", dbName);
-            System.IO.File.Copy(loadDb, path);
-        }
+    path = Application.persistentDataPath + "/" + dbName;
+    if (!System.IO.File.Exists(path))
+    {
+        var loadDb = System.IO.Path.Combine(Application.dataPath + "/Raw", dbName);
+        System.IO.File.Copy(loadDb, path);
+    }
 #endif
 
         return path;
-    }
+    } 
 
     private void Update()
     {
         HandleMouseDrag();
     }
-    //void LoadImagesByLocation(int locationId)
-    //{
-    //    // Kết nối tới database
-    //    string conn = "URI=file:" + dbPath; // Path to database.
-    //    using (IDbConnection dbconn = new SqliteConnection(conn))
-    //    {
-    //        dbconn.Open(); // Mở kết nối tới database.
-    //        using (IDbCommand dbcmd = dbconn.CreateCommand())
-    //        {
-    //            // Truy vấn các hình ảnh dựa trên location_id
-    //            string sqlQuery = "SELECT image_name FROM image WHERE location_id = @location_id";
-    //            dbcmd.CommandText = sqlQuery;
-    //            var parameter = dbcmd.CreateParameter();
-    //            parameter.ParameterName = "@location_id";
-    //            parameter.Value = locationId;
-    //            dbcmd.Parameters.Add(parameter);
+    // Hàm hiển thị các hình ảnh trong ScrollView
+    void DisplaySmallImages(string imageName)
+    {
+        string imagePath = Path.Combine(Application.streamingAssetsPath, "Images", imageName) + ".jpg";
+        Debug.Log("imagePath 000: "+ imagePath);
+        // Load texture từ file hình ảnh
+        Texture2D texture = LoadTexture(imagePath);
 
-    //            using (IDataReader reader = dbcmd.ExecuteReader())
-    //            {
-    //                // Danh sách đường dẫn tới các hình ảnh
-    //                List<string> imagePaths = new List<string>();
+        if (texture != null)
+        {
+            // Lấy component Image của đối tượng và gán sprite cho nó
+            Image imageComponent = locationImage.GetComponent<Image>();
 
-    //                while (reader.Read())
-    //                {
-    //                    // Lấy tên file của hình ảnh
-    //                    string imageName = reader.GetString(0);
-    //                    string imagePath = Path.Combine(Application.streamingAssetsPath, "Images", imageName) + ".jpg";
+            float imageAspect = (float)texture.width / texture.height;
 
-    //                    // Thêm hình ảnh vào danh sách
-    //                    imagePaths.Add(imagePath);
-    //                }
+            // Lấy kích thước của UI Image
+            RectTransform rectTransform = locationImage.GetComponent<RectTransform>();
+            float uiAspect = rectTransform.rect.width / rectTransform.rect.height;
 
-    //                // Hiển thị hình ảnh trong ScrollView
-    //                DisplayImages(imagePaths);
+            // Tính toán để cắt ảnh thành hình chữ nhật phù hợp
+            int newWidth, newHeight;
+            int xOffset = 0, yOffset = 0;
 
-    //                reader.Close();
-    //            }
+            if (imageAspect > uiAspect)
+            {
+                // Ảnh rộng hơn UI Image -> cắt chiều ngang
+                newHeight = texture.height;
+                newWidth = Mathf.RoundToInt(newHeight * uiAspect);
+                xOffset = (texture.width - newWidth) / 2;
+            }
+            else
+            {
+                // Ảnh cao hơn hoặc vừa tỷ lệ -> cắt chiều dọc
+                newWidth = texture.width;
+                newHeight = Mathf.RoundToInt(newWidth / uiAspect);
+                yOffset = (texture.height - newHeight) / 2;
+            }
 
-    //            dbcmd.Dispose();
-    //        }
+            // Tạo vùng cắt ảnh (Rect)
+            Rect cropRect = new Rect(xOffset, yOffset, newWidth, newHeight);
+             
+            // Gán sprite cho Image
+            imageComponent.sprite = Sprite.Create(texture, cropRect, new Vector2(0.5f, 0.5f)); ;
+             
 
-    //        dbconn.Close();
-    //    }
-    //}
+            locationImage.preserveAspect = false;
+            // Lấy chiều cao của ScrollView
+           // float scrollViewHeight = ((RectTransform)content).rect.height;
+
+            // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
+            //imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight); 
+        }
+        else
+        {
+            Debug.LogError("Could not load texture from path 000: " + imagePath);
+        }
+    }
 
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplayImages(List<string> imagePaths)
     {
         int i = 0;
+        // Xóa tất cả các con trong content
+        foreach (Transform child in content)
+        {
+            Destroy(child.gameObject);
+        }
+        imageSprites.Clear();
+        imageSpritesOriginal.Clear();
+
         foreach (string imagePath in imagePaths)
         {
             // Load texture từ file hình ảnh
             Texture2D texture = LoadTexture(imagePath);
+            Debug.Log("imagePath 111: " + imagePath);
 
             if (texture != null)
             {
@@ -236,13 +314,11 @@ public class LocationSceneManager : MonoBehaviour
                 imageSpritesOriginal.Add(newSpriteOriginal);
                 int localIndex = i;
                 newImageObj.GetComponent<Button>().onClick.AddListener(() => OnImageClick(localIndex));
-
-                i++;
-
+                i++; 
             }
             else
             {
-                Debug.LogError("Could not load texture from path: " + imagePath);
+                Debug.LogError("Could not load texture from path 111: " + imagePath);
             }
         }
     }
@@ -269,7 +345,7 @@ public class LocationSceneManager : MonoBehaviour
         currentImageIndex = imageIndex;
         largeImage.sprite = imageSpritesOriginal[imageIndex];
         largeImage.GetComponent<Image>().preserveAspect = true;
-        largeImagePanel.SetActive(true); 
+        largeImagePanel.SetActive(true);
 
         // Reset vị trí và alpha của ảnh
         largeImageRectTransform.anchoredPosition = Vector2.zero;
@@ -470,4 +546,139 @@ public class LocationSceneManager : MonoBehaviour
     {
         SceneManager.LoadScene("PlayGameScene");
     }
+
+    public IEnumerator CopyFolderFromStreamingAssets(string folderName)
+    {
+        string sourceFolder = Path.Combine(Application.streamingAssetsPath, folderName);
+        string destinationFolder = Path.Combine(Application.persistentDataPath, folderName);
+
+        // Tạo thư mục đích nếu chưa tồn tại
+        if (!Directory.Exists(destinationFolder))
+        {
+            Directory.CreateDirectory(destinationFolder);
+        }
+         
+        // Android: Sử dụng UnityWebRequest để sao chép file từ APK
+        string fileListPath = Path.Combine(Application.streamingAssetsPath, folderName, "filelist.txt");
+
+        // Đọc filelist.txt
+        string[] files;
+#if UNITY_ANDROID
+        // Trên Android: Sử dụng UnityWebRequest để tải filelist.txt
+        using (UnityWebRequest request = UnityWebRequest.Get(fileListPath))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError($"Failed to load filelist.txt: {request.error}");
+                yield break;
+            }
+
+            // Lấy danh sách file từ nội dung filelist.txt
+            string fileListContent = request.downloadHandler.text;
+            files = fileListContent.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        }
+#else
+        // Trên các nền tảng khác: Sử dụng File.ReadAllLines
+        if (!File.Exists(fileListPath))
+        {
+            Debug.LogError("Missing filelist.txt in " + sourceFolder);
+            yield break;
+        }
+
+        files = File.ReadAllLines(fileListPath);
+#endif
+
+        // Sao chép từng file
+        foreach (string file in files)
+        {
+            string sourcePath = Path.Combine(Application.streamingAssetsPath, folderName, file);
+            string destinationPath = Path.Combine(destinationFolder, file);
+
+#if UNITY_ANDROID
+            using (UnityWebRequest fileRequest = UnityWebRequest.Get(sourcePath))
+            {
+                yield return fileRequest.SendWebRequest();
+
+                if (fileRequest.result == UnityWebRequest.Result.ConnectionError || fileRequest.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.LogError($"Failed to copy {file}: {fileRequest.error}");
+                    continue;
+                }
+
+                File.WriteAllBytes(destinationPath, fileRequest.downloadHandler.data);
+                Debug.Log($"Copied {file} to {destinationPath}");
+            }
+#else
+            // Trên các nền tảng khác: Sao chép file trực tiếp
+            File.Copy(sourcePath, destinationPath, true);
+            Debug.Log($"Copied {file} to {destinationPath}");
+#endif
+        }
+
+        Debug.Log("All files copied successfully.");
+    }
+
+    //IEnumerator CopyAllStreamingAssetsToPersistentPath()
+    //    {
+    //        string sourceFolder = Path.Combine(Application.streamingAssetsPath, "Images");
+    //        string destinationFolder = Path.Combine(Application.persistentDataPath, "Images");
+
+    //        if (!Directory.Exists(destinationFolder))
+    //        {
+    //            Directory.CreateDirectory(destinationFolder);
+    //        }
+
+    //        string[] files;
+
+    //#if UNITY_EDITOR
+    //        files = Directory.GetFiles(sourceFolder);
+    //#elif UNITY_ANDROID
+    //        using (UnityWebRequest request = UnityWebRequest.Get(sourceFolder))
+    //        {
+    //            yield return request.SendWebRequest();
+    //            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+    //            {
+    //                Debug.LogError("Failed to get file list from StreamingAssets.");
+    //                yield break;
+    //            }
+
+    //            // Giả định rằng file là danh sách tên file (trên Android bạn cần tự xác định danh sách file)
+    //            files = request.downloadHandler.text.Split('\n');
+
+    //        }
+    //#else
+    //    files = Directory.GetFiles(sourceFolder);
+    //#endif
+
+    //        foreach (string file in files)
+    //        {
+    //            string fileName = Path.GetFileName(file);
+    //            string sourcePath = Path.Combine(sourceFolder, fileName);
+    //            string destinationPath = Path.Combine(destinationFolder, fileName);
+
+    //            if (!File.Exists(destinationPath))
+    //            {
+    //                if (Application.platform == RuntimePlatform.Android)
+    //                {
+    //                    using (UnityWebRequest request = UnityWebRequest.Get(sourcePath))
+    //                    {
+    //                        yield return request.SendWebRequest();
+    //                        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+    //                        {
+    //                            Debug.LogError($"Failed to copy {fileName}: {request.error}");
+    //                            continue;
+    //                        }
+    //                        File.WriteAllBytes(destinationPath, request.downloadHandler.data);
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    File.Copy(sourcePath, destinationPath);
+    //                }
+    //            }
+    //        }
+    //        Debug.Log("All files copied to persistentDataPath.");
+    //    }
 }

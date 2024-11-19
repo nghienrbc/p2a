@@ -9,7 +9,6 @@ public class BaseToogleButton : MonoBehaviour
     public Sprite toggledImage;           // Hình ảnh khi nút được nhấn
     protected bool isToggled = false;     // Trạng thái của nút
 
-    public MyakuController myakuController;
     protected Button button;
 
     [System.Serializable]
@@ -55,15 +54,15 @@ public class BaseToogleButton : MonoBehaviour
         // Gọi UIManager để xử lý click cho nút này
         UIManager.Instance.OnButtonClicked(this);
 
-        foreach (PanelSettings settings in panelsToControl)
-        {
-            // Kiểm tra nếu enable_move được bật
-            if (settings.enable_move && settings.panelMover != null)
-            {
-                // Di chuyển panel theo hướng và trạng thái moveOutOrIn
-                settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
-            }
-        }
+        //foreach (PanelSettings settings in panelsToControl)
+        //{
+        //    // Kiểm tra nếu enable_move được bật
+        //    if (settings.enable_move && settings.panelMover != null)
+        //    {
+        //        // Di chuyển panel theo hướng và trạng thái moveOutOrIn
+        //        settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
+        //    }
+        //}
     } 
     // Hàm để đặt lại nút về hình ảnh mặc định
     public void ResetToDefault()

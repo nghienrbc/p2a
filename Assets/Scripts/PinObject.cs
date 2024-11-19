@@ -13,6 +13,6 @@ public class PinObject : MonoBehaviour
         Vector3 endPoint = transform.position + transform.up * lineLength;
 
         // Vẽ đường thẳng từ pin theo trục Z local của nó
-        Debug.DrawLine(startPoint, endPoint, Color.red);
+        // Debug.DrawLine(startPoint, endPoint, Color.red);
     }
 }

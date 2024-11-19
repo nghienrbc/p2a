@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using MyGame.Enums;
 
 public class PanelMover : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class PanelMover : MonoBehaviour
     private RectTransform panelRect;
     private Vector3 originalPosition; // Vị trí ban đầu của panel
     private Vector3 targetPosition;   // Vị trí di chuyển ngoài màn hình
-    private bool isOffScreen = false; // Trạng thái của panel (trong hoặc ngoài màn hình)
+    public bool isOffScreen = false; // Trạng thái của panel (trong hoặc ngoài màn hình)
 
     private CanvasGroup canvasGroup;
 

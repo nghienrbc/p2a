@@ -7,9 +7,16 @@ using UnityEngine.SceneManagement;
 using System;
 using System.IO;
 using BestHTTP;
+using MyGame.Enums;
+using UnityEngine.Networking;
 
-public class UIManager : MonoBehaviour
+namespace MyGame.Enums
 {
+    public enum ShowHide { Show = 1, Hide = 0 }
+    public enum MoveInOut { In = 0, Out = 1 }
+}
+public class UIManager : MonoBehaviour
+{ 
     public static UIManager Instance { get; private set; }
 
     public TMP_Text connectionTxt;
@@ -29,8 +36,13 @@ public class UIManager : MonoBehaviour
     private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
     // Start is called before the first frame update
 
+    public PanelMover mapPanel;
+    public PanelMover cameraPanel;
+    public PanelMover mapDetailPanel;
+    public PanelMover LocationPanel;
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
+    public MyakuController myakuController;
 
     [System.Serializable]
     public class PanelSettings
@@ -109,15 +121,18 @@ public class UIManager : MonoBehaviour
     {
         // Đợi cho đến khi frame đầu tiên kết thúc để đảm bảo tất cả panel đã khởi tạo
         yield return new WaitForEndOfFrame();
-        foreach (PanelSettings settings in panelsToControl)
-        {
-            // Kiểm tra nếu enable_move được bật
-            if (settings.enable_move && settings.panelMover != null)
-            {
-                // Di chuyển panel theo hướng và trạng thái moveOutOrIn
-                settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
-            }
-        }
+        //foreach (PanelSettings settings in panelsToControl)
+        //{
+        //    // Kiểm tra nếu enable_move được bật
+        //    if (settings.enable_move && settings.panelMover != null)
+        //    {
+        //        // Di chuyển panel theo hướng và trạng thái moveOutOrIn
+        //        settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
+        //    }
+        //}
+        MovePanel(cameraPanel, PanelMover.Direction.Up, true, 0);
+        MovePanel(mapPanel, PanelMover.Direction.Up, true, 0);
+       MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 0);
     }
 
 
@@ -450,14 +465,96 @@ public class UIManager : MonoBehaviour
         // ẩn map và map detail panel
         foreach (PanelSettings settings in panelsToControl)
         {
-            Debug.Log("close button click");
-            // Kiểm tra nếu enable_move được bật
-            // if (settings.panelMover != null && settings.panelMover.gameObject.activeSelf == true)
-            //{
-            // Di chuyển panel theo hướng và trạng thái moveOutOrIn
-            settings.panelMover.FadeOut(0.5f);
-           // }
+            //Debug.Log("close button click");
+            //ShowHidePanel(mapPanel, ShowHide.Hide, 0.5f);
+            ShowHidePanel(LocationPanel, ShowHide.Hide, 0.5f);
+
+            UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+            MoveMyaku(false);
         }
     }
+    public void ShowHidePanel(PanelMover panelMover, ShowHide isShow, float speed)
+    {
+        if (isShow == ShowHide.Show)
+        {
+            panelMover.FadeIn(speed);
+        }
+        else
+        {
+            panelMover.FadeOut(speed);
+        }
+    }
+    public void MovePanel(PanelMover panelMover, PanelMover.Direction direction, bool isMoveOut, float speed)
+    { 
+        panelMover.MovePanel(direction, isMoveOut, speed);
+    }
+    public void MoveMyaku(bool moveToFar)
+    {
+        if (moveToFar && !myakuController.isPlaceInFarPossiton)
+        {
+            myakuController.MoveMyakuToFarPossition();
+        }
+        else if (!moveToFar && myakuController.isPlaceInFarPossiton)
+        {
+            myakuController.MoveMyakuToNearPossition();
+        }
+    }
+    IEnumerator CopyAllStreamingAssetsToPersistentPath()
+    {
+        string sourceFolder = Path.Combine(Application.streamingAssetsPath, "Images");
+        string destinationFolder = Path.Combine(Application.persistentDataPath, "Images");
 
+        if (!Directory.Exists(destinationFolder))
+        {
+            Directory.CreateDirectory(destinationFolder);
+        }
+
+        string[] files;
+#if UNITY_ANDROID
+        using (UnityWebRequest request = UnityWebRequest.Get(sourceFolder))
+        {
+            yield return request.SendWebRequest();
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError("Failed to get file list from StreamingAssets.");
+                yield break;
+            }
+
+            // Giả định rằng file là danh sách tên file (trên Android bạn cần tự xác định danh sách file)
+            files = request.downloadHandler.text.Split('\n');
+        }
+#else
+    files = Directory.GetFiles(sourceFolder);
+#endif
+
+        foreach (string file in files)
+        {
+            string fileName = Path.GetFileName(file);
+            string sourcePath = Path.Combine(sourceFolder, fileName);
+            string destinationPath = Path.Combine(destinationFolder, fileName);
+
+            if (!File.Exists(destinationPath))
+            {
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    using (UnityWebRequest request = UnityWebRequest.Get(sourcePath))
+                    {
+                        yield return request.SendWebRequest();
+                        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+                        {
+                            Debug.LogError($"Failed to copy {fileName}: {request.error}");
+                            continue;
+                        }
+                        File.WriteAllBytes(destinationPath, request.downloadHandler.data);
+                    }
+                }
+                else
+                {
+                    File.Copy(sourcePath, destinationPath);
+                }
+            }
+        }
+        Debug.Log("All files copied to persistentDataPath.");
+    }
 }

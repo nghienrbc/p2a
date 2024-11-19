@@ -12,7 +12,10 @@ public class HomeBtn : BaseToogleButton
             UIManager.Instance.BtnStopCameraClick();
             UIManager.Instance.functionName = "home";
             UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
-            myakuController.MoveMyakuToFarPossition();
+            //
+            UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)
