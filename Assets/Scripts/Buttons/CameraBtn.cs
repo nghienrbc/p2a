@@ -15,6 +15,7 @@ public class CameraBtn : BaseToogleButton
             UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, false, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
+
         }
         base.OnButtonClick(); 
     }

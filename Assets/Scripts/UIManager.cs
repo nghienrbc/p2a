@@ -423,7 +423,8 @@ public class UIManager : MonoBehaviour
     }
 
     public void BtnStopRecordClick()
-    {
+    { 
+        UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
         recorder.StopRecording();
         recordingIndicator.gameObject.SetActive(false);
     }

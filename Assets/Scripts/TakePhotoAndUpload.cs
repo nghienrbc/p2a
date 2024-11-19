@@ -51,9 +51,14 @@ public class TakePhotoAndUpload : MonoBehaviour
     public void StartTakePhoto()
     {
         UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
+        photoSave.gameObject.SetActive(false);
+        cameraDisplay.gameObject.SetActive(true);
+        qrCodeImage.gameObject.SetActive(false);
         shootBtn.interactable = true;
         reshootBtn.interactable = false;
         downloadBtn.interactable = false;
+         
+
         // Lấy danh sách các camera
         WebCamDevice[] devices = WebCamTexture.devices;
 
@@ -186,14 +191,7 @@ public class TakePhotoAndUpload : MonoBehaviour
     }
 
     public void ReshootPhotoBtn()
-    { 
-        photoSave.gameObject.SetActive(false);
-        cameraDisplay.gameObject.SetActive(true);
-        qrCodeImage.gameObject.SetActive(false);
-
-        shootBtn.interactable = true;
-        reshootBtn.interactable = false;
-        downloadBtn.interactable = false;
+    {  
         StartTakePhoto();
     }
 

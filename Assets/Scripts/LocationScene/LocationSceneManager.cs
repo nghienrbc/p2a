@@ -103,8 +103,7 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
 
 
-        StartCoroutine(CopyFolderFromStreamingAssets("Images"));
-        //StartCoroutine(CopyAllStreamingAssetsToPersistentPath());
+        StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
     }
 
     public void GetImageByLocationId(int locationId)
@@ -202,8 +201,8 @@ public class LocationSceneManager : MonoBehaviour
     }
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplaySmallImages(string imageName)
-    {
-        string imagePath = Path.Combine(Application.streamingAssetsPath, "Images", imageName) + ".jpg";
+    { 
+        string imagePath = Path.Combine(Application.persistentDataPath, "Images", imageName) + ".jpg";
         Debug.Log("imagePath 000: "+ imagePath);
         // Load texture từ file hình ảnh
         Texture2D texture = LoadTexture(imagePath);
@@ -418,16 +417,11 @@ public class LocationSceneManager : MonoBehaviour
                 {
                     // Chỉ cho phép di chuyển ảnh sang trái hoặc phải
                     largeImageRectTransform.anchoredPosition = new Vector2(difference.x, 0);
-                }
-                else // Di chuyển dọc (lên)
-                {
-                    // Chỉ cho phép di chuyển ảnh theo phương dọc
-                    largeImageRectTransform.anchoredPosition = new Vector2(0, difference.y);
+                    // Tính toán độ mờ dần của ảnh (khi swipe càng xa thì ảnh càng mờ)
+                    float alpha = Mathf.Clamp(1 - Mathf.Abs(difference.magnitude) / dragThreshold, 0.4f, 1f);
+                    largeImageCanvasGroup.alpha = alpha;
                 }
 
-                // Tính toán độ mờ dần của ảnh (khi swipe càng xa thì ảnh càng mờ)
-                float alpha = Mathf.Clamp(1 - Mathf.Abs(difference.magnitude) / dragThreshold, 0.4f, 1f);
-                largeImageCanvasGroup.alpha = alpha;
             }
         }
 
@@ -462,24 +456,7 @@ public class LocationSceneManager : MonoBehaviour
                         StartCoroutine(SmoothReturnToPosition()); // Nếu kéo không đủ xa, đưa ảnh về vị trí cũ
                     }
                 }
-                else // Swipe lên để đóng ảnh lớn
-                {
-                    if (Mathf.Abs(difference.y) > dragThreshold) // Kiểm tra xem có vuốt đủ xa không
-                    {
-                        if (difference.y > 0) // Vuốt lên
-                        {
-                            CloseLargeImage();
-                        }
-                        else
-                        {
-                            StartCoroutine(SmoothReturnToPosition()); // Nếu kéo không đủ xa, đưa ảnh về vị trí cũ
-                        }
-                    }
-                    else
-                    {
-                        StartCoroutine(SmoothReturnToPosition()); // Nếu kéo không đủ xa, đưa ảnh về vị trí cũ
-                    }
-                }
+                
             }
 
             // Reset biến kiểm tra drag
@@ -618,67 +595,5 @@ public class LocationSceneManager : MonoBehaviour
         }
 
         Debug.Log("All files copied successfully.");
-    }
-
-    //IEnumerator CopyAllStreamingAssetsToPersistentPath()
-    //    {
-    //        string sourceFolder = Path.Combine(Application.streamingAssetsPath, "Images");
-    //        string destinationFolder = Path.Combine(Application.persistentDataPath, "Images");
-
-    //        if (!Directory.Exists(destinationFolder))
-    //        {
-    //            Directory.CreateDirectory(destinationFolder);
-    //        }
-
-    //        string[] files;
-
-    //#if UNITY_EDITOR
-    //        files = Directory.GetFiles(sourceFolder);
-    //#elif UNITY_ANDROID
-    //        using (UnityWebRequest request = UnityWebRequest.Get(sourceFolder))
-    //        {
-    //            yield return request.SendWebRequest();
-    //            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-    //            {
-    //                Debug.LogError("Failed to get file list from StreamingAssets.");
-    //                yield break;
-    //            }
-
-    //            // Giả định rằng file là danh sách tên file (trên Android bạn cần tự xác định danh sách file)
-    //            files = request.downloadHandler.text.Split('\n');
-
-    //        }
-    //#else
-    //    files = Directory.GetFiles(sourceFolder);
-    //#endif
-
-    //        foreach (string file in files)
-    //        {
-    //            string fileName = Path.GetFileName(file);
-    //            string sourcePath = Path.Combine(sourceFolder, fileName);
-    //            string destinationPath = Path.Combine(destinationFolder, fileName);
-
-    //            if (!File.Exists(destinationPath))
-    //            {
-    //                if (Application.platform == RuntimePlatform.Android)
-    //                {
-    //                    using (UnityWebRequest request = UnityWebRequest.Get(sourcePath))
-    //                    {
-    //                        yield return request.SendWebRequest();
-    //                        if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-    //                        {
-    //                            Debug.LogError($"Failed to copy {fileName}: {request.error}");
-    //                            continue;
-    //                        }
-    //                        File.WriteAllBytes(destinationPath, request.downloadHandler.data);
-    //                    }
-    //                }
-    //                else
-    //                {
-    //                    File.Copy(sourcePath, destinationPath);
-    //                }
-    //            }
-    //        }
-    //        Debug.Log("All files copied to persistentDataPath.");
-    //    }
+    } 
 }

@@ -122,6 +122,10 @@ public class RecordAudio : MonoBehaviour
             {
                 request.Dispose(); // Giải phóng tài nguyên trong mọi trường hợp
                 Debug.LogError("Error uploading audio: " + (resp != null ? resp.Message : "Unknown error"));
+
+                UIManager.Instance.connectionTxt.text = "An error occurred, please help me check the network connection!."; 
+                myakuController.animator.SetTrigger("hello");
+
                 return;
             }
 
@@ -180,6 +184,8 @@ public class RecordAudio : MonoBehaviour
     private void OnAudioFinished()
     {
         Debug.Log("Audio finished playing!");
+
+        UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
         myakuController.animator.SetBool("answer", false);
     }
 

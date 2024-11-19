@@ -48,6 +48,8 @@ public class MyakuController : MonoBehaviour
     {
         animator.SetBool("thinking", false);
         animator.SetBool("answer", true);
+        
+        UIManager.Instance.connectionTxt.text = "OK! Here is my answer";
     }
 
     public void MoveMyakuToFarPossition()

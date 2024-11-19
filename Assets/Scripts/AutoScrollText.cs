@@ -1,47 +1,62 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class AutoScrollText : MonoBehaviour
 {
-    public ScrollRect scrollRect;       // ScrollRect chứa TextMeshPro
-    public float scrollSpeed = 20f;    // Tốc độ cuộn (pixel/giây)
-    private bool isScrolling = true;   // Trạng thái cuộn
+    public ScrollRect scrollRect;         // ScrollRect của ScrollView
+    public TextMeshProUGUI textMeshPro;  // TextMeshPro trong Content
+    public float scrollSpeed = 20f;      // Tốc độ cuộn (đơn vị: pixels/giây)
 
-    private RectTransform contentRect; // RectTransform của Content
-    private float contentHeight;       // Chiều cao của Content
-    private float scrollViewHeight;    // Chiều cao của Viewport
+    private Coroutine scrollCoroutine;
 
     void Start()
     {
-        // Lấy RectTransform của Content và Viewport
-        contentRect = scrollRect.content;
-        scrollViewHeight = scrollRect.viewport.rect.height;
-
-        // Tính chiều cao của nội dung
-        contentHeight = contentRect.rect.height;
-
-        // Kiểm tra nếu nội dung nhỏ hơn Viewport thì không cần cuộn
-        if (contentHeight <= scrollViewHeight)
+        // Kiểm tra nếu nội dung vượt quá vùng hiển thị
+        if (IsTextOverflowing())
         {
-            isScrolling = false;
+            // Bắt đầu cuộn
+            scrollCoroutine = StartCoroutine(ScrollTextUp());
         }
     }
 
-    void Update()
+    // Hàm kiểm tra nếu TextMeshPro có nội dung vượt quá vùng hiển thị
+    private bool IsTextOverflowing()
     {
-        if (isScrolling)
+        return textMeshPro.preferredHeight > ((RectTransform)scrollRect.viewport).rect.height;
+    }
+
+    // Coroutine để cuộn nội dung dần dần
+    private IEnumerator ScrollTextUp()
+    {
+        // Đặt vị trí cuộn về đầu
+        scrollRect.verticalNormalizedPosition = 1;
+
+        // Tính khoảng cách cần cuộn
+        float contentHeight = textMeshPro.preferredHeight;
+        float viewportHeight = ((RectTransform)scrollRect.viewport).rect.height;
+        float totalScrollDistance = contentHeight - viewportHeight;
+
+        // Cuộn từ trên xuống
+        while (scrollRect.verticalNormalizedPosition > 0)
         {
-            // Di chuyển Content lên trên theo thời gian
-            float newY = contentRect.anchoredPosition.y + scrollSpeed * Time.deltaTime;
+            float scrollDelta = (scrollSpeed / totalScrollDistance) * Time.deltaTime;
+            scrollRect.verticalNormalizedPosition -= scrollDelta;
+            yield return null;
+        }
 
-            // Nếu Content đã cuộn hết, đặt lại vị trí ban đầu
-            if (newY >= contentHeight - scrollViewHeight)
-            {
-                newY = 0f; // Đặt lại vị trí cuộn về đầu
-            }
+        // Đảm bảo cuộn hết sau khi xong
+        scrollRect.verticalNormalizedPosition = 0;
+    }
 
-            // Cập nhật vị trí Content
-            contentRect.anchoredPosition = new Vector2(contentRect.anchoredPosition.x, newY);
+    // Hàm dừng cuộn (nếu cần)
+    public void StopScrolling()
+    {
+        if (scrollCoroutine != null)
+        {
+            StopCoroutine(scrollCoroutine);
+            scrollCoroutine = null;
         }
     }
 }
