@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\ASEAN\\Code\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v31\\values-v31.xml",
+            "outputFile": "D:\\Developement\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v31\\values-v31.xml",
             "map": [
                 {
-                    "source": "D:\\ASEAN\\Code\\p2a\\buildp2a\\unityLibrary\\build\\intermediates\\packaged_res\\debug\\values-v31\\values-v31.xml",
+                    "source": "D:\\Developement\\p2a\\buildp2a\\unityLibrary\\build\\intermediates\\packaged_res\\debug\\values-v31\\values-v31.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

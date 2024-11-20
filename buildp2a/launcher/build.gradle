@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation project(':unityLibrary')
-    }
+}
 
 android {
     ndkPath "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620"

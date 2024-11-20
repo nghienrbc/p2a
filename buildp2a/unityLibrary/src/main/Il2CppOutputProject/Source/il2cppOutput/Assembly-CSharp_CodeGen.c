@@ -15,8 +15,16 @@
 extern void EarthSpinScript_Update_m09FD0418EA174B20C5EDEF20722A0D448F4F8A67 (void);
 extern void EarthSpinScript__ctor_m84481738C5700B7BC924A85E3B31C69A2C74E15A (void);
 extern void AutoScrollText_Start_mA46ADFA887748E1097CF4D52E9E087947550ED35 (void);
-extern void AutoScrollText_Update_m32F158FC02597A8A98D70DB6DC911F5CA843C42C (void);
+extern void AutoScrollText_IsTextOverflowing_m7A161C27244C1C76618A73CB2B5FBCA6723E47DB (void);
+extern void AutoScrollText_ScrollTextUp_m7D1318A72458F862F0F7E56F7587CB3702D63A25 (void);
+extern void AutoScrollText_StopScrolling_mE4B9A64D513DA26BCCB2918075ADDCC6C180013D (void);
 extern void AutoScrollText__ctor_m6EDF31B58484EB2490525923ED3436B23DDDE640 (void);
+extern void U3CScrollTextUpU3Ed__6__ctor_m7A0136C0A4E3E4D92A65736777A03A6A90408160 (void);
+extern void U3CScrollTextUpU3Ed__6_System_IDisposable_Dispose_mA1CBDBA467E7A4A7943D911EEF4950D47BAF64D4 (void);
+extern void U3CScrollTextUpU3Ed__6_MoveNext_m6A1771D862AEE173CC220D54EF230BCE9010A00C (void);
+extern void U3CScrollTextUpU3Ed__6_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mAE6D83E6346A433792581894C2600BAB579F3C94 (void);
+extern void U3CScrollTextUpU3Ed__6_System_Collections_IEnumerator_Reset_m7F6ABB89727055828BAC798A4A38BE446A076D01 (void);
+extern void U3CScrollTextUpU3Ed__6_System_Collections_IEnumerator_get_Current_m8A955E3393A4CA022EE8A954E93A083D4ECE77FF (void);
 extern void BaseToogleButton_Start_m2FA0BB4C600B9528D9177AD5B9EBA11B17700487 (void);
 extern void BaseToogleButton_ToggleImage_mBAB1768853D23939DEBEA4E3703C3ACBBF530593 (void);
 extern void BaseToogleButton_OnButtonClick_mACB6AC788EF6121AB49A36A825CA448112A36823 (void);
@@ -1599,13 +1607,21 @@ extern void SQLite3_ColumnString_mC7495ED684AF170F31724D26EF5BB4EBA78E0E94 (void
 extern void SQLite3_ColumnByteArray_m09025DD6AB983E61366EFCB4F1500F7EA24CEC5E (void);
 extern void SQLite3_ExtendedErrCode_mE53EAE79412B17719370EA83EF845896409E4E68 (void);
 extern void SQLite3_LibVersionNumber_m2C388472E0DC6C13BA5F5A2DD8BB226EA30D52C5 (void);
-static Il2CppMethodPointer s_methodPointers[1683] = 
+static Il2CppMethodPointer s_methodPointers[1691] = 
 {
 	EarthSpinScript_Update_m09FD0418EA174B20C5EDEF20722A0D448F4F8A67,
 	EarthSpinScript__ctor_m84481738C5700B7BC924A85E3B31C69A2C74E15A,
 	AutoScrollText_Start_mA46ADFA887748E1097CF4D52E9E087947550ED35,
-	AutoScrollText_Update_m32F158FC02597A8A98D70DB6DC911F5CA843C42C,
+	AutoScrollText_IsTextOverflowing_m7A161C27244C1C76618A73CB2B5FBCA6723E47DB,
+	AutoScrollText_ScrollTextUp_m7D1318A72458F862F0F7E56F7587CB3702D63A25,
+	AutoScrollText_StopScrolling_mE4B9A64D513DA26BCCB2918075ADDCC6C180013D,
 	AutoScrollText__ctor_m6EDF31B58484EB2490525923ED3436B23DDDE640,
+	U3CScrollTextUpU3Ed__6__ctor_m7A0136C0A4E3E4D92A65736777A03A6A90408160,
+	U3CScrollTextUpU3Ed__6_System_IDisposable_Dispose_mA1CBDBA467E7A4A7943D911EEF4950D47BAF64D4,
+	U3CScrollTextUpU3Ed__6_MoveNext_m6A1771D862AEE173CC220D54EF230BCE9010A00C,
+	U3CScrollTextUpU3Ed__6_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mAE6D83E6346A433792581894C2600BAB579F3C94,
+	U3CScrollTextUpU3Ed__6_System_Collections_IEnumerator_Reset_m7F6ABB89727055828BAC798A4A38BE446A076D01,
+	U3CScrollTextUpU3Ed__6_System_Collections_IEnumerator_get_Current_m8A955E3393A4CA022EE8A954E93A083D4ECE77FF,
 	BaseToogleButton_Start_m2FA0BB4C600B9528D9177AD5B9EBA11B17700487,
 	BaseToogleButton_ToggleImage_mBAB1768853D23939DEBEA4E3703C3ACBBF530593,
 	BaseToogleButton_OnButtonClick_mACB6AC788EF6121AB49A36A825CA448112A36823,
@@ -3310,37 +3326,45 @@ extern void FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_Adj
 extern void FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk (void);
 static Il2CppTokenAdjustorThunkPair s_adjustorThunks[23] = 
 {
-	{ 0x060004FC, HsvColor_get_NormalizedH_mBEF0296FD8D8F343B8CADED675275050D98D6B74_AdjustorThunk },
-	{ 0x060004FD, HsvColor_set_NormalizedH_mB80112AD8E2ED425026FDB567263A725DF17CFD0_AdjustorThunk },
-	{ 0x060004FE, HsvColor_get_NormalizedS_m1AF38B899ABDCDE1CB6BB10D74F20C2EC91E78FC_AdjustorThunk },
-	{ 0x060004FF, HsvColor_set_NormalizedS_m63711AB18F048875A97C782DA9613D349B0D4096_AdjustorThunk },
-	{ 0x06000500, HsvColor_get_NormalizedV_m97D23C0851723BF797FC162992D9CD5DD3D4B395_AdjustorThunk },
-	{ 0x06000501, HsvColor_set_NormalizedV_m24DE369903322D39C5DB36C496DD5AF03FA6FA31_AdjustorThunk },
-	{ 0x06000502, HsvColor__ctor_mDBE69A4991E5553E4E4D42F05A407140A2CAC652_AdjustorThunk },
-	{ 0x06000503, HsvColor_ToString_m70B1449864611F0B247F3AFB742CF53D45156F3A_AdjustorThunk },
-	{ 0x0600050D, FloatTween_get_startFloat_m9A7F4BC62EA9B02EE82C313C79EF468CB671A500_AdjustorThunk },
-	{ 0x0600050E, FloatTween_set_startFloat_m39F7FACECAA3A485AC4A7B1D01998EB5E9F6CAA4_AdjustorThunk },
-	{ 0x0600050F, FloatTween_get_targetFloat_m0FFD1C85696C18943937025D55A45D4D8EC90F32_AdjustorThunk },
-	{ 0x06000510, FloatTween_set_targetFloat_m70BAF0E81D11D5ACDC1791BC81F1872F5F6B9D3F_AdjustorThunk },
-	{ 0x06000511, FloatTween_get_duration_m5EBD52251A5E7517FEA479C98D388EC3A1073B57_AdjustorThunk },
-	{ 0x06000512, FloatTween_set_duration_m360C1B2B8C0CDA0C2DC5B85B2EC5B404A5DBCFAA_AdjustorThunk },
-	{ 0x06000513, FloatTween_get_ignoreTimeScale_mB030BF93E22DF9B8453BCA27CE9A08FDA32E035A_AdjustorThunk },
-	{ 0x06000514, FloatTween_set_ignoreTimeScale_m13BD60C70D7BEA885452B9AD3BB545D585C7183B_AdjustorThunk },
-	{ 0x06000515, FloatTween_TweenValue_m3E8D8DE6F8E0AAB072E76AF4AF5EE762ACA3CC85_AdjustorThunk },
-	{ 0x06000516, FloatTween_AddOnChangedCallback_m12B3F58BD054E3D510964DA64654EE358833C648_AdjustorThunk },
-	{ 0x06000517, FloatTween_AddOnFinishCallback_m1BD0EB2F2878F4142162CE7851E3EA942A48B06D_AdjustorThunk },
-	{ 0x06000518, FloatTween_GetIgnoreTimescale_mFB3F7CFD3CB4F084AACC1AD69C2F54ED745FF0EA_AdjustorThunk },
-	{ 0x06000519, FloatTween_GetDuration_mEAD41CA30857F77B22690A8A99B949313BA7493B_AdjustorThunk },
-	{ 0x0600051A, FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_AdjustorThunk },
-	{ 0x0600051B, FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk },
+	{ 0x06000504, HsvColor_get_NormalizedH_mBEF0296FD8D8F343B8CADED675275050D98D6B74_AdjustorThunk },
+	{ 0x06000505, HsvColor_set_NormalizedH_mB80112AD8E2ED425026FDB567263A725DF17CFD0_AdjustorThunk },
+	{ 0x06000506, HsvColor_get_NormalizedS_m1AF38B899ABDCDE1CB6BB10D74F20C2EC91E78FC_AdjustorThunk },
+	{ 0x06000507, HsvColor_set_NormalizedS_m63711AB18F048875A97C782DA9613D349B0D4096_AdjustorThunk },
+	{ 0x06000508, HsvColor_get_NormalizedV_m97D23C0851723BF797FC162992D9CD5DD3D4B395_AdjustorThunk },
+	{ 0x06000509, HsvColor_set_NormalizedV_m24DE369903322D39C5DB36C496DD5AF03FA6FA31_AdjustorThunk },
+	{ 0x0600050A, HsvColor__ctor_mDBE69A4991E5553E4E4D42F05A407140A2CAC652_AdjustorThunk },
+	{ 0x0600050B, HsvColor_ToString_m70B1449864611F0B247F3AFB742CF53D45156F3A_AdjustorThunk },
+	{ 0x06000515, FloatTween_get_startFloat_m9A7F4BC62EA9B02EE82C313C79EF468CB671A500_AdjustorThunk },
+	{ 0x06000516, FloatTween_set_startFloat_m39F7FACECAA3A485AC4A7B1D01998EB5E9F6CAA4_AdjustorThunk },
+	{ 0x06000517, FloatTween_get_targetFloat_m0FFD1C85696C18943937025D55A45D4D8EC90F32_AdjustorThunk },
+	{ 0x06000518, FloatTween_set_targetFloat_m70BAF0E81D11D5ACDC1791BC81F1872F5F6B9D3F_AdjustorThunk },
+	{ 0x06000519, FloatTween_get_duration_m5EBD52251A5E7517FEA479C98D388EC3A1073B57_AdjustorThunk },
+	{ 0x0600051A, FloatTween_set_duration_m360C1B2B8C0CDA0C2DC5B85B2EC5B404A5DBCFAA_AdjustorThunk },
+	{ 0x0600051B, FloatTween_get_ignoreTimeScale_mB030BF93E22DF9B8453BCA27CE9A08FDA32E035A_AdjustorThunk },
+	{ 0x0600051C, FloatTween_set_ignoreTimeScale_m13BD60C70D7BEA885452B9AD3BB545D585C7183B_AdjustorThunk },
+	{ 0x0600051D, FloatTween_TweenValue_m3E8D8DE6F8E0AAB072E76AF4AF5EE762ACA3CC85_AdjustorThunk },
+	{ 0x0600051E, FloatTween_AddOnChangedCallback_m12B3F58BD054E3D510964DA64654EE358833C648_AdjustorThunk },
+	{ 0x0600051F, FloatTween_AddOnFinishCallback_m1BD0EB2F2878F4142162CE7851E3EA942A48B06D_AdjustorThunk },
+	{ 0x06000520, FloatTween_GetIgnoreTimescale_mFB3F7CFD3CB4F084AACC1AD69C2F54ED745FF0EA_AdjustorThunk },
+	{ 0x06000521, FloatTween_GetDuration_mEAD41CA30857F77B22690A8A99B949313BA7493B_AdjustorThunk },
+	{ 0x06000522, FloatTween_ValidTarget_m0E27C9DB6E996F94E2C68F7C352825091F3DC9CB_AdjustorThunk },
+	{ 0x06000523, FloatTween_Finished_m78F8875E61118C57342C344D4DE08940CF244201_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[1683] = 
+static const int32_t s_InvokerIndices[1691] = 
 {
 	9549,
 	9549,
 	9549,
+	9323,
+	9426,
 	9549,
 	9549,
+	7571,
+	9549,
+	9323,
+	9426,
+	9549,
+	9426,
 	9549,
 	9549,
 	9549,
@@ -5022,45 +5046,45 @@ static const int32_t s_InvokerIndices[1683] =
 };
 static const Il2CppTokenRangePair s_rgctxIndices[39] = 
 {
-	{ 0x0200003D, { 0, 4 } },
-	{ 0x020000EE, { 19, 7 } },
-	{ 0x020000EF, { 26, 7 } },
-	{ 0x02000116, { 89, 8 } },
-	{ 0x0200011A, { 97, 49 } },
-	{ 0x0200011B, { 167, 1 } },
-	{ 0x0200011C, { 168, 5 } },
-	{ 0x060001CA, { 4, 3 } },
-	{ 0x060001CB, { 7, 3 } },
-	{ 0x06000414, { 10, 3 } },
-	{ 0x06000476, { 13, 3 } },
-	{ 0x06000477, { 16, 3 } },
-	{ 0x06000555, { 33, 1 } },
-	{ 0x06000556, { 34, 1 } },
-	{ 0x06000557, { 35, 1 } },
-	{ 0x0600055D, { 36, 2 } },
-	{ 0x06000563, { 38, 2 } },
-	{ 0x06000564, { 40, 2 } },
-	{ 0x06000565, { 42, 2 } },
-	{ 0x06000568, { 44, 2 } },
-	{ 0x06000569, { 46, 6 } },
-	{ 0x0600056A, { 52, 6 } },
-	{ 0x0600056B, { 58, 6 } },
-	{ 0x0600056D, { 64, 6 } },
-	{ 0x06000586, { 70, 1 } },
-	{ 0x06000587, { 71, 1 } },
-	{ 0x0600060D, { 72, 3 } },
-	{ 0x0600060E, { 75, 5 } },
-	{ 0x0600060F, { 80, 4 } },
-	{ 0x06000611, { 84, 3 } },
-	{ 0x06000612, { 87, 2 } },
-	{ 0x06000647, { 146, 2 } },
-	{ 0x0600064D, { 148, 2 } },
-	{ 0x0600064E, { 150, 2 } },
-	{ 0x0600064F, { 152, 2 } },
-	{ 0x06000650, { 154, 2 } },
-	{ 0x06000651, { 156, 1 } },
-	{ 0x06000653, { 157, 7 } },
-	{ 0x06000654, { 164, 3 } },
+	{ 0x0200003E, { 0, 4 } },
+	{ 0x020000EF, { 19, 7 } },
+	{ 0x020000F0, { 26, 7 } },
+	{ 0x02000117, { 89, 8 } },
+	{ 0x0200011B, { 97, 49 } },
+	{ 0x0200011C, { 167, 1 } },
+	{ 0x0200011D, { 168, 5 } },
+	{ 0x060001D2, { 4, 3 } },
+	{ 0x060001D3, { 7, 3 } },
+	{ 0x0600041C, { 10, 3 } },
+	{ 0x0600047E, { 13, 3 } },
+	{ 0x0600047F, { 16, 3 } },
+	{ 0x0600055D, { 33, 1 } },
+	{ 0x0600055E, { 34, 1 } },
+	{ 0x0600055F, { 35, 1 } },
+	{ 0x06000565, { 36, 2 } },
+	{ 0x0600056B, { 38, 2 } },
+	{ 0x0600056C, { 40, 2 } },
+	{ 0x0600056D, { 42, 2 } },
+	{ 0x06000570, { 44, 2 } },
+	{ 0x06000571, { 46, 6 } },
+	{ 0x06000572, { 52, 6 } },
+	{ 0x06000573, { 58, 6 } },
+	{ 0x06000575, { 64, 6 } },
+	{ 0x0600058E, { 70, 1 } },
+	{ 0x0600058F, { 71, 1 } },
+	{ 0x06000615, { 72, 3 } },
+	{ 0x06000616, { 75, 5 } },
+	{ 0x06000617, { 80, 4 } },
+	{ 0x06000619, { 84, 3 } },
+	{ 0x0600061A, { 87, 2 } },
+	{ 0x0600064F, { 146, 2 } },
+	{ 0x06000655, { 148, 2 } },
+	{ 0x06000656, { 150, 2 } },
+	{ 0x06000657, { 152, 2 } },
+	{ 0x06000658, { 154, 2 } },
+	{ 0x06000659, { 156, 1 } },
+	{ 0x0600065B, { 157, 7 } },
+	{ 0x0600065C, { 164, 3 } },
 };
 extern const uint32_t g_rgctx_Singleton_1_tEB10BC7581192E8DC4004CC6A80E88A3E42C3444;
 extern const uint32_t g_rgctx_T_t2337B8A22C295A41D129CA0B4B104663AAC37B94;
@@ -5415,7 +5439,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
 {
 	"Assembly-CSharp.dll",
-	1683,
+	1691,
 	s_methodPointers,
 	23,
 	s_adjustorThunks,
