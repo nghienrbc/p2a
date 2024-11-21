@@ -206,9 +206,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1842491405}
-        m_TargetAssemblyTypeName: PlayGameSceneManager, Assembly-CSharp
-        m_MethodName: BteLocationSceneClick
+      - m_Target: {fileID: 1768401057}
+        m_TargetAssemblyTypeName: WebviewTest, Assembly-CSharp
+        m_MethodName: ShowUrlFullScreen
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1039,9 +1039,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1842491405}
-        m_TargetAssemblyTypeName: PlayGameSceneManager, Assembly-CSharp
-        m_MethodName: BtnGameSceneClick
+      - m_Target: {fileID: 1768401057}
+        m_TargetAssemblyTypeName: WebviewTest, Assembly-CSharp
+        m_MethodName: ShowUrlPopupDefault
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1323,7 +1323,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1768401057}
         m_TargetAssemblyTypeName: WebviewTest, Assembly-CSharp
-        m_MethodName: ShowUrlFullScreen
+        m_MethodName: ShowUrlPopupPositionSize
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

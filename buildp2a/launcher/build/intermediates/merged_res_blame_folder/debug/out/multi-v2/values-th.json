@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\Developement\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-th\\values-th.xml",
+            "outputFile": "D:\\ASEAN\\Code\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-th\\values-th.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\transforms-3\\cb0d44f3a40f1ac71628111490f52eab\\transformed\\core-1.13.1\\res\\values-th\\values-th.xml",
+                    "source": "C:\\Users\\Duc Nguyen\\.gradle\\caches\\transforms-3\\cb0d44f3a40f1ac71628111490f52eab\\transformed\\core-1.13.1\\res\\values-th\\values-th.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

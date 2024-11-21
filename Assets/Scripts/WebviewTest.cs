@@ -9,7 +9,7 @@ public class WebviewTest : MonoBehaviour
     public void ShowUrlFullScreen()
     {
         GpmWebView.ShowUrl(
-            "https://google.com/",
+            "https://games.crazygames.com/vi_VN/slingshot-fortress/index.html?v=1.311",
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.FULLSCREEN,
@@ -40,7 +40,7 @@ public class WebviewTest : MonoBehaviour
     public void ShowUrlPopupDefault()
     {
         GpmWebView.ShowUrl(
-            "https://google.com/",
+            "https://play.gamepix.com/makruk-thai-chess/embed",
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.POPUP,
@@ -67,7 +67,7 @@ public class WebviewTest : MonoBehaviour
     public void ShowUrlPopupPositionSize()
     {
         GpmWebView.ShowUrl(
-            "https://google.com/",
+            "https://games.crazygames.com/vi_VN/square-bird/index.html?v=1.311",
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.POPUP,
