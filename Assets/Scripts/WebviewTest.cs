@@ -67,7 +67,7 @@ public class WebviewTest : MonoBehaviour
     public void ShowUrlPopupPositionSize()
     {
         GpmWebView.ShowUrl(
-            "https://games.crazygames.com/vi_VN/square-bird/index.html?v=1.311",
+            "https://s-m.game24h.vn//html5game/o-an-quan/",
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.POPUP,

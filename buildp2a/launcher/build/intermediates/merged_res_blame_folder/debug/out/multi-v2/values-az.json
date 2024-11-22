@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\ASEAN\\Code\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-az\\values-az.xml",
+            "outputFile": "com.Duytan.P2A.launcher-mergeDebugResources-10:/values-az/values-az.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Duc Nguyen\\.gradle\\caches\\transforms-3\\cb0d44f3a40f1ac71628111490f52eab\\transformed\\core-1.13.1\\res\\values-az\\values-az.xml",
+                    "source": "C:\\Users\\Duc Nguyen\\.gradle\\caches\\transforms-3\\1d2713afba6c6d77e7cfe2e489f379ba\\transformed\\core-1.13.1\\res\\values-az\\values-az.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
