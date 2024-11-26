@@ -19,6 +19,18 @@ public class RecordAudio : MonoBehaviour
     private HTTPRequest request;
     private float startTime;
     private float recordingLength;
+     
+    private AudioClip audioClip; // AudioClip để chứa stream audio
+    private bool isPlaying = false;
+
+    private const int sampleRate = 44100; // Sample rate của audio (tùy theo stream của bạn)
+    private int channels = 2;            // Số kênh (1: mono, 2: stereo)
+    private int bufferSize = 8192;       // Kích thước buffer dữ liệu
+
+    private float[] audioBuffer;
+    private int bufferIndex = 0;
+    private bool isStreaming = false;
+
 
     public UnityEvent onAudioFinished; // Sự kiện khi audio kết thúc
 
@@ -83,7 +95,7 @@ public class RecordAudio : MonoBehaviour
 
         myakuController.MyakuThinking();
 
-        string  audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
         if (!File.Exists(audioFilePath))
         {
@@ -116,60 +128,110 @@ public class RecordAudio : MonoBehaviour
 
     private void OnRequestFinished(HTTPRequest req, HTTPResponse resp)
     {
-        try
+        //try
+        //{
+        //    if (resp == null || !resp.IsSuccess)
+        //    {
+        //        request.Dispose(); // Giải phóng tài nguyên trong mọi trường hợp
+        //        Debug.LogError("Error uploading audio: " + (resp != null ? resp.Message : "Unknown error"));
+
+        //        UIManager.Instance.connectionTxt.text = "An error occurred, please help me check the network connection!."; 
+        //        myakuController.animator.SetTrigger("hello");
+
+        //        return;
+        //    }
+
+        //    Debug.Log("Audio uploaded successfully. Processing response..."); 
+        //    // Nhận file audio trả về từ server
+        //    byte[] responseAudioData = resp.Data;
+
+        //    // Phát audio nhận về
+        //    StartCoroutine(PlayReceivedAudio(responseAudioData));
+        //}
+        //finally
+        //{
+        //    request.Dispose(); // Giải phóng tài nguyên trong mọi trường hợp
+        //    isRequestInProgress = false;
+        //}  
+        if (resp.IsSuccess)
         {
-            if (resp == null || !resp.IsSuccess)
-            {
-                request.Dispose(); // Giải phóng tài nguyên trong mọi trường hợp
-                Debug.LogError("Error uploading audio: " + (resp != null ? resp.Message : "Unknown error"));
-
-                UIManager.Instance.connectionTxt.text = "An error occurred, please help me check the network connection!."; 
-                myakuController.animator.SetTrigger("hello");
-
-                return;
-            }
-
-            Debug.Log("Audio uploaded successfully. Processing response..."); 
-            // Nhận file audio trả về từ server
-            byte[] responseAudioData = resp.Data;
-
-            // Phát audio nhận về
-            StartCoroutine(PlayReceivedAudio(responseAudioData));
+            // Phản hồi thành công, đọc stream audio từ response
+            StartCoroutine(PlayAudioStream(resp));
         }
-        finally
+        else
         {
-            request.Dispose(); // Giải phóng tài nguyên trong mọi trường hợp
-            isRequestInProgress = false;
-        }  
+            Debug.LogError("Failed to load audio: " + resp.StatusCode);
+        }
     }
 
-    private IEnumerator PlayReceivedAudio(byte[] audioData)
+    IEnumerator PlayAudioStream(HTTPResponse response)
     {
-        // Lưu file audio nhận được vào bộ nhớ tạm
-        string tempFilePath = Path.Combine(Application.temporaryCachePath, "processed_audio.mp3");
-        File.WriteAllBytes(tempFilePath, audioData);
+        // Đọc dữ liệu từ stream
+        var audioStream = response.DataAsStream;
 
-        // Tải audio file vào AudioClip
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + tempFilePath, AudioType.MPEG))
+        // Tạo AudioClip từ stream
+        audioClip = AudioClip.Create("StreamedAudio", (int)audioStream.Length, 1, 44100, false);
+
+        // Đọc từng phần dữ liệu stream và cập nhật vào AudioClip
+        float[] audioData = new float[audioStream.Length / 2]; // Giả sử mỗi sample là 2 bytes (16-bit PCM)
+        int bytesRead = 0;
+
+        while (bytesRead < audioStream.Length)
         {
-            yield return www.SendWebRequest();
+            // Đọc dữ liệu từ stream
+            int chunkSize = Mathf.Min(1024, audioStream.Length - bytesRead); // Đọc theo từng phần nhỏ
+            byte[] buffer = new byte[chunkSize];
+            int bytesReadThisTime = audioStream.Read(buffer, 0, chunkSize);
 
-            if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+            // Chuyển byte sang float và cập nhật AudioClip
+            for (int i = 0; i < bytesReadThisTime / 2; i++)
             {
-                Debug.LogError("Error loading audio: " + www.error);
-                yield break;
+                audioData[i] = (short)(buffer[i * 2] | buffer[i * 2 + 1] << 8) / 32768.0f; // Định dạng 16-bit PCM
             }
 
-            AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+            // Update audio clip với dữ liệu mới
+            audioClip.SetData(audioData, 0);
+            bytesRead += bytesReadThisTime;
 
-            myakuController.MyakuAnswer();
-            // Phát audio nhận về
-            audioSource.clip = audioClip;
-            audioSource.Play();
-            Debug.Log("Playing received audio.");
-            StartCoroutine(CheckAudioFinished());
+            // Phát âm thanh khi đã nhận đủ dữ liệu
+            if (!isPlaying && bytesRead >= audioStream.Length)
+            {
+                audioSource.clip = audioClip;
+                audioSource.Play();
+                isPlaying = true;
+            }
+
+            yield return null; // Chờ cho đến frame tiếp theo
         }
     }
+
+    //private IEnumerator PlayReceivedAudio(byte[] audioData)
+    //{
+    //    // Lưu file audio nhận được vào bộ nhớ tạm
+    //    string tempFilePath = Path.Combine(Application.temporaryCachePath, "processed_audio.mp3");
+    //    File.WriteAllBytes(tempFilePath, audioData);
+
+    //    // Tải audio file vào AudioClip
+    //    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + tempFilePath, AudioType.MPEG))
+    //    {
+    //        yield return www.SendWebRequest();
+
+    //        if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+    //        {
+    //            Debug.LogError("Error loading audio: " + www.error);
+    //            yield break;
+    //        }
+
+    //        AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+
+    //        myakuController.MyakuAnswer();
+    //        // Phát audio nhận về
+    //        audioSource.clip = audioClip;
+    //        audioSource.Play();
+    //        Debug.Log("Playing received audio.");
+    //        StartCoroutine(CheckAudioFinished());
+    //    }
+    //}
 
     private System.Collections.IEnumerator CheckAudioFinished()
     {
