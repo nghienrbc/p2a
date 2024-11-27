@@ -147,7 +147,23 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("Uploading audio...");
         request.Send();
 
+
+        //yield return new WaitUntil(() => request.IsDone);
         yield return new WaitUntil(() => !isRequestInProgress);
+        // Nếu yêu cầu thành công, bắt đầu phát âm thanh
+        if (request.Response.IsSuccess)
+        {
+
+            Debug.Log("không ổn dồi...");
+            byte[] resAudioData = request.Response.Data;
+            AudioClip audioClip = WavUtility.ToAudioClip(resAudioData, "AudioStream");
+            audioSource.clip = audioClip;
+            audioSource.Play();
+        }
+        else
+        {
+            Debug.LogError("Audio stream failed: " + request.Response.StatusCode);
+        }
     }
 
     private void OnRequestFinished(HTTPRequest req, HTTPResponse resp)
@@ -170,7 +186,7 @@ public class RecordAudio : MonoBehaviour
             byte[] responseAudioData = resp.Data;
 
             // Phát audio nhận về
-            StartCoroutine(PlayReceivedAudio(responseAudioData));
+           StartCoroutine(PlayReceivedAudio(responseAudioData));
         }
         finally
         {
