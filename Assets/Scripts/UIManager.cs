@@ -39,7 +39,8 @@ public class UIManager : MonoBehaviour
     public PanelMover mapPanel;
     public PanelMover cameraPanel;
     public PanelMover mapDetailPanel;
-    public PanelMover LocationPanel;
+    public PanelMover locationPanel;
+    public PanelMover gamePanel;
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
     public MyakuController myakuController;
@@ -120,19 +121,11 @@ public class UIManager : MonoBehaviour
     private IEnumerator MovePanelsAfterInitialization()
     {
         // Đợi cho đến khi frame đầu tiên kết thúc để đảm bảo tất cả panel đã khởi tạo
-        yield return new WaitForEndOfFrame();
-        //foreach (PanelSettings settings in panelsToControl)
-        //{
-        //    // Kiểm tra nếu enable_move được bật
-        //    if (settings.enable_move && settings.panelMover != null)
-        //    {
-        //        // Di chuyển panel theo hướng và trạng thái moveOutOrIn
-        //        settings.panelMover.MovePanel(settings.moveDirection, settings.moveOutOrIn, settings.moveSpeed);
-        //    }
-        //}
+        yield return new WaitForEndOfFrame(); 
         MovePanel(cameraPanel, PanelMover.Direction.Up, true, 0);
         MovePanel(mapPanel, PanelMover.Direction.Up, true, 0);
-       MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 0);
+        MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 0);
+        MovePanel(gamePanel, PanelMover.Direction.Left, true, 0);
     }
 
 
@@ -351,14 +344,14 @@ public class UIManager : MonoBehaviour
         if (receivedData.Trim() == "1")
         {
             // Xử lý khi nhận được true, ví dụ bật một đối tượng
-            if (UIManager.Instance.functionName == "home")
+            if (UIManager.Instance.functionName == "camera")
+            {
+                takePhotoAndUpload.SaveImage();
+            }
+            else
             {
                 recorder.StartRecording();
                 recordingIndicator.gameObject.SetActive(true);
-            }
-            else if (UIManager.Instance.functionName == "camera")
-            {
-                takePhotoAndUpload.SaveImage();
             }
             Debug.Log("Button is pressed");
         }
@@ -468,7 +461,7 @@ public class UIManager : MonoBehaviour
         {
             //Debug.Log("close button click");
             //ShowHidePanel(mapPanel, ShowHide.Hide, 0.5f);
-            ShowHidePanel(LocationPanel, ShowHide.Hide, 0.5f);
+            ShowHidePanel(locationPanel, ShowHide.Hide, 0.5f);
 
             UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);

@@ -64,10 +64,10 @@ public class WebviewTest : MonoBehaviour
     }
 
     // Popup custom position and size
-    public void ShowUrlPopupPositionSize()
+    public void ShowUrlPopupPositionSize(string url)
     {
         GpmWebView.ShowUrl(
-            "https://s-m.game24h.vn//html5game/o-an-quan/",
+            url,
             new GpmWebViewRequest.Configuration()
             {
                 style = GpmWebViewStyle.POPUP,
@@ -94,6 +94,7 @@ public class WebviewTest : MonoBehaviour
             isMaskViewVisible = true,
 #endif
         }, null, null);
+        UIManager.Instance.MoveMyaku(true);
     }
 
     // Popup custom margins
@@ -144,6 +145,7 @@ public class WebviewTest : MonoBehaviour
                 {
                     Debug.LogFormat("Fail to close WebView. Error:{0}", error);
                 }
+                UIManager.Instance.MoveMyaku(false);
                 break;
             case GpmWebViewCallback.CallbackType.PageStarted:
                 if (string.IsNullOrEmpty(data) == false)

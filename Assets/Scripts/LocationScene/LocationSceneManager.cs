@@ -117,7 +117,7 @@ public class LocationSceneManager : MonoBehaviour
            // Location location = locations.First();
             locationPanel.gameObject.SetActive(true);
 
-            UIManager.Instance.ShowHidePanel(UIManager.Instance.LocationPanel, MyGame.Enums.ShowHide.Show, 0.5f);
+            UIManager.Instance.ShowHidePanel(UIManager.Instance.locationPanel, MyGame.Enums.ShowHide.Show, 0.5f);
 
             locationNameTxt.text = locations.First().location_name;
             locationInfoTxt.text = locations.First().location_description;
@@ -304,7 +304,7 @@ public class LocationSceneManager : MonoBehaviour
                 RectTransform imageRectTransform = newImageObj.GetComponent<RectTransform>();
 
                 // Lấy chiều cao của ScrollView
-                float scrollViewHeight = ((RectTransform)content).rect.height;
+                float scrollViewHeight = ((RectTransform)content).rect.width;
 
                 // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
                 imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
