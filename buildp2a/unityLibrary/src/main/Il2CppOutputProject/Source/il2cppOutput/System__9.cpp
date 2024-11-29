@@ -28388,7 +28388,7 @@ IL_0020:
 		Il2CppChar L_16 = ___0_input;
 		NullCheck(L_15);
 		Il2CppChar L_17;
-		L_17 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_15, L_16);
+		L_17 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_15, L_16);
 		___0_input = L_17;
 		goto IL_006a;
 	}
@@ -28412,7 +28412,7 @@ IL_004e:
 		Il2CppChar L_22 = ___0_input;
 		NullCheck(L_21);
 		Il2CppChar L_23;
-		L_23 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(9, L_21, L_22);
+		L_23 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(10, L_21, L_22);
 		___0_input = L_23;
 	}
 

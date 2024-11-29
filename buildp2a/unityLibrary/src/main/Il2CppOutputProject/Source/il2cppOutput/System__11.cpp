@@ -272,6 +272,7 @@ struct Delegate_t;
 struct DelegateData_t9B286B493293CD2D23A5B2B5EF0E5B1324C2B77E;
 struct DelegatingTypeDescriptionProvider_tD558985CB6DA5A64F97D00287158CE755F7AFEE8;
 struct DesignerAttribute_t52B0DE7CF80C5AFFCFCA49F6ABB6609BB9E99355;
+struct DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A;
 struct EditorAttribute_t1397B216132A6B45128F224DA0C7113354F8FB3C;
 struct EventArgs_t37273F03EAC87217701DD431B190FBD84AD7C377;
 struct EventDescriptor_t3EAC449428E29E0D0C8DE9FCC6494E5C05A3260A;
@@ -307,7 +308,6 @@ struct ISurrogateSelector_t35CC72FCAD57FCB71968799C400627F09E81FB01;
 struct ITypeDescriptorContext_t514D0B45A781ED18AB6A0DC6673A95B8359443F4;
 struct ITypeDescriptorFilterService_tE74C52FB36A71D62CA3617553D830DA6BBBBA788;
 struct InstanceDescriptor_t19684A5B2EDEBF906D50F65DC39F9B4D5E0843A5;
-struct InvalidDataException_t9D62CAAA10DD31CCD9C0F92AA5729A05282F18A1;
 struct InvalidOperationException_t5DDE4D49B7405FAAB1E4576F4715A42A3FAD4BAB;
 struct LicenseContext_t0F17AF9215C4B143A5A88216684CC066F09FFAF1;
 struct MemberDescriptor_t1CEA84A7BBAFDB04A9E6E23F2FBEED59F01172A7;
@@ -358,7 +358,6 @@ struct StringBuilder_t;
 struct StringCollection_t3C8ACD597B2EB7592031E5240BDDD4102223BDBE;
 struct StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06;
 struct StrongNameKeyPair_t0657447B6CFAA8FE880A228AA578EC20BC6AF8F2;
-struct SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295;
 struct TextInfo_tD3BAFCFD77418851E7D5CB8D2588F47019E414B4;
 struct TraceSwitch_t199A0DB240149B5CDCF2754FC0E11CCBF51224B4;
 struct Type_t;
@@ -602,7 +601,6 @@ IL2CPP_EXTERN_C String_t* _stringLiteral6F42498ADE17E452CCFC96AF356C74D51ACA0524
 IL2CPP_EXTERN_C String_t* _stringLiteral6F60E896CBE94313C35CDF8C33C899216DA269EF;
 IL2CPP_EXTERN_C String_t* _stringLiteral6FEF7F07E4E5C8758103389685FF14ABCB30BD0B;
 IL2CPP_EXTERN_C String_t* _stringLiteral751F5076C7A89E0EBF4B8BBF42D19173A068D0FE;
-IL2CPP_EXTERN_C String_t* _stringLiteral78EAF77F0338972A1440C4FF28DA2B20A9586104;
 IL2CPP_EXTERN_C String_t* _stringLiteral7A4031343C4BF504EC9F4A28169986445F910C6A;
 IL2CPP_EXTERN_C String_t* _stringLiteral7FCF7A87CABC373319B2F3FA01CF5A0164A66AFA;
 IL2CPP_EXTERN_C String_t* _stringLiteral8398C464CEF2A8E224363DAF635848402299705A;
@@ -1449,6 +1447,12 @@ struct DesignerAttribute_t52B0DE7CF80C5AFFCFCA49F6ABB6609BB9E99355  : public Att
 	String_t* ___designerBaseTypeName;
 	String_t* ___typeId;
 };
+struct DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A  : public Attribute_tFDA8EFEFB0711976D22474794576DAF28F7440AA
+{
+	String_t* ____typeId;
+	String_t* ___U3CSerializerTypeNameU3Ek__BackingField;
+	String_t* ___U3CSerializerBaseTypeNameU3Ek__BackingField;
+};
 struct DictionaryEntry_t171080F37B311C25AA9E75888F9C9D703FA721BB 
 {
 	RuntimeObject* ____key;
@@ -2000,9 +2004,6 @@ struct FileInfo_t62782BBAFA832A78724E4CF2EE96548B8466AB1C  : public FileSystemIn
 struct InvalidCastException_t47FC62F21A3937E814D20381DDACEF240E95AC2E  : public SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295
 {
 };
-struct InvalidDataException_t9D62CAAA10DD31CCD9C0F92AA5729A05282F18A1  : public SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295
-{
-};
 struct InvalidOperationException_t5DDE4D49B7405FAAB1E4576F4715A42A3FAD4BAB  : public SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295
 {
 };
@@ -2279,6 +2280,7 @@ struct WeakHashtable_t56A27CA9C3EEBBCD3B87B4DFE255DB3830C535C3_StaticFields
 struct AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F_StaticFields
 {
 	String_t* ____process_guid;
+	AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F* ___default_domain;
 };
 struct AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F_ThreadStaticFields
 {
@@ -3078,6 +3080,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void LicenseContext__ctor_mD0A723B61016C22083
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void TraceSwitch__ctor_m775278D7946F29D7A7939D2048CA72DBCB0A5ABF (TraceSwitch_t199A0DB240149B5CDCF2754FC0E11CCBF51224B4* __this, String_t* ___0_displayName, String_t* ___1_description, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BinaryFormatter__ctor_m484DBB5D742624C3A8190921A85458BCECBB1705 (BinaryFormatter_t5A79B3E3328D1B8FDE8C57D1E17668AD47A4466F* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1 (String_t* ___0_a, String_t* ___1_b, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR String_t* DesignerSerializerAttribute_get_SerializerBaseTypeName_mA5CAA6A901E66DEF6DBDBC1F57AB098CC851610C_inline (DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void InstanceDescriptor__ctor_m9AA7C372C2EEDA3F07BE3A6CCC21BCBD3814B64F (InstanceDescriptor_t19684A5B2EDEBF906D50F65DC39F9B4D5E0843A5* __this, MemberInfo_t* ___0_member, RuntimeObject* ___1_arguments, bool ___2_isComplete, const RuntimeMethod* method) ;
 inline ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918* Array_Empty_TisRuntimeObject_mFB8A63D602BB6974D31E20300D9EB89C6FE7C278_inline (const RuntimeMethod* method)
 {
@@ -3176,10 +3179,6 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ArgumentOutOfRangeException__ctor_mE5B27
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06* StringComparer_get_InvariantCultureIgnoreCase_m736E26B9A455C50799BF69D87F2E076C272337B1_inline (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CaseInsensitiveComparer__ctor_mCB4043516ED08874EE7AA38C56A3C3E016F4DA1E (CaseInsensitiveComparer_t451E7BFCF626D7D4BE4854A4D57A6BE41AB2A281* __this, CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* ___0_culture, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void CaseInsensitiveHashCodeProvider__ctor_mE5326CFE4A3269CC813CCF1ADF2E57529E902C4B (CaseInsensitiveHashCodeProvider_tF498D8C952B58B677A9C869EE6A4BC750A3FF03F* __this, CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* ___0_culture, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* Locale_GetText_m7BA18BC14D3028C4C4722E220800563188DA3600 (String_t* ___0_msg, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SystemException__ctor_mC481DFD60F19362A0B3523FBD5E429EC4F1F3FB5 (SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295* __this, String_t* ___0_message, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Exception_set_HResult_m010A171183E240EBF4F7611E924B533FAB2E471F_inline (Exception_t* __this, int32_t ___0_value, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SystemException__ctor_mA2BB392E0F4CD8A4C132984F76B7A9FBDB3B6879 (SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295* __this, SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ___0_info, StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 ___1_context, const RuntimeMethod* method) ;
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
@@ -22687,6 +22686,89 @@ IL_0043:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void DesignerSerializerAttribute__ctor_mC83F4D8E04A7A19844EBD2711D9010D57CE19F43 (DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A* __this, String_t* ___0_serializerTypeName, String_t* ___1_baseSerializerTypeName, const RuntimeMethod* method) 
+{
+	{
+		Attribute__ctor_m79ED1BF1EE36D1E417BA89A0D9F91F8AAD8D19E2(__this, NULL);
+		String_t* L_0 = ___0_serializerTypeName;
+		__this->___U3CSerializerTypeNameU3Ek__BackingField = L_0;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->___U3CSerializerTypeNameU3Ek__BackingField), (void*)L_0);
+		String_t* L_1 = ___1_baseSerializerTypeName;
+		__this->___U3CSerializerBaseTypeNameU3Ek__BackingField = L_1;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->___U3CSerializerBaseTypeNameU3Ek__BackingField), (void*)L_1);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DesignerSerializerAttribute_get_SerializerBaseTypeName_mA5CAA6A901E66DEF6DBDBC1F57AB098CC851610C (DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A* __this, const RuntimeMethod* method) 
+{
+	{
+		String_t* L_0 = __this->___U3CSerializerBaseTypeNameU3Ek__BackingField;
+		return L_0;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* DesignerSerializerAttribute_get_TypeId_mEB1ED84888A725B0C17DA9D47A7C25C351DF5E84 (DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A* __this, const RuntimeMethod* method) 
+{
+	String_t* V_0 = NULL;
+	int32_t V_1 = 0;
+	{
+		String_t* L_0 = __this->____typeId;
+		if (L_0)
+		{
+			goto IL_003c;
+		}
+	}
+	{
+		String_t* L_1;
+		L_1 = DesignerSerializerAttribute_get_SerializerBaseTypeName_mA5CAA6A901E66DEF6DBDBC1F57AB098CC851610C_inline(__this, NULL);
+		V_0 = L_1;
+		String_t* L_2 = V_0;
+		NullCheck(L_2);
+		int32_t L_3;
+		L_3 = String_IndexOf_mE21E78F35EF4A7768E385A72814C88D22B689966(L_2, ((int32_t)44), NULL);
+		V_1 = L_3;
+		int32_t L_4 = V_1;
+		if ((((int32_t)L_4) == ((int32_t)(-1))))
+		{
+			goto IL_0025;
+		}
+	}
+	{
+		String_t* L_5 = V_0;
+		int32_t L_6 = V_1;
+		NullCheck(L_5);
+		String_t* L_7;
+		L_7 = String_Substring_mB1D94F47935D22E130FF2C01DBB6A4135FBB76CE(L_5, 0, L_6, NULL);
+		V_0 = L_7;
+	}
+
+IL_0025:
+	{
+		Type_t* L_8;
+		L_8 = Object_GetType_mE10A8FC1E57F3DF29972CCBC026C2DC3942263B3(__this, NULL);
+		NullCheck(L_8);
+		String_t* L_9;
+		L_9 = VirtualFuncInvoker0< String_t* >::Invoke(27, L_8);
+		String_t* L_10 = V_0;
+		String_t* L_11;
+		L_11 = String_Concat_m9E3155FB84015C823606188F53B47CB44C444991(L_9, L_10, NULL);
+		__this->____typeId = L_11;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->____typeId), (void*)L_11);
+	}
+
+IL_003c:
+	{
+		String_t* L_12 = __this->____typeId;
+		return L_12;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void InstanceDescriptor__ctor_m4A88597D681C8A8A9551AB318F8CBB47D49BEC57 (InstanceDescriptor_t19684A5B2EDEBF906D50F65DC39F9B4D5E0843A5* __this, MemberInfo_t* ___0_member, RuntimeObject* ___1_arguments, const RuntimeMethod* method) 
 {
 	{
@@ -28328,48 +28410,6 @@ IL_001a:
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Winvalid-offsetof"
-#pragma clang diagnostic ignored "-Wunused-variable"
-#endif
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void InvalidDataException__ctor_mE85BD9741C8A2C6D03128821898A587169DA0C41 (InvalidDataException_t9D62CAAA10DD31CCD9C0F92AA5729A05282F18A1* __this, const RuntimeMethod* method) 
-{
-	static bool s_Il2CppMethodInitialized;
-	if (!s_Il2CppMethodInitialized)
-	{
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral78EAF77F0338972A1440C4FF28DA2B20A9586104);
-		s_Il2CppMethodInitialized = true;
-	}
-	{
-		String_t* L_0;
-		L_0 = Locale_GetText_m7BA18BC14D3028C4C4722E220800563188DA3600(_stringLiteral78EAF77F0338972A1440C4FF28DA2B20A9586104, NULL);
-		SystemException__ctor_mC481DFD60F19362A0B3523FBD5E429EC4F1F3FB5(__this, L_0, NULL);
-		Exception_set_HResult_m010A171183E240EBF4F7611E924B533FAB2E471F_inline(__this, ((int32_t)-2146233085), NULL);
-		return;
-	}
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void InvalidDataException__ctor_m514879053D89E3C8229A01AA8970237FA5409532 (InvalidDataException_t9D62CAAA10DD31CCD9C0F92AA5729A05282F18A1* __this, String_t* ___0_message, const RuntimeMethod* method) 
-{
-	{
-		String_t* L_0 = ___0_message;
-		SystemException__ctor_mC481DFD60F19362A0B3523FBD5E429EC4F1F3FB5(__this, L_0, NULL);
-		Exception_set_HResult_m010A171183E240EBF4F7611E924B533FAB2E471F_inline(__this, ((int32_t)-2146233085), NULL);
-		return;
-	}
-}
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void InvalidDataException__ctor_m076999CA4741F42158DAC11C78DDA17F00FCDE2B (InvalidDataException_t9D62CAAA10DD31CCD9C0F92AA5729A05282F18A1* __this, SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ___0_info, StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 ___1_context, const RuntimeMethod* method) 
-{
-	{
-		SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* L_0 = ___0_info;
-		StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 L_1 = ___1_context;
-		SystemException__ctor_mA2BB392E0F4CD8A4C132984F76B7A9FBDB3B6879(__this, L_0, L_1, NULL);
-		return;
-	}
-}
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR String_t* TypeConverterAttribute_get_ConverterTypeName_mBBE5335F11FC13345D2828866172BB5DDF9F3E45_inline (TypeConverterAttribute_t2E0AA4000E0B7A66DFC1E10B80ED2386764026C3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -28545,6 +28585,13 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR String_t* AssemblyName_get_Name_m
 		return L_0;
 	}
 }
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR String_t* DesignerSerializerAttribute_get_SerializerBaseTypeName_mA5CAA6A901E66DEF6DBDBC1F57AB098CC851610C_inline (DesignerSerializerAttribute_tAE3F34713747A8811944481A6B5D640728163A0A* __this, const RuntimeMethod* method) 
+{
+	{
+		String_t* L_0 = __this->___U3CSerializerBaseTypeNameU3Ek__BackingField;
+		return L_0;
+	}
+}
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR RuntimeObject* InstanceDescriptor_get_Arguments_mF64376FB377AA57CC10376452FECFDC55C6EC837_inline (InstanceDescriptor_t19684A5B2EDEBF906D50F65DC39F9B4D5E0843A5* __this, const RuntimeMethod* method) 
 {
 	{
@@ -28599,14 +28646,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR StringComparer_t6268F19CA34879176
 		il2cpp_codegen_runtime_class_init_inline(StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06_il2cpp_TypeInfo_var);
 		CultureAwareComparer_t5822A6535A6EB4C448D1B7736067D1188BAEE8CD* L_0 = ((StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06_StaticFields*)il2cpp_codegen_static_fields_for(StringComparer_t6268F19CA34879176651429C0D8A3D0002BB8E06_il2cpp_TypeInfo_var))->___s_invariantCultureIgnoreCase;
 		return L_0;
-	}
-}
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Exception_set_HResult_m010A171183E240EBF4F7611E924B533FAB2E471F_inline (Exception_t* __this, int32_t ___0_value, const RuntimeMethod* method) 
-{
-	{
-		int32_t L_0 = ___0_value;
-		__this->____HResult = L_0;
-		return;
 	}
 }
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918* Array_Empty_TisRuntimeObject_mFB8A63D602BB6974D31E20300D9EB89C6FE7C278_gshared_inline (const RuntimeMethod* method) 

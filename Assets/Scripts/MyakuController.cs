@@ -51,6 +51,10 @@ public class MyakuController : MonoBehaviour
         
         UIManager.Instance.connectionTxt.text = "OK! Here is my answer";
     }
+    public void MyakuCountForShootPhoto()
+    {
+        animator.SetTrigger("takephoto");
+    }
 
     public void MoveMyakuToFarPossition()
     {

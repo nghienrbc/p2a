@@ -168,6 +168,7 @@ struct Delegate_t;
 struct DelegateData_t9B286B493293CD2D23A5B2B5EF0E5B1324C2B77E;
 struct DivideByZeroException_tC43171E50A38F5CD4242D258D0B0C6B74898C279;
 struct DllNotFoundException_t8CAE636A394C482C9FCF38FB7B7929506319D534;
+struct DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723;
 struct EntryPointNotFoundException_t15F4C4ABBCF00C39FC1C2C903F15DF41055C1743;
 struct EventArgs_t37273F03EAC87217701DD431B190FBD84AD7C377;
 struct EventHandler_tC6323FD7E6163F965259C33D72612C0E5B9BAB82;
@@ -230,6 +231,7 @@ IL2CPP_EXTERN_C RuntimeClass* DateTimeParse_t4FB3E2A513F1775F6B2EC5C0762DC7CA2E6
 IL2CPP_EXTERN_C RuntimeClass* DateTime_t66193957C73913903DDAD89FEDC46139BCA5802D_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* DaylightTime_tD25E40D1890DA32AE08CEED9E611D21180F925EE_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Double_tE150EF3D1D43DEE85D533810AB4C742307EEDE5F_il2cpp_TypeInfo_var;
+IL2CPP_EXTERN_C RuntimeClass* DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* EventArgs_t37273F03EAC87217701DD431B190FBD84AD7C377_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* FormatException_tCD210E92627903FFEDAAA706C08FB6222B4D012B_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Func_1_tD3BAAA914BE2AFD64735F23C13992306EDD4454C_il2cpp_TypeInfo_var;
@@ -358,6 +360,7 @@ IL2CPP_EXTERN_C String_t* _stringLiteralB655C47A0A1F6AF4DCDB6B7A1506B8EFB729C8BF
 IL2CPP_EXTERN_C String_t* _stringLiteralB7E7D625DFBC9C92FA0449D5E3E0BE263DECD0EA;
 IL2CPP_EXTERN_C String_t* _stringLiteralBB62E92766460DDF2A10079AF8CE4DDDFD86586A;
 IL2CPP_EXTERN_C String_t* _stringLiteralBF45CADC16AD267EA891B4231D162B68FDED748D;
+IL2CPP_EXTERN_C String_t* _stringLiteralC081BB60FA285F18D5FB7608A209BF4FBFB19C3D;
 IL2CPP_EXTERN_C String_t* _stringLiteralC2F9A94ED8684F4AE51F264CC8E83B9731EAE480;
 IL2CPP_EXTERN_C String_t* _stringLiteralCB055AAEFA4D412DEC5D12DE4C0BA4F2A3850EE7;
 IL2CPP_EXTERN_C String_t* _stringLiteralCB0A78B035105B2CCEB9174377B59BDBD1095C96;
@@ -1414,6 +1417,9 @@ struct DivideByZeroException_tC43171E50A38F5CD4242D258D0B0C6B74898C279  : public
 struct DllNotFoundException_t8CAE636A394C482C9FCF38FB7B7929506319D534  : public TypeLoadException_t6333E3083F7BFF1A582969E6F67ACBA8B0035C32
 {
 };
+struct DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723  : public ArgumentException_tAD90411542A20A9C72D5CDA3A84181D8B947A263
+{
+};
 struct EntryPointNotFoundException_t15F4C4ABBCF00C39FC1C2C903F15DF41055C1743  : public TypeLoadException_t6333E3083F7BFF1A582969E6F67ACBA8B0035C32
 {
 };
@@ -1578,6 +1584,10 @@ struct SerializationException_t09D5CC39CEF9CC37AC9D2E0C6DBE050B4E3F8CA7_StaticFi
 struct __DTString_t732683AF9A8EEC82B66C136920240C4033EF0637_StaticFields
 {
 	CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB* ___WhiteSpaceChecks;
+};
+struct DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_StaticFields
+{
+	String_t* ___s_duplicateWaitObjectMessage;
 };
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -2119,6 +2129,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Decimal_tDA6C877282B2D789CF97C0949661CC11D643
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Decimal_tDA6C877282B2D789CF97C0949661CC11D643969F Double_System_IConvertible_ToDecimal_m85928A32723C1E26C9EC2F91D9F67560B84C329E (double* __this, RuntimeObject* ___0_provider, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR DateTime_t66193957C73913903DDAD89FEDC46139BCA5802D Double_System_IConvertible_ToDateTime_m18B8B48632B59B918FE758F033129ED0CADEF7B0 (double* __this, RuntimeObject* ___0_provider, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* Double_System_IConvertible_ToType_m3D460190E7F9A622C80CE98B28C50CDEC62662B6 (double* __this, Type_t* ___0_type, RuntimeObject* ___1_provider, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DuplicateWaitObjectException_get_DuplicateWaitObjectMessage_m4BD300B17A89C31A080A68DB7F9D90156EEBAF47 (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ArgumentException__ctor_mB4FA5CCA0CDB08730E9ED40FA935BA38C032D83A (ArgumentException_tAD90411542A20A9C72D5CDA3A84181D8B947A263* __this, SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ___0_info, StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 ___1_context, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void EventArgs__ctor_mC6F9412D03203ADEF854117542C8EBF61624C8C3 (EventArgs_t37273F03EAC87217701DD431B190FBD84AD7C377* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SystemException__ctor_mC481DFD60F19362A0B3523FBD5E429EC4F1F3FB5 (SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295* __this, String_t* ___0_message, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SystemException__ctor_mA2BB392E0F4CD8A4C132984F76B7A9FBDB3B6879 (SystemException_tCC48D868298F4C0705279823E34B00F4FBDB7295* __this, SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ___0_info, StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 ___1_context, const RuntimeMethod* method) ;
@@ -10530,6 +10542,63 @@ IL2CPP_EXTERN_C  RuntimeObject* Double_System_IConvertible_ToType_m3D460190E7F9A
 	RuntimeObject* _returnValue;
 	_returnValue = Double_System_IConvertible_ToType_m3D460190E7F9A622C80CE98B28C50CDEC62662B6(_thisAdjusted, ___0_type, ___1_provider, method);
 	return _returnValue;
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DuplicateWaitObjectException_get_DuplicateWaitObjectMessage_m4BD300B17A89C31A080A68DB7F9D90156EEBAF47 (const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteralC081BB60FA285F18D5FB7608A209BF4FBFB19C3D);
+		s_Il2CppMethodInitialized = true;
+	}
+	{
+		String_t* L_0 = ((DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_StaticFields*)il2cpp_codegen_static_fields_for(DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var))->___s_duplicateWaitObjectMessage;
+		il2cpp_codegen_memory_barrier();
+		if (L_0)
+		{
+			goto IL_0015;
+		}
+	}
+	{
+		il2cpp_codegen_memory_barrier();
+		((DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_StaticFields*)il2cpp_codegen_static_fields_for(DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var))->___s_duplicateWaitObjectMessage = _stringLiteralC081BB60FA285F18D5FB7608A209BF4FBFB19C3D;
+		Il2CppCodeGenWriteBarrier((void**)(&((DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_StaticFields*)il2cpp_codegen_static_fields_for(DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var))->___s_duplicateWaitObjectMessage), (void*)_stringLiteralC081BB60FA285F18D5FB7608A209BF4FBFB19C3D);
+	}
+
+IL_0015:
+	{
+		String_t* L_1 = ((DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_StaticFields*)il2cpp_codegen_static_fields_for(DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723_il2cpp_TypeInfo_var))->___s_duplicateWaitObjectMessage;
+		il2cpp_codegen_memory_barrier();
+		return L_1;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void DuplicateWaitObjectException__ctor_mC2D960E900D3B471CBDCF589F736A0040B25B181 (DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723* __this, const RuntimeMethod* method) 
+{
+	{
+		String_t* L_0;
+		L_0 = DuplicateWaitObjectException_get_DuplicateWaitObjectMessage_m4BD300B17A89C31A080A68DB7F9D90156EEBAF47(NULL);
+		ArgumentException__ctor_m026938A67AF9D36BB7ED27F80425D7194B514465(__this, L_0, NULL);
+		Exception_set_HResult_m010A171183E240EBF4F7611E924B533FAB2E471F_inline(__this, ((int32_t)-2146233047), NULL);
+		return;
+	}
+}
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void DuplicateWaitObjectException__ctor_m533FA1A91A0334110470B3E3FAAED28C49FBC221 (DuplicateWaitObjectException_tF47283BB06EFE276EF9145376D9124BB307A1723* __this, SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ___0_info, StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 ___1_context, const RuntimeMethod* method) 
+{
+	{
+		SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* L_0 = ___0_info;
+		StreamingContext_t56760522A751890146EE45F82F866B55B7E33677 L_1 = ___1_context;
+		ArgumentException__ctor_mB4FA5CCA0CDB08730E9ED40FA935BA38C032D83A(__this, L_0, L_1, NULL);
+		return;
+	}
 }
 #ifdef __clang__
 #pragma clang diagnostic pop

@@ -7815,7 +7815,7 @@ CATCH_000e:
 		TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_3 = V_0;
 		NullCheck(L_3);
 		uint8_t L_4;
-		L_4 = VirtualFuncInvoker0< uint8_t >::Invoke(13, L_3);
+		L_4 = VirtualFuncInvoker0< uint8_t >::Invoke(16, L_3);
 		TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_5 = V_0;
 		VirtualActionInvoker3< uint8_t, String_t*, Exception_t* >::Invoke(12, __this, L_4, ((String_t*)il2cpp_codegen_initialize_runtime_metadata_inline((uintptr_t*)&_stringLiteral611C94FC30E43698E7F2C06CC525082A41D50E80)), L_5);
 		TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_6 = V_0;
@@ -7985,7 +7985,7 @@ IL_007f:
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_17 = V_1;
 			NullCheck(L_17);
 			uint8_t L_18;
-			L_18 = VirtualFuncInvoker0< uint8_t >::Invoke(13, L_17);
+			L_18 = VirtualFuncInvoker0< uint8_t >::Invoke(16, L_17);
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_19 = V_1;
 			VirtualActionInvoker3< uint8_t, String_t*, Exception_t* >::Invoke(12, __this, L_18, ((String_t*)il2cpp_codegen_initialize_runtime_metadata_inline((uintptr_t*)&_stringLiteral611C94FC30E43698E7F2C06CC525082A41D50E80)), L_19);
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_20 = V_1;
@@ -8149,7 +8149,7 @@ IL_003f:
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_11 = V_0;
 			NullCheck(L_11);
 			uint8_t L_12;
-			L_12 = VirtualFuncInvoker0< uint8_t >::Invoke(13, L_11);
+			L_12 = VirtualFuncInvoker0< uint8_t >::Invoke(16, L_11);
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_13 = V_0;
 			VirtualActionInvoker3< uint8_t, String_t*, Exception_t* >::Invoke(12, __this, L_12, ((String_t*)il2cpp_codegen_initialize_runtime_metadata_inline((uintptr_t*)&_stringLiteral344D51DD192D0862CE0E9711FD4A3E4B873165CB)), L_13);
 			TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_14 = V_0;

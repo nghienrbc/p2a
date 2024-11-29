@@ -19072,12 +19072,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void HostConnection_SaveTo_mDB1C74EA5CA9142ED
 		int64_t L_2;
 		L_2 = DateTime_ToBinary_m14CAC5CF45E58602ACDE00DF41A200CCAA79C445((&V_0), NULL);
 		NullCheck(L_0);
-		VirtualActionInvoker1< int64_t >::Invoke(18, L_0, L_2);
+		VirtualActionInvoker1< int64_t >::Invoke(20, L_0, L_2);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_3 = ___0_bw;
 		uint8_t L_4;
 		L_4 = HostConnection_get_ProtocolSupport_m34B2078D52EA5F180B24B0C61BC4EA0D86AB2D8D_inline(__this, NULL);
 		NullCheck(L_3);
-		VirtualActionInvoker1< uint8_t >::Invoke(8, L_3, L_4);
+		VirtualActionInvoker1< uint8_t >::Invoke(10, L_3, L_4);
 		return;
 	}
 }
@@ -19568,7 +19568,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void HostDefinition_SaveTo_m65AB43535B9C46CD0
 		int32_t L_2;
 		L_2 = Dictionary_2_get_Count_m8669B708DF810E10C166C4D0E85836D9E5FF1FB4(L_1, Dictionary_2_get_Count_m8669B708DF810E10C166C4D0E85836D9E5FF1FB4_RuntimeMethod_var);
 		NullCheck(L_0);
-		VirtualActionInvoker1< int32_t >::Invoke(16, L_0, L_2);
+		VirtualActionInvoker1< int32_t >::Invoke(18, L_0, L_2);
 		Dictionary_2_t2A24CFA26814C7F40F92CD522DA95FBDE7FAB315* L_3 = __this->___hostConnectionVariant;
 		NullCheck(L_3);
 		Enumerator_tA9BEB00AA4C9ABCB2E00A934554BD57B2E75359F L_4;
@@ -19603,7 +19603,7 @@ IL_001f_1:
 				String_t* L_8;
 				L_8 = VirtualFuncInvoker0< String_t* >::Invoke(3, L_7);
 				NullCheck(L_6);
-				VirtualActionInvoker1< String_t* >::Invoke(21, L_6, L_8);
+				VirtualActionInvoker1< String_t* >::Invoke(23, L_6, L_8);
 				HostConnection_tBD2C18310BBB73296CAA5C3D86BC197FDE51457C* L_9;
 				L_9 = KeyValuePair_2_get_Value_m656517A631A2FC78BB17F79D2E1C5DFC6AD528A9_inline((&V_1), KeyValuePair_2_get_Value_m656517A631A2FC78BB17F79D2E1C5DFC6AD528A9_RuntimeMethod_var);
 				BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_10 = ___0_bw;
@@ -20342,7 +20342,7 @@ IL_009c_2:
 						{
 							BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_12 = V_1;
 							NullCheck(L_12);
-							VirtualActionInvoker1< int32_t >::Invoke(16, L_12, 1);
+							VirtualActionInvoker1< int32_t >::Invoke(18, L_12, 1);
 							BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_13 = V_1;
 							il2cpp_codegen_runtime_class_init_inline(HostManager_t13C00E4B943D7FC597EF83F92382515BB5534EAE_il2cpp_TypeInfo_var);
 							Dictionary_2_tC29FC48F8D9FBBD04DB8CF4F56E9E27E0F72C61F* L_14 = ((HostManager_t13C00E4B943D7FC597EF83F92382515BB5534EAE_StaticFields*)il2cpp_codegen_static_fields_for(HostManager_t13C00E4B943D7FC597EF83F92382515BB5534EAE_il2cpp_TypeInfo_var))->___hosts;
@@ -20350,7 +20350,7 @@ IL_009c_2:
 							int32_t L_15;
 							L_15 = Dictionary_2_get_Count_mBB4BA5BA63333F7E17A7EDA559FEDDD345359CE8(L_14, Dictionary_2_get_Count_mBB4BA5BA63333F7E17A7EDA559FEDDD345359CE8_RuntimeMethod_var);
 							NullCheck(L_13);
-							VirtualActionInvoker1< int32_t >::Invoke(16, L_13, L_15);
+							VirtualActionInvoker1< int32_t >::Invoke(18, L_13, L_15);
 							Dictionary_2_tC29FC48F8D9FBBD04DB8CF4F56E9E27E0F72C61F* L_16 = ((HostManager_t13C00E4B943D7FC597EF83F92382515BB5534EAE_StaticFields*)il2cpp_codegen_static_fields_for(HostManager_t13C00E4B943D7FC597EF83F92382515BB5534EAE_il2cpp_TypeInfo_var))->___hosts;
 							NullCheck(L_16);
 							Enumerator_t2D639F8F5BA4606562E64278EFB746BB2688C5FF L_17;
@@ -20385,7 +20385,7 @@ IL_0051_4:
 									String_t* L_21;
 									L_21 = VirtualFuncInvoker0< String_t* >::Invoke(3, L_20);
 									NullCheck(L_19);
-									VirtualActionInvoker1< String_t* >::Invoke(21, L_19, L_21);
+									VirtualActionInvoker1< String_t* >::Invoke(23, L_19, L_21);
 									HostDefinition_tE133611B58D5D9AE1B1270EA994B770E6AC8D617* L_22;
 									L_22 = KeyValuePair_2_get_Value_m4F1028CDB6256E1C740AE4A2EB1554550D475A67_inline((&V_3), KeyValuePair_2_get_Value_m4F1028CDB6256E1C740AE4A2EB1554550D475A67_RuntimeMethod_var);
 									BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_23 = V_1;

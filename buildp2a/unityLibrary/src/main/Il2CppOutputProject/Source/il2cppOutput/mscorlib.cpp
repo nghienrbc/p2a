@@ -12737,7 +12737,7 @@ IL_0013:
 		int32_t L_7 = ___0_i;
 		NullCheck(L_6);
 		Il2CppChar L_8;
-		L_8 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_6, ((int32_t)(uint16_t)L_7));
+		L_8 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_6, ((int32_t)(uint16_t)L_7));
 		___0_i = L_8;
 	}
 
@@ -12754,7 +12754,7 @@ IL_002b:
 		int32_t L_11 = ___0_i;
 		NullCheck(L_10);
 		Il2CppChar L_12;
-		L_12 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_10, ((int32_t)(uint16_t)L_11));
+		L_12 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_10, ((int32_t)(uint16_t)L_11));
 		___0_i = L_12;
 	}
 

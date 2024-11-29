@@ -65,14 +65,16 @@ public class LocationSceneManager : MonoBehaviour
     public TMP_Text locationNameTxt;
     public TMP_Text locationLocationTxt;
     public TMP_Text locationInfoTxt;
+    public GameObject largeImagePanel; // Panel bao quanh image lớn (nền tối)
+    public Image largeImage; // UI Image lớn hiển thị ảnh
+       
+    public RectTransform largePanelRect;   
 
     private List<Sprite> imageSprites = new List<Sprite>(); // Danh sách các sprite từ DB
     private List<Sprite> imageSpritesOriginal = new List<Sprite>(); // Danh sách các sprite từ DB chưa xữ lý cover
     private string dbPath;
 
-    public GameObject largeImagePanel; // Panel bao quanh image lớn (nền tối)
-
-    public Image largeImage; // UI Image lớn hiển thị ảnh
+   
 
     private int currentImageIndex; // Chỉ số của ảnh hiện tại trong danh sách
 
@@ -106,7 +108,7 @@ public class LocationSceneManager : MonoBehaviour
         StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
     }
 
-    public void GetImageByLocationId(int locationId)
+    public void GetImageByLocationId(RectTransform buttonRect, int locationId)
     {
         int targetLocationId = locationId;
         IEnumerable<ImageTable> images = _dataService.GetImageByLocationId(targetLocationId);
@@ -115,7 +117,20 @@ public class LocationSceneManager : MonoBehaviour
         {
             Debug.Log("location nè");
            // Location location = locations.First();
-            locationPanel.gameObject.SetActive(true);
+            // Tính toán vị trí panel nhỏ
+            Vector3 buttonPosition = buttonRect.position;
+            Vector3 panelLargePosition = largePanelRect.position;
+
+            // Kích thước của button và panel nhỏ
+            Vector2 buttonSize = buttonRect.rect.size;
+            Vector2 smallPanelSize = locationPanel.GetComponent<RectTransform>().rect.size;
+
+            // Tính toán vị trí panel nhỏ sao cho nó không bị ra ngoài panel lớn
+            Vector3 newPanelPosition = CalculatePopupPosition(buttonPosition, buttonSize, smallPanelSize);
+
+            // Đặt vị trí cho panel nhỏ
+            locationPanel.transform.position = newPanelPosition;
+            locationPanel.gameObject.SetActive(true); 
 
             UIManager.Instance.ShowHidePanel(UIManager.Instance.locationPanel, MyGame.Enums.ShowHide.Show, 0.5f);
 
@@ -595,5 +610,80 @@ public class LocationSceneManager : MonoBehaviour
         }
 
         Debug.Log("All files copied successfully.");
-    } 
+    }
+
+    private Vector3 CalculatePopupPosition(Vector3 buttonPosition, Vector2 buttonSize, Vector2 smallPanelSize)
+    {
+        float padding = 10f;  // Khoảng cách giữa button và panel nhỏ
+
+        // Lấy vị trí trung tâm của button
+        float buttonCenterX = buttonPosition.x;
+        float buttonCenterY = buttonPosition.y;
+
+        // Vị trí của panel nhỏ
+        Vector3 position = buttonPosition;
+
+        // Tính toán vị trí panel nhỏ (khi button gần mép trên hoặc dưới của panel lớn)
+        if (buttonCenterY + buttonSize.y / 2 + smallPanelSize.y / 2 + padding > largePanelRect.position.y + largePanelRect.rect.height / 2)
+        {
+            // Nếu button gần sát mép trên, thì hiển thị panel nhỏ ở dưới button
+            position.y = buttonCenterY - buttonSize.y / 2 - smallPanelSize.y / 2 - padding;
+        }
+        else if (buttonCenterY - buttonSize.y / 2 - smallPanelSize.y / 2 - padding < largePanelRect.position.y - largePanelRect.rect.height / 2)
+        {
+            // Nếu button gần sát mép dưới, thì hiển thị panel nhỏ ở trên button
+            position.y = buttonCenterY + buttonSize.y / 2 + smallPanelSize.y / 2 + padding;
+        }
+        else
+        {
+            // Mặc định hiển thị panel nhỏ ở dưới button nếu không gần mép
+            position.y = buttonCenterY - buttonSize.y / 2 - smallPanelSize.y / 2 - padding;
+        }
+
+        // Kiểm tra vị trí theo trục X: nếu button gần sát mép trái hoặc phải của panel lớn
+        if (buttonCenterX + buttonSize.x / 2 + smallPanelSize.x / 2 + padding > largePanelRect.position.x + largePanelRect.rect.width / 2)
+        {
+            // Nếu button gần sát mép phải của panel lớn, hiển thị panel nhỏ bên trái button
+            position.x = buttonCenterX - buttonSize.x / 2 - smallPanelSize.x / 2 - padding;
+        }
+        else if (buttonCenterX - buttonSize.x / 2 - smallPanelSize.x / 2 - padding < largePanelRect.position.x - largePanelRect.rect.width / 2)
+        {
+            // Nếu button gần sát mép trái của panel lớn, hiển thị panel nhỏ bên phải button
+            position.x = buttonCenterX + buttonSize.x / 2 + smallPanelSize.x / 2 + padding;
+        }
+        else
+        {
+            // Mặc định hiển thị panel nhỏ bên phải button nếu không gần mép
+            position.x = buttonCenterX + buttonSize.x / 2 + smallPanelSize.x / 2 + padding;
+        }
+
+        // Kiểm tra lại xem panel nhỏ có bị ra ngoài biên của panel lớn không
+        position = EnsurePanelWithinBounds(position, smallPanelSize);
+
+        return position;
+    }
+
+    private Vector3 EnsurePanelWithinBounds(Vector3 position, Vector2 smallPanelSize)
+    {
+        // Kiểm tra vị trí của panel nhỏ và điều chỉnh nếu panel nhỏ bị ra ngoài panel lớn
+        if (position.x + smallPanelSize.x / 2 > largePanelRect.position.x + largePanelRect.rect.width / 2)
+        {
+            position.x = largePanelRect.position.x + largePanelRect.rect.width / 2 - smallPanelSize.x / 2;
+        }
+        else if (position.x - smallPanelSize.x / 2 < largePanelRect.position.x - largePanelRect.rect.width / 2)
+        {
+            position.x = largePanelRect.position.x - largePanelRect.rect.width / 2 + smallPanelSize.x / 2;
+        }
+
+        if (position.y + smallPanelSize.y / 2 > largePanelRect.position.y + largePanelRect.rect.height / 2)
+        {
+            position.y = largePanelRect.position.y + largePanelRect.rect.height / 2 - smallPanelSize.y / 2;
+        }
+        else if (position.y - smallPanelSize.y / 2 < largePanelRect.position.y - largePanelRect.rect.height / 2)
+        {
+            position.y = largePanelRect.position.y - largePanelRect.rect.height / 2 + smallPanelSize.y / 2;
+        }
+
+        return position;
+    }
 }

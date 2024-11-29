@@ -4900,7 +4900,7 @@ IL_004d:
 		Il2CppChar L_15 = V_0;
 		NullCheck(L_14);
 		Il2CppChar L_16;
-		L_16 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_14, L_15);
+		L_16 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_14, L_15);
 		return L_16;
 	}
 }
@@ -5037,7 +5037,7 @@ IL_007a:
 		L_33 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_30, L_32, NULL);
 		NullCheck(L_29);
 		Il2CppChar L_34;
-		L_34 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_29, L_33);
+		L_34 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_29, L_33);
 		if ((((int32_t)L_27) == ((int32_t)L_34)))
 		{
 			goto IL_00a9;
@@ -5204,7 +5204,7 @@ IL_007b:
 		L_29 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_26, L_28, NULL);
 		NullCheck(L_25);
 		Il2CppChar L_30;
-		L_30 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_25, L_29);
+		L_30 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_25, L_29);
 		CultureInfo_t9BA817D41AD55AC8BD07480DD8AC22F8FFA378E0* L_31 = __this->____culture;
 		NullCheck(L_31);
 		TextInfo_tD3BAFCFD77418851E7D5CB8D2588F47019E414B4* L_32;
@@ -5218,7 +5218,7 @@ IL_007b:
 		L_36 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_33, L_35, NULL);
 		NullCheck(L_32);
 		Il2CppChar L_37;
-		L_37 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_32, L_36);
+		L_37 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_32, L_36);
 		if ((((int32_t)L_30) == ((int32_t)L_37)))
 		{
 			goto IL_00bf;
@@ -14110,7 +14110,7 @@ IL_0271:
 		Il2CppChar L_99 = V_0;
 		NullCheck(L_98);
 		Il2CppChar L_100;
-		L_100 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_98, L_99);
+		L_100 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_98, L_99);
 		V_0 = L_100;
 	}
 
@@ -17073,7 +17073,7 @@ IL_0031:
 		L_16 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_14, L_15, NULL);
 		NullCheck(L_13);
 		Il2CppChar L_17;
-		L_17 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_13, L_16);
+		L_17 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_13, L_16);
 		NullCheck(L_11);
 		StringBuilder_t* L_18;
 		L_18 = StringBuilder_Append_m71228B30F05724CD2CD96D9611DCD61BFB96A6E1(L_11, L_17, NULL);
@@ -17140,7 +17140,7 @@ IL_0074:
 		Il2CppChar L_35 = V_4;
 		NullCheck(L_34);
 		Il2CppChar L_36;
-		L_36 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_34, L_35);
+		L_36 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_34, L_35);
 		V_4 = L_36;
 	}
 
@@ -17409,7 +17409,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RegexParser_AddUnitOne_m991DCA85D3432B8F
 		Il2CppChar L_3 = ___0_ch;
 		NullCheck(L_2);
 		Il2CppChar L_4;
-		L_4 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_2, L_3);
+		L_4 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_2, L_3);
 		___0_ch = L_4;
 	}
 
@@ -17448,7 +17448,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RegexParser_AddUnitNotone_m4F79DE175B95F
 		Il2CppChar L_3 = ___0_ch;
 		NullCheck(L_2);
 		Il2CppChar L_4;
-		L_4 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_2, L_3);
+		L_4 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_2, L_3);
 		___0_ch = L_4;
 	}
 

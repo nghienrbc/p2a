@@ -13421,7 +13421,7 @@ IL_0019:
 IL_001a:
 	{
 		NullCheck(G_B4_1);
-		VirtualActionInvoker1< uint8_t >::Invoke(8, G_B4_1, (uint8_t)((int32_t)(uint8_t)G_B4_0));
+		VirtualActionInvoker1< uint8_t >::Invoke(10, G_B4_1, (uint8_t)((int32_t)(uint8_t)G_B4_0));
 		int32_t L_6 = V_0;
 		V_0 = ((int32_t)il2cpp_codegen_add(L_6, 1));
 	}

@@ -8158,7 +8158,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Cookie_SaveTo_mF74AA73FBD1E44A244780A0C2
 	{
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_0 = ___0_stream;
 		NullCheck(L_0);
-		VirtualActionInvoker1< int32_t >::Invoke(16, L_0, 1);
+		VirtualActionInvoker1< int32_t >::Invoke(18, L_0, 1);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_1 = ___0_stream;
 		String_t* L_2;
 		L_2 = Cookie_get_Name_m898B571390478CC4A858F5934684B36625265B30_inline(__this, NULL);
@@ -8181,7 +8181,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Cookie_SaveTo_mF74AA73FBD1E44A244780A0C2
 IL_0017:
 	{
 		NullCheck(G_B2_1);
-		VirtualActionInvoker1< String_t* >::Invoke(21, G_B2_1, G_B2_0);
+		VirtualActionInvoker1< String_t* >::Invoke(23, G_B2_1, G_B2_0);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_5 = ___0_stream;
 		String_t* L_6;
 		L_6 = Cookie_get_Value_m0157986E8CE247D8B3BFC5FE5534EE8B179BA7EA_inline(__this, NULL);
@@ -8204,7 +8204,7 @@ IL_0017:
 IL_002c:
 	{
 		NullCheck(G_B4_1);
-		VirtualActionInvoker1< String_t* >::Invoke(21, G_B4_1, G_B4_0);
+		VirtualActionInvoker1< String_t* >::Invoke(23, G_B4_1, G_B4_0);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_9 = ___0_stream;
 		DateTime_t66193957C73913903DDAD89FEDC46139BCA5802D L_10;
 		L_10 = Cookie_get_Date_mC0DDD138797ED9A2C6D1B41D770F685A122BD3BE_inline(__this, NULL);
@@ -8213,7 +8213,7 @@ IL_002c:
 		int64_t L_11;
 		L_11 = DateTime_ToBinary_m14CAC5CF45E58602ACDE00DF41A200CCAA79C445((&V_0), NULL);
 		NullCheck(L_9);
-		VirtualActionInvoker1< int64_t >::Invoke(18, L_9, L_11);
+		VirtualActionInvoker1< int64_t >::Invoke(20, L_9, L_11);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_12 = ___0_stream;
 		DateTime_t66193957C73913903DDAD89FEDC46139BCA5802D L_13;
 		L_13 = Cookie_get_LastAccess_mA19914D06E8F2D36CE629517AF6ABF9E8338724F_inline(__this, NULL);
@@ -8221,7 +8221,7 @@ IL_002c:
 		int64_t L_14;
 		L_14 = DateTime_ToBinary_m14CAC5CF45E58602ACDE00DF41A200CCAA79C445((&V_0), NULL);
 		NullCheck(L_12);
-		VirtualActionInvoker1< int64_t >::Invoke(18, L_12, L_14);
+		VirtualActionInvoker1< int64_t >::Invoke(20, L_12, L_14);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_15 = ___0_stream;
 		DateTime_t66193957C73913903DDAD89FEDC46139BCA5802D L_16;
 		L_16 = Cookie_get_Expires_mE8EADA0737930CF3AF7CC962C0676DFC24686064_inline(__this, NULL);
@@ -8229,17 +8229,17 @@ IL_002c:
 		int64_t L_17;
 		L_17 = DateTime_ToBinary_m14CAC5CF45E58602ACDE00DF41A200CCAA79C445((&V_0), NULL);
 		NullCheck(L_15);
-		VirtualActionInvoker1< int64_t >::Invoke(18, L_15, L_17);
+		VirtualActionInvoker1< int64_t >::Invoke(20, L_15, L_17);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_18 = ___0_stream;
 		int64_t L_19;
 		L_19 = Cookie_get_MaxAge_m7076E8A5E7A8E4307ACEF792C36537B7741D0E6E_inline(__this, NULL);
 		NullCheck(L_18);
-		VirtualActionInvoker1< int64_t >::Invoke(18, L_18, L_19);
+		VirtualActionInvoker1< int64_t >::Invoke(20, L_18, L_19);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_20 = ___0_stream;
 		bool L_21;
 		L_21 = Cookie_get_IsSession_m68EE95F648B70D40BF61194F312F676F4C0A32C4_inline(__this, NULL);
 		NullCheck(L_20);
-		VirtualActionInvoker1< bool >::Invoke(7, L_20, L_21);
+		VirtualActionInvoker1< bool >::Invoke(9, L_20, L_21);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_22 = ___0_stream;
 		String_t* L_23;
 		L_23 = Cookie_get_Domain_m42EA5415A5336C8211441660740385B929C11E1E_inline(__this, NULL);
@@ -8262,7 +8262,7 @@ IL_002c:
 IL_0095:
 	{
 		NullCheck(G_B6_1);
-		VirtualActionInvoker1< String_t* >::Invoke(21, G_B6_1, G_B6_0);
+		VirtualActionInvoker1< String_t* >::Invoke(23, G_B6_1, G_B6_0);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_26 = ___0_stream;
 		String_t* L_27;
 		L_27 = Cookie_get_Path_mA9ED0FFA6F6D0558993FC68DB96A03A1C303B590_inline(__this, NULL);
@@ -8285,17 +8285,17 @@ IL_0095:
 IL_00aa:
 	{
 		NullCheck(G_B8_1);
-		VirtualActionInvoker1< String_t* >::Invoke(21, G_B8_1, G_B8_0);
+		VirtualActionInvoker1< String_t* >::Invoke(23, G_B8_1, G_B8_0);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_30 = ___0_stream;
 		bool L_31;
 		L_31 = Cookie_get_IsSecure_mB8B1D717995483C9E2F44FC372CFF1578265CF60_inline(__this, NULL);
 		NullCheck(L_30);
-		VirtualActionInvoker1< bool >::Invoke(7, L_30, L_31);
+		VirtualActionInvoker1< bool >::Invoke(9, L_30, L_31);
 		BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_32 = ___0_stream;
 		bool L_33;
 		L_33 = Cookie_get_IsHttpOnly_mF8E97A5CDE0107640CAC40C709756326C8827BAF_inline(__this, NULL);
 		NullCheck(L_32);
-		VirtualActionInvoker1< bool >::Invoke(7, L_32, L_33);
+		VirtualActionInvoker1< bool >::Invoke(9, L_32, L_33);
 		return;
 	}
 }
@@ -9766,7 +9766,7 @@ IL_00eb_3:
 								{
 									BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_18 = V_1;
 									NullCheck(L_18);
-									VirtualActionInvoker1< int32_t >::Invoke(16, L_18, 1);
+									VirtualActionInvoker1< int32_t >::Invoke(18, L_18, 1);
 									V_2 = 0;
 									il2cpp_codegen_runtime_class_init_inline(CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_il2cpp_TypeInfo_var);
 									List_1_t9B814BEC1B6844E2BCEEF9850A24304B49C07190* L_19 = ((CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_StaticFields*)il2cpp_codegen_static_fields_for(CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_il2cpp_TypeInfo_var))->___Cookies;
@@ -9832,7 +9832,7 @@ IL_0099_4:
 									BinaryWriter_tFB94D67EDFA3F6A34744A163BDABE287FDF2ED1E* L_25 = V_1;
 									int32_t L_26 = V_2;
 									NullCheck(L_25);
-									VirtualActionInvoker1< int32_t >::Invoke(16, L_25, L_26);
+									VirtualActionInvoker1< int32_t >::Invoke(18, L_25, L_26);
 									il2cpp_codegen_runtime_class_init_inline(CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_il2cpp_TypeInfo_var);
 									List_1_t9B814BEC1B6844E2BCEEF9850A24304B49C07190* L_27 = ((CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_StaticFields*)il2cpp_codegen_static_fields_for(CookieJar_t8E3F13FFC65FE9401D7942E38191C699D4A83012_il2cpp_TypeInfo_var))->___Cookies;
 									NullCheck(L_27);

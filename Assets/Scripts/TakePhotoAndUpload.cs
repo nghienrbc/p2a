@@ -11,6 +11,7 @@ using TMPro;
 public class TakePhotoAndUpload : MonoBehaviour
 {
     public GameObject MessagePanel;
+    public MyakuController myakuController;
     public Image qrCodeImage; // UI Image để hiển thị mã QR
     public Image cameraDisplay; // Tham chiếu tới RawImage trong Canvas
     public Image photoSave; 
@@ -182,12 +183,12 @@ public class TakePhotoAndUpload : MonoBehaviour
     public void SaveImage()
     { 
         countdownPanel.SetActive(true);
-
         shootBtn.interactable = false;
         reshootBtn.interactable = false;
         downloadBtn.interactable = false;
-
-        StartCoroutine(CountdownCoroutine()); 
+        UIManager.Instance.connectionTxt.text = "3...2...1...Smile :))";
+        StartCoroutine(CountdownCoroutine());
+        myakuController.MyakuCountForShootPhoto();
     }
 
     public void ReshootPhotoBtn()
@@ -349,6 +350,8 @@ public class TakePhotoAndUpload : MonoBehaviour
         shootBtn.interactable = false;
         reshootBtn.interactable = true;
         downloadBtn.interactable = false;
+
+        UIManager.Instance.connectionTxt.text = "Now use your mobile camera scan QR to save your photo!";
     }
 
     private string ExtractImageUrlFromResponse(string jsonResponse)
@@ -464,6 +467,8 @@ public class TakePhotoAndUpload : MonoBehaviour
             shootBtn.interactable = false;
             reshootBtn.interactable = true;
             downloadBtn.interactable = true;
+
+            UIManager.Instance.connectionTxt.text = "Now, touch on download button to get your photo!";
         }
         else
         {

@@ -25664,7 +25664,7 @@ CATCH_00cf_1:
 				TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_52 = V_6;
 				NullCheck(L_52);
 				uint8_t L_53;
-				L_53 = VirtualFuncInvoker0< uint8_t >::Invoke(13, L_52);
+				L_53 = VirtualFuncInvoker0< uint8_t >::Invoke(16, L_52);
 				VirtualActionInvoker3< ClientHandshakeState_tA20F1EBC1748ACD8134CDD56772022CA75E71D7C*, DtlsRecordLayer_tD44061F951256137478EA324F459686B210B18FB*, uint8_t >::Invoke(6, __this, L_50, L_51, L_53);
 				TlsFatalAlert_tDF7B9CF2E01F7F4DFD07479AECBC5F81574CD13F* L_54 = V_6;
 				IL2CPP_POP_ACTIVE_EXCEPTION(Exception_t*);

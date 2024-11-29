@@ -20,7 +20,7 @@ public class LocationMapPin : MonoBehaviour
     { 
         Debug.Log("Button clicked!");
         // gọi hàm hiển thị Location Panel và Mapdetail panel
-        databaseManager.GetComponent<LocationSceneManager>().GetImageByLocationId(locationID);
+        databaseManager.GetComponent<LocationSceneManager>().GetImageByLocationId(GetComponent<RectTransform>(), locationID);
     }
     // Update is called once per frame
     void Update()

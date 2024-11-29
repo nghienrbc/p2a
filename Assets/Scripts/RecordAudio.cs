@@ -141,9 +141,12 @@ public class RecordAudio : MonoBehaviour
 
         request = new HTTPRequest(new Uri(serverUrl), HTTPMethods.Post, OnRequestFinished);
         request.SetHeader("Content-Type", "multipart/form-data");
-        request.AddField("conversation_id", "4b97d8d1-7182-496b-1111-26f477bf9db5");
+        request.AddField("conversation_id", "4b97d8d1-7182-496b-3333-26f477bf9db5");
         request.AddBinaryData("audio_file", audioData, "audio_sample.mp3", "audio/mpeg");
-
+        //request.StreamChunksImmediately = true;
+        //request.OnDownloadProgress = OnDownloadProgress;
+        //request.OnUploadProgress = OnUploadProgressDelegate;
+        //request.OnStreamingData = OnStreamingDataReceived;
         Debug.Log("Uploading audio...");
         request.Send();
 
@@ -151,19 +154,40 @@ public class RecordAudio : MonoBehaviour
         //yield return new WaitUntil(() => request.IsDone);
         yield return new WaitUntil(() => !isRequestInProgress);
         // Nếu yêu cầu thành công, bắt đầu phát âm thanh
-        if (request.Response.IsSuccess)
-        {
+        //if (request.Response.IsSuccess)
+        //{ 
+        //    Debug.Log("không ổn dồi...");
+        //    byte[] resAudioData = request.Response.Data;
+        //    AudioClip audioClip = WavUtility.ToAudioClip(resAudioData, "AudioStream");
+        //    audioSource.clip = audioClip;
+        //    audioSource.Play();
+        //}
+        //else
+        //{
+        //    Debug.LogError("Audio stream failed: " + request.Response.StatusCode);
+        //}
+    }
 
-            Debug.Log("không ổn dồi...");
-            byte[] resAudioData = request.Response.Data;
-            AudioClip audioClip = WavUtility.ToAudioClip(resAudioData, "AudioStream");
-            audioSource.clip = audioClip;
-            audioSource.Play();
-        }
-        else
-        {
-            Debug.LogError("Audio stream failed: " + request.Response.StatusCode);
-        }
+    private void OnDownloadProgress(HTTPRequest request, long downloaded, long downloadLength)
+    {
+        // Tính toán tỷ lệ tải (phần trăm)
+        float progress = (float)downloaded / downloadLength * 100f;
+        Debug.Log($"Download progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
+
+    }
+    private void OnUploadProgressDelegate(HTTPRequest request, long downloaded, long downloadLength)
+    {
+        // Tính toán tỷ lệ tải (phần trăm)
+        float progress = (float)downloaded / downloadLength * 100f;
+        Debug.Log($"Upload progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
+
+    }
+    // Callback nhận dữ liệu từng phần (stream)
+    private bool OnStreamingDataReceived(HTTPRequest request, HTTPResponse response, byte[] dataFragment, int dataFragmentLength)
+    {
+       // StartCoroutine(PlayReceivedAudio(dataFragment));
+        // Trả về true để tiếp tục nhận dữ liệu
+        return true;
     }
 
     private void OnRequestFinished(HTTPRequest req, HTTPResponse resp)

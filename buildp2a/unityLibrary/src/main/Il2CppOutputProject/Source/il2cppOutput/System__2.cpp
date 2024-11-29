@@ -2275,6 +2275,7 @@ struct TimeSpan_t8195C5B013A2C532FEBDF0B64B6911982E750F5A_StaticFields
 struct AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F_StaticFields
 {
 	String_t* ____process_guid;
+	AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F* ___default_domain;
 };
 struct AppDomain_tFF7010567CBABAEEA7BB19835234D6485E16AD5F_ThreadStaticFields
 {
@@ -21172,7 +21173,7 @@ IL_001b:
 		L_9 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_7, L_8, NULL);
 		NullCheck(L_6);
 		Il2CppChar L_10;
-		L_10 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_6, L_9);
+		L_10 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_6, L_9);
 		NullCheck(L_4);
 		StringBuilder_t* L_11;
 		L_11 = StringBuilder_Append_m71228B30F05724CD2CD96D9611DCD61BFB96A6E1(L_4, L_10, NULL);
@@ -21701,7 +21702,7 @@ IL_002f:
 		L_12 = String_get_Chars_mC49DF0CD2D3BE7BE97B3AD9C995BE3094F8E36D3(L_9, ((int32_t)il2cpp_codegen_add(L_10, L_11)), NULL);
 		NullCheck(L_8);
 		Il2CppChar L_13;
-		L_13 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_8, L_12);
+		L_13 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_8, L_12);
 		String_t* L_14 = __this->___Pattern;
 		int32_t L_15 = V_1;
 		NullCheck(L_14);
@@ -21947,7 +21948,7 @@ IL_0063:
 		Il2CppChar L_25 = V_6;
 		NullCheck(L_24);
 		Il2CppChar L_26;
-		L_26 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_24, L_25);
+		L_26 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_24, L_25);
 		V_6 = L_26;
 	}
 
@@ -22085,7 +22086,7 @@ IL_00f0:
 		Il2CppChar L_64 = V_6;
 		NullCheck(L_63);
 		Il2CppChar L_65;
-		L_65 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_63, L_64);
+		L_65 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_63, L_64);
 		V_6 = L_65;
 	}
 
@@ -22792,7 +22793,7 @@ IL_0017:
 		Il2CppChar L_12 = L_11.___First;
 		NullCheck(L_10);
 		Il2CppChar L_13;
-		L_13 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(7, L_10, L_12);
+		L_13 = VirtualFuncInvoker1< Il2CppChar, Il2CppChar >::Invoke(8, L_10, L_12);
 		V_3 = L_13;
 		List_1_tDB6FA8EDA7A26227B5CA100203EF7BAFA0FDBDDF* L_14 = __this->____rangelist;
 		int32_t L_15 = V_1;
