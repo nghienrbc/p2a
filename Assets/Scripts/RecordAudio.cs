@@ -1,13 +1,16 @@
 ﻿using BestHTTP;
-using NAudio.Wave;
+//using NAudio.Wave;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
-
+using NAudio.Wave;
+using System.Text;
 
 public class RecordAudio : MonoBehaviour
 {
@@ -23,12 +26,11 @@ public class RecordAudio : MonoBehaviour
 
     public UnityEvent onAudioFinished; // Sự kiện khi audio kết thúc
 
-    private MediaFoundationReader mediaFoundationReader;
-
-    /// <summary>
-    /// The WaveOutEvent for audio output.
-    /// </summary>
+    private MediaFoundationReader mediaFoundationReader; 
     private WaveOutEvent waveOut;
+
+    private WaveOutEvent waveOutEvent;
+    private BufferedWaveProvider waveProvider;
 
     private void Start()
     {
@@ -109,14 +111,13 @@ public class RecordAudio : MonoBehaviour
         return trimmedClip;
     }
 
-    public void UploadAndProcessAudio()
+    public async void UploadAndProcessAudio()
     { 
         if (isRequestInProgress)
         {
             Debug.LogWarning("A request is already in progress. Please wait.");
             return;
-        }
-
+        } 
 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
@@ -125,14 +126,140 @@ public class RecordAudio : MonoBehaviour
             Debug.LogError("Audio file not found at path: " + audioFilePath);
             return;
         }
+
+        string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
         // Lấy file audio đã ghi âm từ RecordAudio 
         byte[] audioData = File.ReadAllBytes(audioFilePath);
-        string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
 
-        StartCoroutine(WaitAndSendRequest(audioData, conversationId));  
+        StartCoroutine(WaitAndSendRequest(audioData, conversationId)); 
+        //await SendAudioAndPlayStream();
+        //StartCoroutine(SendAudioAndStreamResponse());
     }
-     
-  
+
+
+    // Hàm gọi để gửi POST request với file audio
+    public IEnumerator SendAudioAndStreamResponse()
+    {
+        // Đọc file WAV từ đĩa
+        string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
+
+        if (!File.Exists(audioFilePath))
+        {
+            Debug.LogError("Audio file not found at path: " + audioFilePath);
+            yield return null;
+        }
+
+        // Lấy file audio đã ghi âm từ RecordAudio 
+        byte[] audioData = File.ReadAllBytes(audioFilePath);
+
+        // Tạo form data để gửi lên server
+        WWWForm form = new WWWForm();
+        form.AddField("conversation_id", "4b97d8d1-7182-496b-1111-26f477bf9db5"); // Conversation ID tùy chỉnh
+        form.AddBinaryData("audio_file", audioData, "audio_sample.wav", "audio/wav");
+
+        // Tạo UnityWebRequest POST
+        using (UnityWebRequest webRequest = UnityWebRequest.Post(serverUrl, form))
+        {
+            // Thiết lập để nhận dữ liệu stream
+            webRequest.downloadHandler = new DownloadHandlerBuffer(); // Dùng DownloadHandlerBuffer để tải raw data
+            webRequest.SendWebRequest(); // Gửi request
+
+            // Chờ cho đến khi tải xong hoặc có lỗi xảy ra
+            while (!webRequest.isDone)
+            {
+                if (webRequest.isNetworkError || webRequest.isHttpError)
+                {
+                    Debug.LogError("Request failed: " + webRequest.error);
+                    yield break;
+                }
+
+                // Khi đã nhận được đủ dữ liệu (ví dụ: hơn 1024 bytes), phát audio ngay lập tức
+                if (webRequest.downloadedBytes > 1024)
+                {
+                    Debug.Log("đang play");
+                    // Lấy dữ liệu byte audio từ response
+                    byte[] audioResponseData = webRequest.downloadHandler.data;
+
+                    // Giải mã audio byte thành AudioClip (nếu dữ liệu trả về là WAV)
+                    AudioClip audioClip = WavUtility.ToAudioClip(audioResponseData, "AudioStream");
+
+                    // Phát âm thanh ngay lập tức
+                    audioSource.clip = audioClip;
+                    audioSource.Play();
+
+                }
+
+                yield return null;
+            }
+
+            // Kiểm tra nếu request thành công và có dữ liệu
+            if (webRequest.isDone && !webRequest.isNetworkError && !webRequest.isHttpError)
+            {
+                Debug.Log("Audio stream complete.");
+            }
+        }
+    }
+
+    private async Task SendAudioAndPlayStream()
+    {
+        // URL API của bạn 
+
+        isRequestInProgress = true;
+        myakuController.MyakuThinking();
+
+        using (HttpClient client = new HttpClient())
+        {
+            string conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+            string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
+
+            if (!File.Exists(audioFilePath))
+            {
+                Debug.LogError("Audio file not found at path: " + audioFilePath);
+                return;
+            }
+            // Lấy file audio đã ghi âm từ RecordAudio 
+            byte[] audioData = File.ReadAllBytes(audioFilePath);
+             
+
+            // Tạo một MultipartFormDataContent để gửi file audio
+            var formContent = new MultipartFormDataContent();
+            formContent.Add(new ByteArrayContent(audioData), "audio_file", "audio_sample.wav"); 
+            formContent.Add(new StringContent(conversationId, Encoding.UTF8), "conversation_id");
+             
+
+            // Gửi yêu cầu POST đến API
+            HttpResponseMessage response = await client.PostAsync(serverUrl, formContent);
+
+            if (response.IsSuccessStatusCode)
+            { 
+                Debug.Log("Audio is start playing 111...");
+                // Lấy stream âm thanh từ response
+                Stream audioStream = await response.Content.ReadAsStreamAsync();
+
+                // Khởi tạo BufferedWaveProvider để phát âm thanh ngay lập tức
+                waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 2));  // Chỉnh WaveFormat nếu cần
+                waveOutEvent = new WaveOutEvent();
+                waveOutEvent.Init(waveProvider);
+                waveOutEvent.Play();
+
+                // Đọc stream và thêm vào BufferedWaveProvider để phát
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = await audioStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    waveProvider.AddSamples(buffer, 0, bytesRead);
+                }
+
+                Debug.Log("Audio is playing...");
+            }
+            else
+            {
+                Debug.LogError("Failed to retrieve audio stream from API");
+            }
+        }
+    }
+
 
     private IEnumerator WaitAndSendRequest(byte[] audioData, string conversationId)
     {
@@ -141,12 +268,12 @@ public class RecordAudio : MonoBehaviour
 
         request = new HTTPRequest(new Uri(serverUrl), HTTPMethods.Post, OnRequestFinished);
         request.SetHeader("Content-Type", "multipart/form-data");
-        request.AddField("conversation_id", "4b97d8d1-7182-496b-3333-26f477bf9db5");
+        request.AddField("conversation_id", conversationId);
         request.AddBinaryData("audio_file", audioData, "audio_sample.mp3", "audio/mpeg");
-        //request.StreamChunksImmediately = true;
-        //request.OnDownloadProgress = OnDownloadProgress;
-        //request.OnUploadProgress = OnUploadProgressDelegate;
-        //request.OnStreamingData = OnStreamingDataReceived;
+        request.StreamChunksImmediately = true;
+        request.OnDownloadProgress = OnDownloadProgress;
+        request.OnUploadProgress = OnUploadProgressDelegate;
+        request.OnStreamingData = OnStreamingDataReceived;
         Debug.Log("Uploading audio...");
         request.Send();
 
@@ -172,22 +299,43 @@ public class RecordAudio : MonoBehaviour
     {
         // Tính toán tỷ lệ tải (phần trăm)
         float progress = (float)downloaded / downloadLength * 100f;
-        Debug.Log($"Download progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
+        //Debug.Log($"Download progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
 
     }
     private void OnUploadProgressDelegate(HTTPRequest request, long downloaded, long downloadLength)
     {
         // Tính toán tỷ lệ tải (phần trăm)
         float progress = (float)downloaded / downloadLength * 100f;
-        Debug.Log($"Upload progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
+       // Debug.Log($"Upload progress: {progress:F2}% ({downloaded} / {downloadLength} bytes)");
 
     }
     // Callback nhận dữ liệu từng phần (stream)
     private bool OnStreamingDataReceived(HTTPRequest request, HTTPResponse response, byte[] dataFragment, int dataFragmentLength)
     {
-       // StartCoroutine(PlayReceivedAudio(dataFragment));
+        StartCoroutine(PlayReceivedAudioChunk(dataFragment));
         // Trả về true để tiếp tục nhận dữ liệu
         return true;
+    }
+
+    private IEnumerator PlayReceivedAudioChunk(byte[] audioData)
+    {
+        // Chuyển đổi dữ liệu nhận được thành AudioClip
+        AudioClip audioClip = WavUtility.ToAudioClip(audioData, "AudioStream");
+
+        // Phát audio ngay lập tức
+        if (audioClip != null)
+        {
+            audioSource.clip = audioClip;
+            audioSource.Play();
+            Debug.Log("Playing audio chunk." + audioData);
+
+            // Chờ cho đến khi âm thanh phát xong
+            yield return new WaitUntil(() => !audioSource.isPlaying);
+        }
+        else
+        {
+            Debug.LogError("Failed to create audio clip from chunk.");
+        }
     }
 
     private void OnRequestFinished(HTTPRequest req, HTTPResponse resp)

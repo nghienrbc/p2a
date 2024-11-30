@@ -951,6 +951,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 9.255
       objectReference: {fileID: 0}
+    - target: {fileID: -6541276357492476327, guid: 16bdbb0536315ef49ab17f6437ee5573, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2045447248349477837, guid: 16bdbb0536315ef49ab17f6437ee5573, type: 3}
     - target: {fileID: -2801966447019528043, guid: 16bdbb0536315ef49ab17f6437ee5573, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.9931
@@ -1392,7 +1396,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be75f9ba519bfe442a52ff10d9dcb8af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  associatedPanel: {fileID: 1533182841}
+  associatedPanel: {fileID: 470513412}
   nationID: 6
   nationName: Malaysia
 --- !u!136 &181009058
