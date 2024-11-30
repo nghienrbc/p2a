@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.029493794, g: 0.07825554, b: 0.16824812, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4835,6 +4835,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   imagePrefab: {fileID: 900608249480703765, guid: 02b7d93b76e788245a989fba54311534, type: 3}
   content: {fileID: 362729666}
+  imageScrollRect: {fileID: 1663034483}
+  textScrollRect: {fileID: 787929317}
   locationPanel: {fileID: 371642270}
   locationImage: {fileID: 167676971}
   locationNameTxt: {fileID: 388070151}

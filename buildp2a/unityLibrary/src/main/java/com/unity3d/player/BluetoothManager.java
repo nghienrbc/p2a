@@ -83,7 +83,7 @@ public class BluetoothManager {
 
     // Bật Bluetooth
     public void enableBluetooth() {
-        if (bluetoothAdapter == null) {
+        if (bluetoothAdapter == null) { 
             Toast.makeText(activity, "Thiết bị không hỗ trợ Bluetooth", Toast.LENGTH_SHORT).show();
         } else {
             if (ContextCompat.checkSelfPermission(activity, android.Manifest.permission.BLUETOOTH_CONNECT)

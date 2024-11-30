@@ -59,6 +59,8 @@ public class LocationSceneManager : MonoBehaviour
 {
     public GameObject imagePrefab;  // Prefab cho mỗi hình ảnh trong ScrollView
     public Transform content;       // Content của ScrollView để chứa các Image
+    public ScrollRect imageScrollRect;
+    public ScrollRect textScrollRect;
 
     public GameObject locationPanel;
     public Image locationImage; // UI Image lớn hiển thị ảnh
@@ -142,6 +144,10 @@ public class LocationSceneManager : MonoBehaviour
                 DisplaySmallImages(images.First().image_name);
             }
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
+
+            imageScrollRect.verticalNormalizedPosition = 1f; // Đặt về vị trí top
+            textScrollRect.verticalNormalizedPosition = 1f; // Đặt về vị trí top
+            currentImageIndex = 0;
         }
 
         List<string> imagePaths = new List<string>();

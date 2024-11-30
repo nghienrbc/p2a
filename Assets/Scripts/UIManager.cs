@@ -33,7 +33,8 @@ public class UIManager : MonoBehaviour
     public string functionName = "home";
 
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio";
-    private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
+    //private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
+    private string targetDeviceAddress = "24:DC:C3:9B:BA:7A";
     // Start is called before the first frame update
 
     public PanelMover mapPanel;
@@ -271,7 +272,7 @@ public class UIManager : MonoBehaviour
         if (IsBluetoothEnabled())
         {
             isFirsttime = true;
-            connectionTxt.text = "Start scan"; 
+            connectionTxt.text = "Start scan bluetooth device...."; 
             bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress); 
         }
         else
@@ -293,7 +294,7 @@ public class UIManager : MonoBehaviour
     // Nhận thông tin thiết bị tìm thấy từ BluetoothManager (được gọi từ Java)
     public void OnDeviceFound(string deviceInfo)
     {
-        connectionTxt.text = "đã nhận message" + deviceInfo;
+        connectionTxt.text = "Found Myaku Bluetooth, hold down the button and ask something!";
         string[] info = deviceInfo.Split(';');
         if (info.Length == 2)
         {
@@ -331,7 +332,7 @@ public class UIManager : MonoBehaviour
     public void OnDeviceConnected(string statusMessage)
     {
         Debug.Log(statusMessage);
-        connectionTxt.text = statusMessage;
+        //connectionTxt.text = statusMessage;
         // Hiển thị thông báo trên UI nếu cần
     }
 
@@ -352,15 +353,17 @@ public class UIManager : MonoBehaviour
             {
                 recorder.StartRecording();
                 recordingIndicator.gameObject.SetActive(true);
+                UIManager.Instance.connectionTxt.text = "";
             }
             Debug.Log("Button is pressed");
-        }
+        }  
         else if (receivedData.Trim() == "0")
         {
             // Xử lý khi nhận được false, ví dụ tắt đối tượng
             Debug.Log("Button is released");
             if (UIManager.Instance.functionName == "home")
             {
+                UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
                 recorder.StopRecording();
                 recordingIndicator.gameObject.SetActive(false);
                 // xữ lý gửi audio lên API để nhận lại một audio
@@ -368,7 +371,7 @@ public class UIManager : MonoBehaviour
             }
         }
 
-        connectionTxt.text = receivedData.Trim();
+        //connectionTxt.text = receivedData.Trim();
     }
     
 

@@ -6,7 +6,6 @@ dependencies {
     implementation(name: 'GpmWebViewPlugin', ext:'aar')
     implementation(name: 'GpmCommunicatorPlugin', ext:'aar')
     implementation(name: 'gpm-webview', ext:'aar')
-
     implementation 'androidx.core:core:1.13.1'
 }
 
