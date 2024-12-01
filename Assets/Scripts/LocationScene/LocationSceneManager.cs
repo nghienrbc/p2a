@@ -107,7 +107,7 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
 
 
-        StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
+        //StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
     }
 
     public void GetImageByLocationId(RectTransform buttonRect, int locationId)

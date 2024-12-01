@@ -345,7 +345,7 @@ public class UIManager : MonoBehaviour
         if (receivedData.Trim() == "1")
         {
             // Xử lý khi nhận được true, ví dụ bật một đối tượng
-            if (UIManager.Instance.functionName == "camera")
+            if (functionName == "camera")
             {
                 takePhotoAndUpload.SaveImage();
             }
@@ -353,7 +353,7 @@ public class UIManager : MonoBehaviour
             {
                 recorder.StartRecording();
                 recordingIndicator.gameObject.SetActive(true);
-                UIManager.Instance.connectionTxt.text = "";
+                connectionTxt.text = "";
             }
             Debug.Log("Button is pressed");
         }  
@@ -361,9 +361,9 @@ public class UIManager : MonoBehaviour
         {
             // Xử lý khi nhận được false, ví dụ tắt đối tượng
             Debug.Log("Button is released");
-            if (UIManager.Instance.functionName == "home")
+            if (functionName == "home")
             {
-                UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
+                connectionTxt.text = "Let me think about the answer for a moment!";
                 recorder.StopRecording();
                 recordingIndicator.gameObject.SetActive(false);
                 // xữ lý gửi audio lên API để nhận lại một audio
@@ -413,14 +413,14 @@ public class UIManager : MonoBehaviour
 
     public void BtnStartRecordClick()
     {
-        UIManager.Instance.connectionTxt.text = "";
+        connectionTxt.text = "";
         recorder.StartRecording();
         recordingIndicator.gameObject.SetActive(true);
     }
 
     public void BtnStopRecordClick()
     { 
-        UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
+        connectionTxt.text = "Let me think about the answer for a moment!";
         recorder.StopRecording();
         recordingIndicator.gameObject.SetActive(false);
     }
@@ -466,8 +466,8 @@ public class UIManager : MonoBehaviour
             //ShowHidePanel(mapPanel, ShowHide.Hide, 0.5f);
             ShowHidePanel(locationPanel, ShowHide.Hide, 0.5f);
 
-            UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
-            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+            MovePanel(mapPanel, PanelMover.Direction.Up, true, 3000);
+            MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 3000);
             MoveMyaku(false);
         }
     }
