@@ -627,9 +627,7 @@
         619,
         620,
         621,
-        622,
-        623,
-        624
+        622
       ],
       "OverwriteOutputs": false,
       "DebugActionIndex": 0
@@ -11293,25 +11291,6 @@
       "ScannerIndex": 3
     },
     {
-      "Annotation": "C_Android_arm64 d8kz/jlkczda2z621.o",
-      "DisplayName": "Compiling Cpp for libil2cpp (arm64)",
-      "Action": "\"C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++\" -march=armv8-a -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__ -faddrsig -mllvm -hoist-common-insts=1 -DANDROID -DHAVE_INTTYPES_H -no-canonical-prefixes -funwind-tables -fstack-protector -fomit-frame-pointer -std=c++11 -Wswitch -Wno-trigraphs -Wno-tautological-compare -Wno-invalid-offsetof -Wno-implicitly-unsigned-literal -Wno-integer-overflow -Wno-shift-negative-value -Wno-unknown-attributes -Wno-implicit-function-declaration -Wno-null-conversion -Wno-missing-declarations -Wno-unused-value -Wno-pragma-once-outside-header -fvisibility=hidden -fexceptions -fno-rtti -g -Os -fPIC -fno-strict-overflow -ffunction-sections -fdata-sections -fmessage-length=0 -pipe -D_GLIBCXX_USE_CXX11_ABI=0 -DBASELIB_INLINE_NAMESPACE=il2cpp_baselib -DIL2CPP_MONO_DEBUGGER_DISABLED -DRUNTIME_IL2CPP -DTARGET_ARM64 -DIL2CPP_ENABLE_WRITE_BARRIERS=1 -DIL2CPP_INCREMENTAL_TIME_SLICE=3 -DHAVE_BDWGC_GC -DNDEBUG -I\".\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/pch\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/os/ClassLibraryPAL/brotli/include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Platforms/Android/Include\" -o \"d8kz/jlkczda2z621.o\" -fcolor-diagnostics -fdiagnostics-absolute-paths -target aarch64-linux-android22 -fstrict-aliasing -fdiagnostics-format=msvc -c -x c++ \"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput/UnityEngine.UnityWebRequestAudioModule.cpp\"",
-      "Inputs": [
-        "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput/UnityEngine.UnityWebRequestAudioModule.cpp",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-ar",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++"
-      ],
-      "Outputs": [
-        "d8kz/jlkczda2z621.o"
-      ],
-      "OverwriteOutputs": false,
-      "AllowUnexpectedOutput": true,
-      "Env": [],
-      "DebugActionIndex": 547,
-      "ScannerIndex": 3
-    },
-    {
       "Annotation": "C_Android_arm64 d8kz/9md1zzbz78k7.o",
       "DisplayName": "Compiling Cpp for libil2cpp (arm64)",
       "Action": "\"C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++\" -march=armv8-a -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__ -faddrsig -mllvm -hoist-common-insts=1 -DANDROID -DHAVE_INTTYPES_H -no-canonical-prefixes -funwind-tables -fstack-protector -fomit-frame-pointer -std=c++11 -Wswitch -Wno-trigraphs -Wno-tautological-compare -Wno-invalid-offsetof -Wno-implicitly-unsigned-literal -Wno-integer-overflow -Wno-shift-negative-value -Wno-unknown-attributes -Wno-implicit-function-declaration -Wno-null-conversion -Wno-missing-declarations -Wno-unused-value -Wno-pragma-once-outside-header -fvisibility=hidden -fexceptions -fno-rtti -g -Os -fPIC -fno-strict-overflow -ffunction-sections -fdata-sections -fmessage-length=0 -pipe -D_GLIBCXX_USE_CXX11_ABI=0 -DBASELIB_INLINE_NAMESPACE=il2cpp_baselib -DIL2CPP_MONO_DEBUGGER_DISABLED -DRUNTIME_IL2CPP -DTARGET_ARM64 -DIL2CPP_ENABLE_WRITE_BARRIERS=1 -DIL2CPP_INCREMENTAL_TIME_SLICE=3 -DHAVE_BDWGC_GC -DNDEBUG -I\".\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/pch\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/os/ClassLibraryPAL/brotli/include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Platforms/Android/Include\" -o \"d8kz/9md1zzbz78k7.o\" -fcolor-diagnostics -fdiagnostics-absolute-paths -target aarch64-linux-android22 -fstrict-aliasing -fdiagnostics-format=msvc -c -x c++ \"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput/UnityEngine.UnityWebRequestModule.cpp\"",
@@ -11327,7 +11306,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 548,
+      "DebugActionIndex": 547,
       "ScannerIndex": 3
     },
     {
@@ -11346,7 +11325,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 549,
+      "DebugActionIndex": 548,
       "ScannerIndex": 3
     },
     {
@@ -11365,7 +11344,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 550,
+      "DebugActionIndex": 549,
       "ScannerIndex": 3
     },
     {
@@ -11384,7 +11363,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 551,
+      "DebugActionIndex": 550,
       "ScannerIndex": 3
     },
     {
@@ -11403,7 +11382,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 552,
+      "DebugActionIndex": 551,
       "ScannerIndex": 3
     },
     {
@@ -11422,7 +11401,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 553,
+      "DebugActionIndex": 552,
       "ScannerIndex": 3
     },
     {
@@ -11441,7 +11420,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 554,
+      "DebugActionIndex": 553,
       "ScannerIndex": 3
     },
     {
@@ -11460,7 +11439,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 555,
+      "DebugActionIndex": 554,
       "ScannerIndex": 3
     },
     {
@@ -11479,7 +11458,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 556,
+      "DebugActionIndex": 555,
       "ScannerIndex": 3
     },
     {
@@ -11498,7 +11477,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 557,
+      "DebugActionIndex": 556,
       "ScannerIndex": 3
     },
     {
@@ -11517,7 +11496,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 558,
+      "DebugActionIndex": 557,
       "ScannerIndex": 3
     },
     {
@@ -11536,7 +11515,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 559,
+      "DebugActionIndex": 558,
       "ScannerIndex": 3
     },
     {
@@ -11555,7 +11534,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 560,
+      "DebugActionIndex": 559,
       "ScannerIndex": 3
     },
     {
@@ -11574,7 +11553,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 561,
+      "DebugActionIndex": 560,
       "ScannerIndex": 3
     },
     {
@@ -11593,7 +11572,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 562,
+      "DebugActionIndex": 561,
       "ScannerIndex": 3
     },
     {
@@ -11612,7 +11591,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 563,
+      "DebugActionIndex": 562,
       "ScannerIndex": 3
     },
     {
@@ -11631,7 +11610,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 564,
+      "DebugActionIndex": 563,
       "ScannerIndex": 3
     },
     {
@@ -11650,7 +11629,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 565,
+      "DebugActionIndex": 564,
       "ScannerIndex": 3
     },
     {
@@ -11669,7 +11648,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 566,
+      "DebugActionIndex": 565,
       "ScannerIndex": 3
     },
     {
@@ -11688,7 +11667,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 567,
+      "DebugActionIndex": 566,
       "ScannerIndex": 3
     },
     {
@@ -11707,7 +11686,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 568,
+      "DebugActionIndex": 567,
       "ScannerIndex": 3
     },
     {
@@ -11726,7 +11705,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 569,
+      "DebugActionIndex": 568,
       "ScannerIndex": 3
     },
     {
@@ -11745,7 +11724,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 570,
+      "DebugActionIndex": 569,
       "ScannerIndex": 3
     },
     {
@@ -11764,7 +11743,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 571,
+      "DebugActionIndex": 570,
       "ScannerIndex": 3
     },
     {
@@ -11783,7 +11762,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 572,
+      "DebugActionIndex": 571,
       "ScannerIndex": 3
     },
     {
@@ -11802,7 +11781,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 573,
+      "DebugActionIndex": 572,
       "ScannerIndex": 3
     },
     {
@@ -11821,7 +11800,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 574,
+      "DebugActionIndex": 573,
       "ScannerIndex": 3
     },
     {
@@ -11840,7 +11819,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 575,
+      "DebugActionIndex": 574,
       "ScannerIndex": 3
     },
     {
@@ -11859,7 +11838,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 576,
+      "DebugActionIndex": 575,
       "ScannerIndex": 3
     },
     {
@@ -11878,7 +11857,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 577,
+      "DebugActionIndex": 576,
       "ScannerIndex": 3
     },
     {
@@ -11897,7 +11876,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 578,
+      "DebugActionIndex": 577,
       "ScannerIndex": 3
     },
     {
@@ -11916,7 +11895,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 579,
+      "DebugActionIndex": 578,
       "ScannerIndex": 3
     },
     {
@@ -11935,7 +11914,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 580,
+      "DebugActionIndex": 579,
       "ScannerIndex": 3
     },
     {
@@ -11954,7 +11933,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 581,
+      "DebugActionIndex": 580,
       "ScannerIndex": 3
     },
     {
@@ -11973,7 +11952,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 582,
+      "DebugActionIndex": 581,
       "ScannerIndex": 3
     },
     {
@@ -11992,7 +11971,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 583,
+      "DebugActionIndex": 582,
       "ScannerIndex": 3
     },
     {
@@ -12011,7 +11990,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 584,
+      "DebugActionIndex": 583,
       "ScannerIndex": 3
     },
     {
@@ -12030,7 +12009,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 585,
+      "DebugActionIndex": 584,
       "ScannerIndex": 3
     },
     {
@@ -12049,7 +12028,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 586,
+      "DebugActionIndex": 585,
       "ScannerIndex": 3
     },
     {
@@ -12068,7 +12047,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 587,
+      "DebugActionIndex": 586,
       "ScannerIndex": 3
     },
     {
@@ -12087,7 +12066,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 588,
+      "DebugActionIndex": 587,
       "ScannerIndex": 3
     },
     {
@@ -12106,7 +12085,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 589,
+      "DebugActionIndex": 588,
       "ScannerIndex": 3
     },
     {
@@ -12125,7 +12104,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 590,
+      "DebugActionIndex": 589,
       "ScannerIndex": 3
     },
     {
@@ -12144,7 +12123,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 591,
+      "DebugActionIndex": 590,
       "ScannerIndex": 3
     },
     {
@@ -12163,7 +12142,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 592,
+      "DebugActionIndex": 591,
       "ScannerIndex": 3
     },
     {
@@ -12182,7 +12161,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 593,
+      "DebugActionIndex": 592,
       "ScannerIndex": 3
     },
     {
@@ -12201,7 +12180,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 594,
+      "DebugActionIndex": 593,
       "ScannerIndex": 3
     },
     {
@@ -12220,7 +12199,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 595,
+      "DebugActionIndex": 594,
       "ScannerIndex": 3
     },
     {
@@ -12239,7 +12218,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 596,
+      "DebugActionIndex": 595,
       "ScannerIndex": 3
     },
     {
@@ -12258,7 +12237,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 597,
+      "DebugActionIndex": 596,
       "ScannerIndex": 3
     },
     {
@@ -12277,7 +12256,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 598,
+      "DebugActionIndex": 597,
       "ScannerIndex": 3
     },
     {
@@ -12296,7 +12275,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 599,
+      "DebugActionIndex": 598,
       "ScannerIndex": 3
     },
     {
@@ -12315,7 +12294,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 600,
+      "DebugActionIndex": 599,
       "ScannerIndex": 3
     },
     {
@@ -12334,7 +12313,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 601,
+      "DebugActionIndex": 600,
       "ScannerIndex": 3
     },
     {
@@ -12353,7 +12332,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 602,
+      "DebugActionIndex": 601,
       "ScannerIndex": 3
     },
     {
@@ -12372,7 +12351,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 603,
+      "DebugActionIndex": 602,
       "ScannerIndex": 3
     },
     {
@@ -12391,7 +12370,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 604,
+      "DebugActionIndex": 603,
       "ScannerIndex": 3
     },
     {
@@ -12410,7 +12389,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 605,
+      "DebugActionIndex": 604,
       "ScannerIndex": 3
     },
     {
@@ -12429,7 +12408,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 606,
+      "DebugActionIndex": 605,
       "ScannerIndex": 3
     },
     {
@@ -12448,7 +12427,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 607,
+      "DebugActionIndex": 606,
       "ScannerIndex": 3
     },
     {
@@ -12467,7 +12446,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 608,
+      "DebugActionIndex": 607,
       "ScannerIndex": 3
     },
     {
@@ -12486,26 +12465,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 609,
-      "ScannerIndex": 3
-    },
-    {
-      "Annotation": "C_Android_arm64 d8kz/rsm61ltjx11q.o",
-      "DisplayName": "Compiling C for libil2cpp (arm64)",
-      "Action": "\"C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++\" -march=armv8-a -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__ -faddrsig -mllvm -hoist-common-insts=1 -DANDROID -DHAVE_INTTYPES_H -no-canonical-prefixes -funwind-tables -fstack-protector -fomit-frame-pointer -Wswitch -Wno-trigraphs -Wno-tautological-compare -Wno-invalid-offsetof -Wno-implicitly-unsigned-literal -Wno-integer-overflow -Wno-shift-negative-value -Wno-unknown-attributes -Wno-implicit-function-declaration -Wno-null-conversion -Wno-missing-declarations -Wno-unused-value -Wno-pragma-once-outside-header -fvisibility=hidden -fexceptions -g -Os -fPIC -fno-strict-overflow -ffunction-sections -fdata-sections -fmessage-length=0 -pipe -D_GLIBCXX_USE_CXX11_ABI=0 -DBASELIB_INLINE_NAMESPACE=il2cpp_baselib -DIL2CPP_MONO_DEBUGGER_DISABLED -DRUNTIME_IL2CPP -DTARGET_ARM64 -DIL2CPP_ENABLE_WRITE_BARRIERS=1 -DIL2CPP_INCREMENTAL_TIME_SLICE=3 -DHAVE_BDWGC_GC -DNDEBUG -I\".\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/pch\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/libil2cpp/os/ClassLibraryPAL/brotli/include\" -I\"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/IL2CPP/external/baselib/Platforms/Android/Include\" -o \"d8kz/rsm61ltjx11q.o\" -fcolor-diagnostics -fdiagnostics-absolute-paths -target aarch64-linux-android22 -fstrict-aliasing -fdiagnostics-format=msvc -c -x c \"D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput/UnityEngine.UnityWebRequestAudioModule_CodeGen.c\"",
-      "Inputs": [
-        "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/Il2CppOutputProject/Source/il2cppOutput/UnityEngine.UnityWebRequestAudioModule_CodeGen.c",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-ar",
-        "C:/Users/Duc Nguyen/AppData/Local/Android/Sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++"
-      ],
-      "Outputs": [
-        "d8kz/rsm61ltjx11q.o"
-      ],
-      "OverwriteOutputs": false,
-      "AllowUnexpectedOutput": true,
-      "Env": [],
-      "DebugActionIndex": 610,
+      "DebugActionIndex": 608,
       "ScannerIndex": 3
     },
     {
@@ -12524,7 +12484,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 611,
+      "DebugActionIndex": 609,
       "ScannerIndex": 3
     },
     {
@@ -12543,7 +12503,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 612,
+      "DebugActionIndex": 610,
       "ScannerIndex": 3
     },
     {
@@ -12562,7 +12522,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 613,
+      "DebugActionIndex": 611,
       "ScannerIndex": 3
     },
     {
@@ -12581,7 +12541,7 @@
       "OverwriteOutputs": false,
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 614,
+      "DebugActionIndex": 612,
       "ScannerIndex": 3
     },
     {
@@ -12589,13 +12549,13 @@
       "DisplayName": "Writing 1729919944154292146.rsp",
       "ActionType": "WriteFile",
       "PayloadOffset": 51577,
-      "PayloadLength": 13231,
+      "PayloadLength": 13187,
       "PayloadDebugContentSnippet": "-march=armv8-a -D__ANDROID_UNA",
       "Inputs": [],
       "Outputs": [
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/rsp/1729919944154292146.rsp"
       ],
-      "DebugActionIndex": 615
+      "DebugActionIndex": 613
     },
     {
       "Annotation": "Link_Android_arm64 d8kz/libil2cpp.so",
@@ -12955,7 +12915,6 @@
         "d8kz/qvbxt3953pau.o",
         "d8kz/bbfl9co36dmd.o",
         "d8kz/cjz1ts41ag3s.o",
-        "d8kz/jlkczda2z621.o",
         "d8kz/9md1zzbz78k7.o",
         "d8kz/km3lb3ik84qx.o",
         "d8kz/vwer7t00o71r.o",
@@ -13018,7 +12977,6 @@
         "d8kz/gkbn7znntfor.o",
         "d8kz/djrr2w21bteh.o",
         "d8kz/9k7tqznc7xfd.o",
-        "d8kz/rsm61ltjx11q.o",
         "d8kz/p4o4grf6zes8.o",
         "d8kz/kb8whfk4agwr.o",
         "d8kz/fbyayt7wb39m.o",
@@ -13710,16 +13668,14 @@
         610,
         611,
         612,
-        613,
-        614,
-        615
+        613
       ],
       "FrontendResponseFiles": [
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/rsp/1729919944154292146.rsp"
       ],
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 616
+      "DebugActionIndex": 614
     },
     {
       "Annotation": "CopyFiles D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.dbg.so",
@@ -13732,9 +13688,9 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.dbg.so"
       ],
       "ToBuildDependencies": [
-        616
+        614
       ],
-      "DebugActionIndex": 617
+      "DebugActionIndex": 615
     },
     {
       "Annotation": "NdkObjCopy D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/stripped/libil2cpp.so",
@@ -13748,11 +13704,11 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/stripped/libil2cpp.so"
       ],
       "ToBuildDependencies": [
-        617
+        615
       ],
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 618
+      "DebugActionIndex": 616
     },
     {
       "Annotation": "NdkObjCopy D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.sym.so",
@@ -13765,11 +13721,11 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.sym.so"
       ],
       "ToBuildDependencies": [
-        617
+        615
       ],
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 619
+      "DebugActionIndex": 617
     },
     {
       "Annotation": "NdkObjCopy D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.so",
@@ -13783,12 +13739,12 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/build/il2cpp_arm64-v8a_Release/il2cpp_cache/buildstate/artifacts/objcopy_gqhv/libil2cpp.so"
       ],
       "ToBuildDependencies": [
-        618,
-        619
+        616,
+        617
       ],
       "AllowUnexpectedOutput": true,
       "Env": [],
-      "DebugActionIndex": 620
+      "DebugActionIndex": 618
     },
     {
       "Annotation": "CopyFiles D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.so",
@@ -13801,15 +13757,15 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.so"
       ],
       "ToBuildDependencies": [
+        618,
         620,
-        622,
-        623
+        621
       ],
       "ToUseDependencies": [
-        622,
-        623
+        620,
+        621
       ],
-      "DebugActionIndex": 621
+      "DebugActionIndex": 619
     },
     {
       "Annotation": "CopyFiles D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.dbg.so",
@@ -13822,13 +13778,13 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.dbg.so"
       ],
       "ToBuildDependencies": [
-        616,
-        623
+        614,
+        621
       ],
       "ToUseDependencies": [
-        623
+        621
       ],
-      "DebugActionIndex": 622
+      "DebugActionIndex": 620
     },
     {
       "Annotation": "CopyFiles D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.sym.so",
@@ -13841,9 +13797,9 @@
         "D:/ASEAN/Code/p2a/buildp2a/unityLibrary/src/main/jniLibs/arm64-v8a/libil2cpp.sym.so"
       ],
       "ToBuildDependencies": [
-        619
+        617
       ],
-      "DebugActionIndex": 623
+      "DebugActionIndex": 621
     },
     {
       "Annotation": "FinalProgram",
@@ -13851,12 +13807,12 @@
       "Inputs": [],
       "Outputs": [],
       "ToBuildDependencies": [
-        621,
-        622,
-        623
+        619,
+        620,
+        621
       ],
       "OverwriteOutputs": false,
-      "DebugActionIndex": 624
+      "DebugActionIndex": 622
     }
   ],
   "FileSignatures": [
@@ -15052,7 +15008,7 @@
   "EmitDataForBeeWhy": 1,
         "NamedNodes": {
           "all_tundra_nodes": 0,
-          "FinalProgram": 624
+          "FinalProgram": 622
         }
 ,  "DefaultNodes": [
     0

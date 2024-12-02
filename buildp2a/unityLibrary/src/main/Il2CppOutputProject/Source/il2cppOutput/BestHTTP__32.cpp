@@ -10524,7 +10524,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void DerUtf8String__ctor_m761082D7117B9C3E17C
 		NullCheck(L_2);
 		NullCheck(L_0);
 		String_t* L_3;
-		L_3 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_0, L_1, 0, ((int32_t)(((RuntimeArray*)L_2)->max_length)));
+		L_3 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_0, L_1, 0, ((int32_t)(((RuntimeArray*)L_2)->max_length)));
 		DerUtf8String__ctor_mB6DCACF04583985FD8341BD21F984882CABDC80A(__this, L_3, NULL);
 		return;
 	}
@@ -10603,7 +10603,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void DerUtf8String_Encode_m72AEA362F633D94C19
 		String_t* L_2 = __this->___str;
 		NullCheck(L_1);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_3;
-		L_3 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_1, L_2);
+		L_3 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_1, L_2);
 		NullCheck(L_0);
 		DerOutputStream_WriteEncoded_mCFAB0D23F5C43A816AAFDD42DF63B39484E0656E(L_0, ((int32_t)12), L_3, NULL);
 		return;

@@ -7,23 +7,36 @@ using UnityEngine.EventSystems;
 public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     private bool isHolding = false; // Trạng thái giữ nút
+    private bool hasHeldEnoughTime = false; // Kiểm tra đã nhấn đủ lâu chưa
+    private float holdTime = 0f; // Thời gian nhấn giữ
+    private float requiredHoldTime = 0.5f; // Thời gian cần để bắt đầu thu âm (ví dụ 0.5 giây)
+
 
     public void OnPointerDown(PointerEventData eventData)
     {
         isHolding = true;
-       // Debug.Log("Button is being held down");
+        holdTime = 0f; // Reset thời gian khi bắt đầu nhấn
 
-        // Bắt đầu xử lý nhấn giữ
-        StartHold();
+        // Bắt đầu theo dõi thời gian giữ
+        Debug.Log("Button is being pressed");
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        isHolding = false;
-       // Debug.Log("Button is released");
+        if (isHolding)
+        {
+            if (hasHeldEnoughTime)
+            {
+                // Nếu đã nhấn đủ lâu, dừng thu âm
+                UIManager.Instance.BtnStopRecordClick();
+            }
 
-        // Xử lý khi nhả nút
-        StopHold();
+            // Reset trạng thái khi nhả nút
+            isHolding = false;
+            hasHeldEnoughTime = false; // Reset trạng thái "nhấn đủ lâu"
+            holdTime = 0f; // Reset thời gian
+            Debug.Log("Button is released");
+        }
     }
 
     private void StartHold()
@@ -34,6 +47,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void StopHold()
     {
+
         UIManager.Instance.BtnStopRecordClick();
     }
 
@@ -41,8 +55,16 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         if (isHolding)
         {
-            // Nếu nút đang được giữ, có thể thực hiện các hành động liên tục ở đây
-          //  Debug.Log("Holding the button...");
+            holdTime += Time.deltaTime; // Cộng dồn thời gian nhấn giữ
+
+            // Kiểm tra xem thời gian nhấn giữ đã đủ chưa
+            if (holdTime >= requiredHoldTime && !hasHeldEnoughTime)
+            {
+                hasHeldEnoughTime = true;
+                // Nếu nhấn đủ lâu, gọi hàm bắt đầu thu âm
+                UIManager.Instance.BtnStartRecordClick();
+                Debug.Log("Recording started after holding for " + requiredHoldTime + " seconds");
+            }
         }
     }
 

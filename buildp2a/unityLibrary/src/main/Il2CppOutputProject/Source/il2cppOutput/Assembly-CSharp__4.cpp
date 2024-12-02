@@ -7668,7 +7668,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR intptr_t SQLite3_Prepare2_mBC0448C52B777A3323
 		String_t* L_3 = ___1_query;
 		NullCheck(L_2);
 		int32_t L_4;
-		L_4 = VirtualFuncInvoker1< int32_t, String_t* >::Invoke(12, L_2, L_3);
+		L_4 = VirtualFuncInvoker1< int32_t, String_t* >::Invoke(11, L_2, L_3);
 		int32_t L_5;
 		L_5 = SQLite3_Prepare2_m5531D11AAAEFE4C51DB0CF750D4D073930A58019(L_0, L_1, L_4, (&V_0), 0, NULL);
 		V_1 = L_5;

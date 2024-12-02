@@ -19570,7 +19570,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FileOutput_Write_mB787A3870E621A41F9A672
 		String_t* L_4 = ___1_logEntry;
 		NullCheck(L_3);
 		int32_t L_5;
-		L_5 = VirtualFuncInvoker1< int32_t, String_t* >::Invoke(12, L_3, L_4);
+		L_5 = VirtualFuncInvoker1< int32_t, String_t* >::Invoke(11, L_3, L_4);
 		V_0 = L_5;
 		int32_t L_6 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(BufferPool_t9AE33DCEE74AA5BD63A83B5CB44DC09DB4A658D3_il2cpp_TypeInfo_var);
@@ -19602,7 +19602,7 @@ FINALLY_0055:
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_13 = V_1;
 			NullCheck(L_9);
 			int32_t L_14;
-			L_14 = VirtualFuncInvoker5< int32_t, String_t*, int32_t, int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t >::Invoke(20, L_9, L_10, 0, L_12, L_13, 0);
+			L_14 = VirtualFuncInvoker5< int32_t, String_t*, int32_t, int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t >::Invoke(19, L_9, L_10, 0, L_12, L_13, 0);
 			Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_15 = __this->___fileStream;
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_16 = V_1;
 			int32_t L_17 = V_0;

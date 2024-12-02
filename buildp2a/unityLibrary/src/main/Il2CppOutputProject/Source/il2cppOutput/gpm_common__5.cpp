@@ -2267,7 +2267,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t GZipStream_EmitHeader_mFFB60EC20DF6F3
 		L_2 = GZipStream_get_Comment_m0C848BF4D98CFD07E6CA2DAAFA06A4E536F2AC17_inline(__this, NULL);
 		NullCheck(L_1);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_3;
-		L_3 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_1, L_2);
+		L_3 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_1, L_2);
 		G_B3_0 = L_3;
 		goto IL_001c;
 	}
@@ -2293,7 +2293,7 @@ IL_001c:
 		L_6 = GZipStream_get_FileName_mF0BBF03D6BF1D3B0FD11A05FDB588100F61069D8_inline(__this, NULL);
 		NullCheck(L_5);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_7;
-		L_7 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_5, L_6);
+		L_7 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_5, L_6);
 		G_B6_0 = L_7;
 		goto IL_0039;
 	}
@@ -12313,7 +12313,7 @@ IL_0045:
 		NullCheck(L_17);
 		NullCheck(L_15);
 		String_t* L_18;
-		L_18 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_15, L_16, 0, ((int32_t)(((RuntimeArray*)L_17)->max_length)));
+		L_18 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_15, L_16, 0, ((int32_t)(((RuntimeArray*)L_17)->max_length)));
 		return L_18;
 	}
 }

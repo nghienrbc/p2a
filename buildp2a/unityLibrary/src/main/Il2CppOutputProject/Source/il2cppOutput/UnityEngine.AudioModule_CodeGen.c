@@ -53,13 +53,14 @@ extern void PCMSetPositionCallback_Invoke_m434D4F02FA25F91DF6199EC5A799C551C7F93
 extern void AudioSource_GetPitch_m80F6D2BAF966F669253E9231AFCFFC303779913D (void);
 extern void AudioSource_SetPitch_mE75DEDF8F37301BDA63E0F545A7A00850C24F53E (void);
 extern void AudioSource_PlayHelper_m4DE8C48925C3548BED306DAB9F87939F24A46960 (void);
+extern void AudioSource_Stop_m8A4872F0A2680798CD28894DD28609445C4783F5 (void);
 extern void AudioSource_get_volume_m9CCF33BC636562EA282FDE07463B547D70134EE3 (void);
 extern void AudioSource_set_volume_mD902BBDBBDE0E3C148609BF3C05096148E90F2C0 (void);
 extern void AudioSource_get_pitch_mB1B0B8A52400B5C798BF1E644FE1C2FFA20A9863 (void);
 extern void AudioSource_set_pitch_mD14631FC99BF38AAFB356D9C45546BC16CF9E811 (void);
-extern void AudioSource_get_clip_m4F5027066F9FC44B44192713142B0C277BB418FE (void);
 extern void AudioSource_set_clip_mFF441895E274286C88D9C75ED5CA1B1B39528D70 (void);
 extern void AudioSource_Play_m95DF07111C61D0E0F00257A00384D31531D590C3 (void);
+extern void AudioSource_Stop_m318F17F17A147C77FF6E0A5A7A6BE057DB90F537 (void);
 extern void AudioSource_get_isPlaying_mC203303F2F7146B2C056CB47B9391463FDF408FC (void);
 extern void Microphone_GetMicrophoneDeviceIDFromName_mD33349A5B41E037F04802638690FBA891035C238 (void);
 extern void Microphone_StartRecord_m561E1A2B878937E556D6FCABC3FE735CB818D897 (void);
@@ -87,7 +88,7 @@ extern void AudioSampleProvider_InvokeSampleFramesAvailable_mEB16F7230AB65A3576B
 extern void AudioSampleProvider_InvokeSampleFramesOverflow_m66593173A527981F5EB2A5EF77B0C9119DAB5E15 (void);
 extern void SampleFramesHandler__ctor_m7DDE0BAD439CD80791140C7D42D661B598A7663A (void);
 extern void SampleFramesHandler_Invoke_m478D5645634B8C734E58B59CF7750797FC54F1BC (void);
-static Il2CppMethodPointer s_methodPointers[75] = 
+static Il2CppMethodPointer s_methodPointers[76] = 
 {
 	AudioSettings_InvokeOnAudioConfigurationChanged_m8273D3AEB24F4C3E374238B6F699BE6696808E85,
 	AudioSettings_InvokeOnAudioSystemShuttingDown_m1B9895D60B3267EBDEC69B9169730DBAD8325E90,
@@ -130,13 +131,14 @@ static Il2CppMethodPointer s_methodPointers[75] =
 	AudioSource_GetPitch_m80F6D2BAF966F669253E9231AFCFFC303779913D,
 	AudioSource_SetPitch_mE75DEDF8F37301BDA63E0F545A7A00850C24F53E,
 	AudioSource_PlayHelper_m4DE8C48925C3548BED306DAB9F87939F24A46960,
+	AudioSource_Stop_m8A4872F0A2680798CD28894DD28609445C4783F5,
 	AudioSource_get_volume_m9CCF33BC636562EA282FDE07463B547D70134EE3,
 	AudioSource_set_volume_mD902BBDBBDE0E3C148609BF3C05096148E90F2C0,
 	AudioSource_get_pitch_mB1B0B8A52400B5C798BF1E644FE1C2FFA20A9863,
 	AudioSource_set_pitch_mD14631FC99BF38AAFB356D9C45546BC16CF9E811,
-	AudioSource_get_clip_m4F5027066F9FC44B44192713142B0C277BB418FE,
 	AudioSource_set_clip_mFF441895E274286C88D9C75ED5CA1B1B39528D70,
 	AudioSource_Play_m95DF07111C61D0E0F00257A00384D31531D590C3,
+	AudioSource_Stop_m318F17F17A147C77FF6E0A5A7A6BE057DB90F537,
 	AudioSource_get_isPlaying_mC203303F2F7146B2C056CB47B9391463FDF408FC,
 	Microphone_GetMicrophoneDeviceIDFromName_mD33349A5B41E037F04802638690FBA891035C238,
 	Microphone_StartRecord_m561E1A2B878937E556D6FCABC3FE735CB818D897,
@@ -173,33 +175,33 @@ extern void AudioMixerPlayable_GetHandle_m6C182D9794E901D123223BB57738A302BEAB41
 extern void AudioMixerPlayable_Equals_mDFB945EB48199A338BAD00D40FB8EEC34CF64D57_AdjustorThunk (void);
 static Il2CppTokenAdjustorThunkPair s_adjustorThunks[6] = 
 {
-	{ 0x06000038, WebCamDevice_get_name_m2BF75E8EA486668299906EAC9B35214890D4601E_AdjustorThunk },
-	{ 0x06000039, WebCamDevice_get_isFrontFacing_mA021D9DBDDB227FEA8AA635E833EAB7718672404_AdjustorThunk },
-	{ 0x06000042, AudioClipPlayable_GetHandle_mEA1D664328FF9B08E4F7D5EBCD4B51A754D97C44_AdjustorThunk },
-	{ 0x06000043, AudioClipPlayable_Equals_m9C1C75ACBB74FE06AD02BE4643F6EB39413EFF83_AdjustorThunk },
-	{ 0x06000046, AudioMixerPlayable_GetHandle_m6C182D9794E901D123223BB57738A302BEAB41FD_AdjustorThunk },
-	{ 0x06000047, AudioMixerPlayable_Equals_mDFB945EB48199A338BAD00D40FB8EEC34CF64D57_AdjustorThunk },
+	{ 0x06000039, WebCamDevice_get_name_m2BF75E8EA486668299906EAC9B35214890D4601E_AdjustorThunk },
+	{ 0x0600003A, WebCamDevice_get_isFrontFacing_mA021D9DBDDB227FEA8AA635E833EAB7718672404_AdjustorThunk },
+	{ 0x06000043, AudioClipPlayable_GetHandle_mEA1D664328FF9B08E4F7D5EBCD4B51A754D97C44_AdjustorThunk },
+	{ 0x06000044, AudioClipPlayable_Equals_m9C1C75ACBB74FE06AD02BE4643F6EB39413EFF83_AdjustorThunk },
+	{ 0x06000047, AudioMixerPlayable_GetHandle_m6C182D9794E901D123223BB57738A302BEAB41FD_AdjustorThunk },
+	{ 0x06000048, AudioMixerPlayable_Equals_mDFB945EB48199A338BAD00D40FB8EEC34CF64D57_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[75] = 
+static const int32_t s_InvokerIndices[76] = 
 {
-	15355,
-	16232,
-	16232,
-	16175,
-	16175,
+	15352,
+	16229,
+	16229,
+	16172,
+	16172,
 	4276,
 	7735,
-	16175,
-	15355,
-	16175,
-	15355,
-	16175,
-	16232,
-	16232,
+	16172,
+	15352,
+	16172,
+	15352,
+	16172,
+	16229,
+	16229,
 	9828,
-	11264,
-	11264,
-	16200,
+	11263,
+	11263,
+	16197,
 	9702,
 	694,
 	9760,
@@ -208,7 +210,7 @@ static const int32_t s_InvokerIndices[75] =
 	9665,
 	2687,
 	2687,
-	10898,
+	10897,
 	10142,
 	7852,
 	7852,
@@ -220,33 +222,34 @@ static const int32_t s_InvokerIndices[75] =
 	7852,
 	4276,
 	7816,
-	15155,
-	13865,
-	13869,
+	15152,
+	13862,
+	13866,
+	7735,
 	9760,
 	7903,
 	9760,
 	7903,
-	9702,
 	7852,
 	9828,
+	9828,
 	9593,
-	14927,
-	11613,
-	15360,
-	11627,
-	15364,
-	16200,
+	14924,
+	11612,
+	15357,
+	11626,
+	15361,
+	16197,
 	9702,
 	9593,
-	16200,
+	16197,
 	7852,
 	9828,
 	9828,
 	9593,
 	9702,
 	1300,
-	11153,
+	11152,
 	9714,
 	5590,
 	2704,
@@ -262,7 +265,7 @@ IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_AudioModule_CodeGenModul
 const Il2CppCodeGenModule g_UnityEngine_AudioModule_CodeGenModule = 
 {
 	"UnityEngine.AudioModule.dll",
-	75,
+	76,
 	s_methodPointers,
 	6,
 	s_adjustorThunks,

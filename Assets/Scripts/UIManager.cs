@@ -136,7 +136,8 @@ public class UIManager : MonoBehaviour
         string[] permissions = new string[] {
             "android.permission.BLUETOOTH_CONNECT",
             "android.permission.BLUETOOTH_SCAN",
-            "android.permission.ACCESS_FINE_LOCATION"
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.RECORD_AUDIO",
         };
 
         using (AndroidJavaClass contextCompat = new AndroidJavaClass("androidx.core.content.ContextCompat"))

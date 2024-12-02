@@ -10877,7 +10877,7 @@ IL_0018_1:
 			Encoding_t65CDEF28CF20A7B8C92E85A4E808920C2465F095* L_19 = __this->___encoding;
 			NullCheck(L_19);
 			String_t* L_20;
-			L_20 = VirtualFuncInvoker0< String_t* >::Invoke(10, L_19);
+			L_20 = VirtualFuncInvoker0< String_t* >::Invoke(9, L_19);
 			NullCheck(L_18);
 			StringBuilder_t* L_21;
 			L_21 = StringBuilder_Append_m08904D74E0C78E5F36DCD9C9303BDD07886D9F7D(L_18, L_20, NULL);
