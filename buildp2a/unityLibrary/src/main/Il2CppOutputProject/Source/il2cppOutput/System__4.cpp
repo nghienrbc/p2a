@@ -2324,6 +2324,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Attribute__ctor_m79ED1BF1EE36D1E417BA89A
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void SwitchLevelAttribute_set_SwitchLevelType_m4757AB3B3D77487056F17495239C40B56FC2E9AF (SwitchLevelAttribute_t1C9B38E19789AFAA9F130ED5BF3D1E5EF7FEF4BF* __this, Type_t* ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Type_op_Equality_m99930A0E44E420A685FABA60E60BA1CC5FA0EBDC (Type_t* ___0_left, Type_t* ___1_right, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ArgumentNullException__ctor_m444AE141157E333844FC1A9500224C2F9FD24F4B (ArgumentNullException_t327031E412FAB2351B0022DD5DAD47E67E597129* __this, String_t* ___0_paramName, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Stopwatch__ctor_mAFE6B2F45CF1C3469EF6D5307972BC098B473D0A (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Stopwatch_Start_m35906A38C7D336CF9DD35854C7E170D762A55915 (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int64_t Stopwatch_get_ElapsedTicks_m3F4040FBF8C7CCDC69E0E04824019DEBB25AA410 (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR TimeSpan_t8195C5B013A2C532FEBDF0B64B6911982E750F5A TimeSpan_FromTicks_m9C683B1D142312F22E8CC6C803E32EF6D42F9003 (int64_t ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR TimeSpan_t8195C5B013A2C532FEBDF0B64B6911982E750F5A Stopwatch_get_Elapsed_mF16CCA2F9B7E2EAEFCAF8D81F44370DBAC1B2178 (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* __this, const RuntimeMethod* method) ;
@@ -3285,6 +3287,23 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int64_t Stopwatch_GetTimestamp_mA3BDF219C573A
 	using namespace il2cpp::icalls;
 	return ((Stopwatch_GetTimestamp_mA3BDF219C573A34751D6A792E86C825B74D2CEB7_ftn)System::System::Diagnostics::Stopwatch::GetTimestamp) ();
 }
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* Stopwatch_StartNew_mF813F15E68604C7734FECC301B7042A521041259 (const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	{
+		Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* L_0 = (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043*)il2cpp_codegen_object_new(Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043_il2cpp_TypeInfo_var);
+		Stopwatch__ctor_mAFE6B2F45CF1C3469EF6D5307972BC098B473D0A(L_0, NULL);
+		Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* L_1 = L_0;
+		NullCheck(L_1);
+		Stopwatch_Start_m35906A38C7D336CF9DD35854C7E170D762A55915(L_1, NULL);
+		return L_1;
+	}
+}
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Stopwatch__ctor_mAFE6B2F45CF1C3469EF6D5307972BC098B473D0A (Stopwatch_tA188A210449E22C07053A7D3014DD182C7369043* __this, const RuntimeMethod* method) 
 {
 	{
@@ -4070,7 +4089,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DerSequenceReader_ReadUtf8String_m6
 		int32_t L_4 = V_0;
 		NullCheck(L_1);
 		String_t* L_5;
-		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_1, L_2, L_3, L_4);
+		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_1, L_2, L_3, L_4);
 		int32_t L_6 = __this->____position;
 		int32_t L_7 = V_0;
 		__this->____position = ((int32_t)il2cpp_codegen_add(L_6, L_7));
@@ -4147,7 +4166,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DerSequenceReader_ReadPrintableStri
 		int32_t L_4 = V_0;
 		NullCheck(L_1);
 		String_t* L_5;
-		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_1, L_2, L_3, L_4);
+		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_1, L_2, L_3, L_4);
 		int32_t L_6 = __this->____position;
 		int32_t L_7 = V_0;
 		__this->____position = ((int32_t)il2cpp_codegen_add(L_6, L_7));
@@ -4171,7 +4190,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DerSequenceReader_ReadIA5String_m0C
 		int32_t L_4 = V_0;
 		NullCheck(L_1);
 		String_t* L_5;
-		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_1, L_2, L_3, L_4);
+		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_1, L_2, L_3, L_4);
 		int32_t L_6 = __this->____position;
 		int32_t L_7 = V_0;
 		__this->____position = ((int32_t)il2cpp_codegen_add(L_6, L_7));
@@ -4278,7 +4297,7 @@ IL_005d:
 		int32_t L_16 = V_0;
 		NullCheck(L_13);
 		String_t* L_17;
-		L_17 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_13, L_14, L_15, L_16);
+		L_17 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_13, L_14, L_15, L_16);
 		V_1 = L_17;
 		goto IL_0090;
 	}
@@ -4301,7 +4320,7 @@ CATCH_0079:
 		int32_t L_22 = V_0;
 		NullCheck(L_19);
 		String_t* L_23;
-		L_23 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_19, L_20, L_21, L_22);
+		L_23 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_19, L_20, L_21, L_22);
 		V_1 = L_23;
 		IL2CPP_POP_ACTIVE_EXCEPTION(Exception_t*);
 		goto IL_0090;
@@ -4406,7 +4425,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* DerSequenceReader_ReadBMPString_m6A
 		int32_t L_4 = V_0;
 		NullCheck(L_1);
 		String_t* L_5;
-		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_1, L_2, L_3, L_4);
+		L_5 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_1, L_2, L_3, L_4);
 		int32_t L_6 = __this->____position;
 		int32_t L_7 = V_0;
 		__this->____position = ((int32_t)il2cpp_codegen_add(L_6, L_7));
@@ -4533,7 +4552,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR DateTime_t66193957C73913903DDAD89FEDC46139BCA
 		int32_t L_5 = V_0;
 		NullCheck(L_2);
 		String_t* L_6;
-		L_6 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_2, L_3, L_4, L_5);
+		L_6 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_2, L_3, L_4, L_5);
 		int32_t L_7 = __this->____position;
 		int32_t L_8 = V_0;
 		__this->____position = ((int32_t)il2cpp_codegen_add(L_7, L_8));
@@ -6279,7 +6298,7 @@ IL_0055_1:
 			L_13 = ASN1_get_Value_mA6F9BE5AC19AC060AC42673C8FD5AA864EA046B6(L_12, NULL);
 			NullCheck(L_11);
 			String_t* L_14;
-			L_14 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(36, L_11, L_13);
+			L_14 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(37, L_11, L_13);
 			V_5 = L_14;
 			goto IL_00af_1;
 		}
@@ -6295,7 +6314,7 @@ IL_0070_1:
 			L_17 = ASN1_get_Value_mA6F9BE5AC19AC060AC42673C8FD5AA864EA046B6(L_16, NULL);
 			NullCheck(L_15);
 			String_t* L_18;
-			L_18 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(36, L_15, L_17);
+			L_18 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(37, L_15, L_17);
 			V_5 = L_18;
 			goto IL_00af_1;
 		}

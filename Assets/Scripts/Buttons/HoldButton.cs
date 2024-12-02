@@ -11,7 +11,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void OnPointerDown(PointerEventData eventData)
     {
         isHolding = true;
-        Debug.Log("Button is being held down");
+       // Debug.Log("Button is being held down");
 
         // Bắt đầu xử lý nhấn giữ
         StartHold();
@@ -20,7 +20,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void OnPointerUp(PointerEventData eventData)
     {
         isHolding = false;
-        Debug.Log("Button is released");
+       // Debug.Log("Button is released");
 
         // Xử lý khi nhả nút
         StopHold();
@@ -42,7 +42,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         if (isHolding)
         {
             // Nếu nút đang được giữ, có thể thực hiện các hành động liên tục ở đây
-            Debug.Log("Holding the button...");
+          //  Debug.Log("Holding the button...");
         }
     }
 

@@ -2204,7 +2204,7 @@ IL_00ce:
 		int32_t L_65 = V_2;
 		NullCheck(L_63);
 		CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB* L_66;
-		L_66 = VirtualFuncInvoker3< CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(26, L_63, L_64, 0, ((int32_t)il2cpp_codegen_multiply(4, L_65)));
+		L_66 = VirtualFuncInvoker3< CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(27, L_63, L_64, 0, ((int32_t)il2cpp_codegen_multiply(4, L_65)));
 		int32_t L_67 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(Convert_t7097FF336D592F7C06D88A98349A44646F91EFFC_il2cpp_TypeInfo_var);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_68;
@@ -2414,7 +2414,7 @@ IL_00b5:
 		int32_t L_59 = V_2;
 		NullCheck(L_57);
 		CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB* L_60;
-		L_60 = VirtualFuncInvoker3< CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(26, L_57, L_58, 0, ((int32_t)il2cpp_codegen_multiply(4, L_59)));
+		L_60 = VirtualFuncInvoker3< CharU5BU5D_t799905CF001DD5F13F7DBB310181FC4D8B7D0AAB*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(27, L_57, L_58, 0, ((int32_t)il2cpp_codegen_multiply(4, L_59)));
 		int32_t L_61 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(Convert_t7097FF336D592F7C06D88A98349A44646F91EFFC_il2cpp_TypeInfo_var);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_62;
@@ -7267,7 +7267,7 @@ IL_005a:
 		int32_t L_13 = ___1_ibStart;
 		int32_t L_14 = ___2_cbSize;
 		NullCheck(L_11);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_11, L_12, L_13, L_14);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_11, L_12, L_13, L_14);
 		return;
 	}
 }
@@ -7436,7 +7436,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void TailStream__ctor_m736F08472DCE23B30B34A2
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void TailStream_Clear_m1F947937D510AB93C3A68D8FFCA2DE43A14D9552 (TailStream_t66811A2F798809BFF512D00D30DE89E3DB9A3B3C* __this, const RuntimeMethod* method) 
 {
 	{
-		VirtualActionInvoker0::Invoke(18, __this);
+		VirtualActionInvoker0::Invoke(19, __this);
 		return;
 	}
 }
@@ -7931,7 +7931,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void PasswordDeriveBytes__ctor_m643FB67B5A6AE
 		String_t* L_1 = ___0_strPassword;
 		NullCheck(L_0);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_2;
-		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_0, L_1);
+		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_0, L_1);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_3 = ___1_rgbSalt;
 		String_t* L_4 = ___2_strHashName;
 		int32_t L_5 = ___3_iterations;
@@ -8571,10 +8571,10 @@ IL_0069:
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_16 = __this->____baseValue;
 			NullCheck(L_16);
 			NullCheck(L_14);
-			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_14, L_15, 0, ((int32_t)(((RuntimeArray*)L_16)->max_length)));
+			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_14, L_15, 0, ((int32_t)(((RuntimeArray*)L_16)->max_length)));
 			CryptoStream_t8258B5E90AA951C21358547EA7C7BEB444441F65* L_17 = V_3;
 			NullCheck(L_17);
-			VirtualActionInvoker0::Invoke(18, L_17);
+			VirtualActionInvoker0::Invoke(19, L_17);
 			goto IL_006a;
 		}
 		catch(Il2CppExceptionWrapper& e)
@@ -8646,10 +8646,10 @@ IL_00d5:
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_35 = __this->____baseValue;
 			NullCheck(L_35);
 			NullCheck(L_33);
-			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_33, L_34, 0, ((int32_t)(((RuntimeArray*)L_35)->max_length)));
+			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_33, L_34, 0, ((int32_t)(((RuntimeArray*)L_35)->max_length)));
 			CryptoStream_t8258B5E90AA951C21358547EA7C7BEB444441F65* L_36 = V_4;
 			NullCheck(L_36);
-			VirtualActionInvoker0::Invoke(18, L_36);
+			VirtualActionInvoker0::Invoke(19, L_36);
 			goto IL_00d6;
 		}
 		catch(Il2CppExceptionWrapper& e)
@@ -8781,7 +8781,7 @@ IL_007c:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_27 = V_1;
 		int32_t L_28 = V_0;
 		NullCheck(L_26);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(35, L_26, L_27, 0, L_28);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_26, L_27, 0, L_28);
 	}
 
 IL_00a8:

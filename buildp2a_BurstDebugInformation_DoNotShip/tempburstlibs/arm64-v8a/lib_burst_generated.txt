@@ -21,6 +21,7 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_ge
 --assembly-defines=System.Core;
 --assembly-defines=System;
 --assembly-defines=System.Drawing;
+--assembly-defines=System.Net.Http;
 --assembly-defines=System.Numerics;
 --assembly-defines=System.Windows.Forms;
 --assembly-defines=System.Xml;

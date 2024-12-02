@@ -5952,7 +5952,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AutomataDictionary_Add_mD353BD85702D57FB
 		String_t* L_1 = ___0_str;
 		NullCheck(L_0);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_2;
-		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_0, L_1);
+		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_0, L_1);
 		V_0 = L_2;
 		V_1 = 0;
 		AutomataNode_t749A6284E9EA48A4D564901DBE9249305D0B2929* L_3 = __this->___root;
@@ -8325,7 +8325,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ByteArrayStringHashTable_Add_m605A758799
 		String_t* L_1 = ___0_key;
 		NullCheck(L_0);
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_2;
-		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(18, L_0, L_1);
+		L_2 = VirtualFuncInvoker1< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, String_t* >::Invoke(19, L_0, L_1);
 		int32_t L_3 = ___1_value;
 		bool L_4;
 		L_4 = ByteArrayStringHashTable_TryAddInternal_m752A297CFDEEA6C45D473B1C09BC0F0A0A6273A0(__this, L_2, L_3, NULL);
@@ -8889,7 +8889,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* Entry_ToString_mC16666B4B96A2D16EF9
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_4 = __this->___Key;
 		NullCheck(L_3);
 		String_t* L_5;
-		L_5 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(36, L_3, L_4);
+		L_5 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(37, L_3, L_4);
 		NullCheck(L_2);
 		(L_2)->SetAt(static_cast<il2cpp_array_size_t>(1), (String_t*)L_5);
 		StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248* L_6 = L_2;
@@ -9027,7 +9027,7 @@ IL_005c:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_19 = L_18.___Key;
 		NullCheck(L_17);
 		String_t* L_20;
-		L_20 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(36, L_17, L_19);
+		L_20 = VirtualFuncInvoker1< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(37, L_17, L_19);
 		Entry_t39F343C9DF50958B6CB0CC4C05208796E8898549 L_21 = V_4;
 		int32_t L_22 = L_21.___Value;
 		KeyValuePair_2_t203D89707A14A98B3FB295DFFAC0F4D3CF2B1078 L_23;
@@ -19767,7 +19767,7 @@ IL_000b:
 		L_8 = String_get_Length_m42625D67623FA5CC7A44D47425CE86FB946542D2_inline(L_7, NULL);
 		NullCheck(L_6);
 		int32_t L_9;
-		L_9 = VirtualFuncInvoker1< int32_t, int32_t >::Invoke(34, L_6, L_8);
+		L_9 = VirtualFuncInvoker1< int32_t, int32_t >::Invoke(35, L_6, L_8);
 		il2cpp_codegen_runtime_class_init_inline(MessagePackBinary_tB0FEDBDE7233BAC5640D1DB5C162F6764E9BE488_il2cpp_TypeInfo_var);
 		MessagePackBinary_EnsureCapacity_m2B492D0219E3FCDCBDFD64E68D96CD2698B4DAD7_inline(L_4, L_5, ((int32_t)il2cpp_codegen_add(L_9, 5)), NULL);
 		String_t* L_10 = ___2_value;
@@ -19822,7 +19822,7 @@ IL_0045:
 		int32_t L_22 = V_1;
 		NullCheck(L_16);
 		int32_t L_23;
-		L_23 = VirtualFuncInvoker5< int32_t, String_t*, int32_t, int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t >::Invoke(19, L_16, L_17, 0, L_19, L_21, L_22);
+		L_23 = VirtualFuncInvoker5< int32_t, String_t*, int32_t, int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t >::Invoke(20, L_16, L_17, 0, L_19, L_21, L_22);
 		V_2 = L_23;
 		int32_t L_24 = V_2;
 		if ((((int32_t)L_24) > ((int32_t)((int32_t)31))))

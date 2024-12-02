@@ -514,8 +514,8 @@ public static class WavUtility
         }
 
         // Tạo AudioClip từ dữ liệu mẫu
-        AudioClip audioClip = AudioClip.Create(name, sampleCount, 1, 44100, false);
+        AudioClip audioClip = AudioClip.Create(name, sampleCount, 1, 24000, false);
         audioClip.SetData(samples, 0);
         return audioClip;
-    }
+    } 
 }

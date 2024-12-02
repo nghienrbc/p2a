@@ -7552,7 +7552,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ParsingState_Close_mA2ACDB0CCE0955A1C3B7
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_2 = __this->___stream;
 		NullCheck(L_2);
-		VirtualActionInvoker0::Invoke(18, L_2);
+		VirtualActionInvoker0::Invoke(19, L_2);
 		return;
 	}
 
@@ -10877,7 +10877,7 @@ IL_0018_1:
 			Encoding_t65CDEF28CF20A7B8C92E85A4E808920C2465F095* L_19 = __this->___encoding;
 			NullCheck(L_19);
 			String_t* L_20;
-			L_20 = VirtualFuncInvoker0< String_t* >::Invoke(9, L_19);
+			L_20 = VirtualFuncInvoker0< String_t* >::Invoke(10, L_19);
 			NullCheck(L_18);
 			StringBuilder_t* L_21;
 			L_21 = StringBuilder_Append_m08904D74E0C78E5F36DCD9C9303BDD07886D9F7D(L_18, L_20, NULL);

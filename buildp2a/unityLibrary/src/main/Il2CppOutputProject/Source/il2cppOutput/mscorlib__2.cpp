@@ -4812,7 +4812,7 @@ IL_001f_2:
 					int32_t L_11 = V_2;
 					NullCheck(L_8);
 					int32_t L_12;
-					L_12 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(32, L_8, L_9, L_10, L_11);
+					L_12 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(33, L_8, L_9, L_10, L_11);
 					V_3 = L_12;
 					int32_t L_13 = V_3;
 					if (L_13)
@@ -7878,7 +7878,7 @@ IL_0159:
 		uint32_t L_104 = L_103->___CharCount;
 		NullCheck(L_100);
 		String_t* L_105;
-		L_105 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_100, L_101, L_102, L_104);
+		L_105 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_100, L_101, L_102, L_104);
 		*((RuntimeObject**)L_99) = (RuntimeObject*)L_105;
 		Il2CppCodeGenWriteBarrier((void**)(RuntimeObject**)L_99, (void*)(RuntimeObject*)L_105);
 		int32_t L_106 = V_0;
@@ -8038,7 +8038,7 @@ IL_0207:
 		int32_t L_163 = V_0;
 		NullCheck(L_159);
 		String_t* L_164;
-		L_164 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_159, L_160, L_161, ((int32_t)il2cpp_codegen_subtract(((int32_t)il2cpp_codegen_subtract(((int32_t)(((RuntimeArray*)L_162)->max_length)), L_163)), 1)));
+		L_164 = VirtualFuncInvoker3< String_t*, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(38, L_159, L_160, L_161, ((int32_t)il2cpp_codegen_subtract(((int32_t)il2cpp_codegen_subtract(((int32_t)(((RuntimeArray*)L_162)->max_length)), L_163)), 1)));
 		*((RuntimeObject**)L_158) = (RuntimeObject*)L_164;
 		Il2CppCodeGenWriteBarrier((void**)(RuntimeObject**)L_158, (void*)(RuntimeObject*)L_164);
 	}

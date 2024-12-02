@@ -27404,7 +27404,7 @@ IL_0062:
 		int64_t L_35 = V_6;
 		NullCheck(L_34);
 		int64_t L_36;
-		L_36 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(30, L_34, L_35, 0);
+		L_36 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_34, L_35, 0);
 		goto IL_00cc;
 	}
 

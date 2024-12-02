@@ -12,6 +12,7 @@ using UnityEngine.Networking;
 using NAudio.Wave;
 using System.Text;
 using BestHTTP.Caching;
+//using System.Diagnostics;
 
 public class RecordAudio : MonoBehaviour
 {
@@ -239,8 +240,7 @@ public class RecordAudio : MonoBehaviour
                 return;
             }
             // Lấy file audio đã ghi âm từ RecordAudio 
-            byte[] audioData = File.ReadAllBytes(audioFilePath);
-
+            byte[] audioData = File.ReadAllBytes(audioFilePath); 
 
             // Tạo một MultipartFormDataContent để gửi file audio
             var formContent = new MultipartFormDataContent();
@@ -251,71 +251,49 @@ public class RecordAudio : MonoBehaviour
             var request = new HttpRequestMessage(HttpMethod.Post, serverUrl)
             {
                 Content = formContent
-            };
+            }; 
+
+            // Đo thời gian gửi yêu cầu
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             // Gửi yêu cầu POST với HttpCompletionOption.ResponseHeadersRead
             HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
+             
             // Gửi yêu cầu POST đến API
             //HttpResponseMessage response = await client.PostAsync(serverUrl, formContent);
 
             response.EnsureSuccessStatusCode();
-
-            //using (Stream stream = await response.Content.ReadAsStreamAsync())
-            //{
-            //    var tempFilePath = Path.Combine(Path.GetTempPath(), "tempAudio.mp3");
-            //    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            //    {
-            //        await stream.CopyToAsync(fileStream);
-            //    }
-            // Load the audio file as an AudioClip
-            //byte[] audioData = File.ReadAllBytes(tempFilePath);
-            //AudioClip audioClip = WavUtility.ToAudioClip(audioData, "tempAudio");
-
-            //// Set the AudioClip to the AudioSource and play it
-            //audioSource.clip = audioClip;
-            //audioSource.Play();
-            //}
-
+            // Đo thời gian nhận phản hồi đầu tiên (bao gồm cả headers)
+            stopwatch.Stop();
+            Debug.Log($"Time to receive headers: {stopwatch.ElapsedMilliseconds} ms"); 
+           
             if (response.IsSuccessStatusCode)
             {
                 // Phản hồi header đã được nhận
-                Debug.Log("Header received. Start receiving stream...");
-
-                Debug.Log("Audio is start playing 111...");
-                // Lấy stream âm thanh từ response
-                //Stream audioStream = await response.Content.ReadAsStreamAsync();
+                Debug.Log("Header received. Start receiving stream..."); 
+                // Lấy stream âm thanh từ response 
                 using (Stream audioStream = await response.Content.ReadAsStreamAsync())
                 {
                     // Tạo file tạm trong thư mục tạm của hệ thống
                     string tempFilePath = Path.Combine(Application.temporaryCachePath, "tempAudio.wav");
 
-                    // Mở FileStream để ghi dữ liệu vào file
-                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    AudioClip audioClip = await CreateAudioClipFromStream(audioStream);
+                    if (audioClip != null)
                     {
-                        // Khởi tạo BufferedWaveProvider để phát âm thanh ngay lập tức
-                        waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 2));  // Chỉnh WaveFormat nếu cần
-                    waveOutEvent = new WaveOutEvent();
-                    waveOutEvent.Init(waveProvider);
-                    waveOutEvent.Play();
+                        AudioSource audioSource = GetComponent<AudioSource>();
+                        audioSource.clip = audioClip;
+                        audioSource.Play();
 
-                    // Đọc stream và thêm vào BufferedWaveProvider để phát
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = await audioStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        Debug.Log("Audio is playing...");
+                        isRequestInProgress = false;
+                    }
+                    else
                     {
-                        waveProvider.AddSamples(buffer, 0, bytesRead);
-                            // Ghi dữ liệu vào file tạm
-                            await fileStream.WriteAsync(buffer, 0, bytesRead);
-                            Debug.Log($"Written {bytesRead} bytes to temp file.");
-
-
-                            await Task.Delay(5);  // Thêm độ trễ nhỏ để điều chỉnh tốc độ phát
-                        }
-                        Debug.Log("Audio is playing and saved to temporary file.");
+                        Debug.LogError("Failed to load audio clip");
                     }
 
-                    Debug.Log("Audio is playing...");
+                  
+                    isRequestInProgress = false;
                 }
             }
             else
@@ -323,6 +301,42 @@ public class RecordAudio : MonoBehaviour
                 Debug.LogError("Failed to retrieve audio stream from API");
             }
         }
+    } 
+    private async Task<AudioClip> CreateAudioClipFromStream(Stream audioStream)
+    {
+        // Tạo mảng byte để lưu dữ liệu âm thanh
+        using (MemoryStream memoryStream = new MemoryStream())
+        {
+            await audioStream.CopyToAsync(memoryStream);
+            byte[] audioBytes = memoryStream.ToArray();
+
+            // Giả sử rằng đây là dữ liệu PCM (chỉ là ví dụ, bạn cần xác nhận kiểu dữ liệu từ API)
+            // Nếu cần, bạn có thể sử dụng thư viện khác như NAudio để chuyển đổi sang định dạng PCM nếu tệp không phải WAV.
+            float[] audioData = ConvertToFloatArray(audioBytes);  // Cần có hàm chuyển đổi từ byte[] sang float[] nếu cần
+
+            // Tạo AudioClip từ dữ liệu PCM
+            AudioClip audioClip = AudioClip.Create("StreamingAudio", audioData.Length, 1, 24000, false);
+            audioClip.SetData(audioData, 0);
+
+            return audioClip;
+        }
+    }
+
+    private float[] ConvertToFloatArray(byte[] audioBytes)
+    {
+        // Đây là ví dụ cơ bản, bạn cần thực hiện chuyển đổi từ byte[] (thường là dữ liệu WAV hoặc MP3) sang mảng float[]
+        // Nếu bạn có file WAV, có thể dùng một thư viện như NAudio để xử lý và chuyển đổi nó
+        // Cách đơn giản là nếu file đã ở định dạng PCM, bạn có thể dùng một giải thuật để chuyển trực tiếp sang float[]
+        int sampleCount = audioBytes.Length / 2;  // Giả sử mỗi mẫu là 2 bytes (16 bit)
+        float[] audioData = new float[sampleCount];
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            short sample = BitConverter.ToInt16(audioBytes, i * 2);  // Đọc 2 bytes làm một sample 16-bit
+            audioData[i] = sample / 32768.0f;  // Chuyển đổi từ short (-32768 to 32767) sang float (-1.0 to 1.0)
+        }
+
+        return audioData;
     }
 
 
@@ -376,13 +390,11 @@ public class RecordAudio : MonoBehaviour
     // Callback nhận dữ liệu từng phần (stream)
     private bool OnStreamingDataReceived(HTTPRequest request, HTTPResponse response, byte[] dataFragment, int dataFragmentLength)
     {
-        Debug.Log("dataFragmentLength: " + dataFragmentLength);
-
+        Debug.Log("dataFragmentLength: " + dataFragmentLength); 
         StartCoroutine(PlayReceivedAudioChunk(dataFragment));
         // Trả về true để tiếp tục nhận dữ liệu 
         return true;
     }
-
     private IEnumerator PlayReceivedAudioChunk(byte[] audioData)
     {
         // Chuyển đổi dữ liệu nhận được thành AudioClip
@@ -424,7 +436,7 @@ public class RecordAudio : MonoBehaviour
             byte[] responseAudioData = resp.Data;
 
             // Phát audio nhận về
-           //StartCoroutine(PlayReceivedAudio(responseAudioData));
+           StartCoroutine(PlayReceivedAudio(responseAudioData));
         }
         finally
         {
@@ -432,8 +444,7 @@ public class RecordAudio : MonoBehaviour
             isRequestInProgress = false;
         }  
     }
-
-
+    
     private IEnumerator PlayReceivedAudio(byte[] audioData)
     {
         // Lưu file audio nhận được vào bộ nhớ tạm
@@ -586,5 +597,90 @@ public class RecordAudio : MonoBehaviour
             return (int)br.BaseStream.Position;
         }
     }
+    //// Mở FileStream để ghi dữ liệu vào file
+    //using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+    //{
+    //    // Khởi tạo BufferedWaveProvider để phát âm thanh ngay lập tức 
+    //    //waveProvider = new BufferedWaveProvider(new WaveFormat(24000, 16, 1));
 
+    //    //waveOutEvent = new WaveOutEvent();
+    //    //waveOutEvent.Init(waveProvider);
+    //    //waveOutEvent.Play();
+
+    //    // Đọc stream và thêm vào BufferedWaveProvider để phát
+    //    byte[] buffer = new byte[1024];
+    //    int bytesRead;
+    //    int sampleRate = 24000;  // Tùy chỉnh theo mẫu của bạn (ví dụ: 24000Hz)
+    //    int channels = 1;  // Một kênh (mono) hoặc hai kênh (stereo)
+    //    int bitsPerSample = 16; // 16-bit PCM audio
+
+    //    myakuController.MyakuAnswer();
+
+    //    // Tạo AudioClip (Giả sử dữ liệu là PCM)
+    //    AudioClip audioClip = AudioClip.Create("StreamingAudio", 0, channels, sampleRate, true);
+    //    // Khởi tạo AudioSource để phát âm thanh
+    //    AudioSource audioSource = GetComponent<AudioSource>();
+    //    audioSource.clip = audioClip;
+    //    audioSource.Play();
+
+
+    //    // Dữ liệu âm thanh sẽ được cập nhật theo từng chunk
+    //    List<float> audioSamplesList = new List<float>();
+
+    //    while ((bytesRead = await audioStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    //    {
+    //        // Kiểm tra xem buffer có đầy không trước khi thêm vào BufferedWaveProvider
+    //       // if (waveProvider.BufferedBytes < waveProvider.BufferLength)
+    //       // {
+    //            //////waveProvider.AddSamples(buffer, 0, bytesRead);
+    //            Debug.Log($"Written {bytesRead} bytes to temp file.");
+    //            await fileStream.WriteAsync(buffer, 0, bytesRead);
+    //        //  }
+    //        //else
+    //        //{
+    //        //    // Nếu buffer đầy, đợi một chút trước khi thử lại
+    //        //    await Task.Delay(5);  // Delay 10ms hoặc điều chỉnh theo yêu cầu
+    //        //}
+
+    //        // Ghi dữ liệu vào file tạm
+    //        //
+    //        //
+    //        //await Task.Delay(1);  // Thêm độ trễ nhỏ để điều chỉnh tốc độ phát    
+
+
+    //        // Chuyển đổi dữ liệu từ byte sang float (16-bit PCM)
+    //        float[] audioSamples = new float[bytesRead / 2]; // 16-bit PCM sẽ có 2 byte cho mỗi sample
+    //        for (int i = 0; i < audioSamples.Length; i++)
+    //        {
+    //            // Chuyển đổi từ byte sang short, rồi chia cho 32768 để chuyển thành giá trị float
+    //            audioSamples[i] = BitConverter.ToInt16(buffer, i * 2) / 32768f;
+    //        }
+
+    //        // Thêm samples mới vào danh sách
+    //        audioSamplesList.AddRange(audioSamples);
+
+    //        // Cập nhật AudioClip với dữ liệu đã nhận
+    //        int currentSampleCount = audioSamplesList.Count;
+    //        if (currentSampleCount > audioClip.samples)
+    //        {
+    //            // Tăng số lượng samples của AudioClip nếu cần
+    //            audioClip = AudioClip.Create("StreamingAudio", currentSampleCount, channels, sampleRate, true);
+    //            audioSource.clip = audioClip;
+    //            audioSource.Play();
+    //        }
+
+    //        // Cập nhật dữ liệu cho AudioClip
+    //        audioClip.SetData(audioSamplesList.ToArray(), 0);
+    //    }
+    //    Debug.Log("Audio is playing and saved to temporary file."); 
+    //}
+    //// thực hiện tạo audio file ở đây
+    //Debug.Log("Audio is playing...");
+    //// Load the audio file as an AudioClip
+    ////byte[] audioData1 = File.ReadAllBytes(tempFilePath);
+    ////AudioClip audioClip = WavUtility.ToAudioClip(audioData1, "tempAudio"); 
+    //// Set the AudioClip to the AudioSource and play it
+    ////audioSource.clip = audioClip;
+    ////audioSource.Play(); 
+    ////StartCoroutine(CheckAudioFinished());
 }

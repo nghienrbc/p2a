@@ -10315,7 +10315,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec_U3CSaveToU3Eb__18_0_m732F08993AE
 		L_1 = InterfaceFuncInvoker0< Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* >::Invoke(0, IWritableArchiveEntry_t44A3DC77EAFE2717B15D6F1B0D394A297DD38E8F_il2cpp_TypeInfo_var, L_0);
 		NullCheck(L_1);
 		int64_t L_2;
-		L_2 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(30, L_1, ((int64_t)0), (int32_t)0);
+		L_2 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_1, ((int64_t)0), (int32_t)0);
 		return;
 	}
 }
@@ -10775,7 +10775,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec_U3CSaveToU3Eb__18_0_m03DB4372032
 		L_1 = InterfaceFuncInvoker0< Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* >::Invoke(0, IWritableArchiveEntry_t44A3DC77EAFE2717B15D6F1B0D394A297DD38E8F_il2cpp_TypeInfo_var, L_0);
 		NullCheck(L_1);
 		int64_t L_2;
-		L_2 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(30, L_1, ((int64_t)0), (int32_t)0);
+		L_2 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_1, ((int64_t)0), (int32_t)0);
 		return;
 	}
 }
