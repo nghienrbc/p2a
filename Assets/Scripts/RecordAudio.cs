@@ -1,6 +1,4 @@
-﻿using BestHTTP;
-//using NAudio.Wave;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,10 +8,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 using NAudio.Wave;
-using System.Text;
-using BestHTTP.Caching;
-using System.Threading;
-//using System.Diagnostics;
+using System.Text; 
+using System.Threading; 
 
 public class RecordAudio : MonoBehaviour
 {
@@ -22,8 +18,7 @@ public class RecordAudio : MonoBehaviour
     private string conversationId = "";
     private AudioClip recordedClip;
     [SerializeField] AudioSource audioSource;
-    private bool isRequestInProgress = false;
-    private HTTPRequest request;
+    private bool isRequestInProgress = false; 
     private float startTime;
     private float recordingLength;
 
@@ -37,6 +32,8 @@ public class RecordAudio : MonoBehaviour
     private float beginQuestionTime;
     private float endAnswerTime;
     private CancellationTokenSource cancellationTokenSource; // Token source để hủy tác vụ
+    private static HttpClient client = new HttpClient();
+    private Coroutine audioCoroutine; // Để lưu coroutine
 
     private void Start()
     {
@@ -44,34 +41,7 @@ public class RecordAudio : MonoBehaviour
         conversationId = Guid.NewGuid().ToString();
         //StartCoroutine(PlayRadio("http://ice3.somafm.com/defcon-128-mp3"));
     }
-    private IEnumerator PlayRadio(string url)
-    {
-        yield return null;
-        try
-        {
-            mediaFoundationReader = new MediaFoundationReader(url);
-            waveOut = new WaveOutEvent();
-            waveOut.Init(mediaFoundationReader);
-            waveOut.Play();
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"Error playing radio: {ex.Message}");
-        }
-    }
-    void OnDestroy()
-    {
-        if (waveOut != null)
-        {
-            waveOut.Stop();
-            waveOut.Dispose();
-        }
-
-        if (mediaFoundationReader != null)
-        {
-            mediaFoundationReader.Dispose();
-        }
-    }
+    
 
     public void StartRecording()
     {
@@ -84,6 +54,17 @@ public class RecordAudio : MonoBehaviour
             recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
             startTime = Time.realtimeSinceStartup;
         }
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop(); 
+            endAnswerTime = Time.time;
+        }
+        audioSource.clip = null;
+        if (isRequestInProgress)
+        {
+            cancellationTokenSource?.Cancel();
+            Debug.Log("Cancelling previous request...");
+        }
     }
 
     public void StopRecording()
@@ -95,17 +76,7 @@ public class RecordAudio : MonoBehaviour
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
         WavUtility.Save(audioFilePath, recordedClip);
         Debug.Log("Recording saved as " + audioFilePath);
-
-        // kiểm tra nếu chưa nhấn giữ để thu âm thì chưa cho gửi câu hỏi đi
-        // hủy mọi thứ đang diễn ra từ myaku
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-            // Gọi sự kiện khi audio kết thúc
-            onAudioFinished.Invoke();
-            endAnswerTime = Time.time;
-        } 
-
+         
         UploadAndProcessAudio();
     }
 
@@ -125,14 +96,7 @@ public class RecordAudio : MonoBehaviour
     }
 
     public async void UploadAndProcessAudio()
-    {
-        //isRequestInProgress = false;
-        //if (isRequestInProgress)
-        //{
-        //    Debug.LogWarning("A request is already in progress. Please wait.");
-        //    return;
-        //}
-
+    { 
         // kiểm tra nếu sau 15s không có câu hỏi gì cho myaku thì tạo mới conversationId
         beginQuestionTime = Time.time;
         float timeDifference = beginQuestionTime - endAnswerTime;
@@ -161,8 +125,8 @@ public class RecordAudio : MonoBehaviour
         isRequestInProgress = true;
         myakuController.MyakuThinking();
 
-        using (HttpClient client = new HttpClient())
-        {
+        //using (HttpClient client = new HttpClient())
+        //{
             string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
             if (!File.Exists(audioFilePath))
@@ -213,7 +177,13 @@ public class RecordAudio : MonoBehaviour
                             myakuController.MyakuAnswer();
                             Debug.Log("Audio is playing...");
 
-                            StartCoroutine(CheckAudioFinished());
+                        // Dừng các coroutine trước đó nếu có
+                        if (audioCoroutine != null)
+                        {
+                            StopCoroutine(audioCoroutine);
+                        }
+
+                        audioCoroutine = StartCoroutine(CheckAudioFinished());
                         }
                         else
                         {
@@ -238,7 +208,7 @@ public class RecordAudio : MonoBehaviour
             {
                 isRequestInProgress = false;
             }
-        }
+       // }
     } 
     private async Task<AudioClip> CreateAudioClipFromStream(Stream audioStream, CancellationToken cancellationToken)
     {
@@ -246,25 +216,19 @@ public class RecordAudio : MonoBehaviour
         using (MemoryStream memoryStream = new MemoryStream())
         {
             await audioStream.CopyToAsync(memoryStream, cancellationToken);
-            byte[] audioBytes = memoryStream.ToArray();
-
-            // Giả sử rằng đây là dữ liệu PCM (chỉ là ví dụ, bạn cần xác nhận kiểu dữ liệu từ API)
-            // Nếu cần, bạn có thể sử dụng thư viện khác như NAudio để chuyển đổi sang định dạng PCM nếu tệp không phải WAV.
+            byte[] audioBytes = memoryStream.ToArray(); 
             float[] audioData = ConvertToFloatArray(audioBytes);  // Cần có hàm chuyển đổi từ byte[] sang float[] nếu cần
 
             // Tạo AudioClip từ dữ liệu PCM
             AudioClip audioClip = AudioClip.Create("StreamingAudio", audioData.Length, 1, 24000, false);
             audioClip.SetData(audioData, 0);
-
+            Resources.UnloadUnusedAssets();  // Giải phóng tài nguyên không còn sử dụng (tùy chọn)
             return audioClip;
         }
     }
 
     private float[] ConvertToFloatArray(byte[] audioBytes)
-    {
-        // Đây là ví dụ cơ bản, bạn cần thực hiện chuyển đổi từ byte[] (thường là dữ liệu WAV hoặc MP3) sang mảng float[]
-        // Nếu bạn có file WAV, có thể dùng một thư viện như NAudio để xử lý và chuyển đổi nó
-        // Cách đơn giản là nếu file đã ở định dạng PCM, bạn có thể dùng một giải thuật để chuyển trực tiếp sang float[]
+    { 
         int sampleCount = audioBytes.Length / 2;  // Giả sử mỗi mẫu là 2 bytes (16 bit)
         float[] audioData = new float[sampleCount];
 
@@ -293,6 +257,8 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("Audio finished playing!"); 
         UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
         myakuController.animator.SetBool("answer", false);
+        audioSource.clip = null;
+        Resources.UnloadUnusedAssets();
     }
 
     public bool HasRecordedAudio()

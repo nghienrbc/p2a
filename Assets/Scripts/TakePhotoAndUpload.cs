@@ -37,7 +37,8 @@ public class TakePhotoAndUpload : MonoBehaviour
     private Button reshootBtn;
     private Button downloadBtn;
 
-
+    private int cameraRotate = 0;
+    public RawImage rawImage; // RawImage để hiển thị video từ webcam
 
     private void Start()
     {
@@ -49,6 +50,13 @@ public class TakePhotoAndUpload : MonoBehaviour
         reshootBtn = GameObject.FindWithTag("reshoot").GetComponent<Button>();
         downloadBtn = GameObject.FindWithTag("download").GetComponent<Button>();
     }
+    public void RotateCamera()
+    {
+        cameraRotate += 1;
+        if (cameraRotate == 4) cameraRotate = 0;
+        cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, cameraRotate * 90);
+    }
+
     public void StartTakePhoto()
     {
         UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
@@ -71,9 +79,14 @@ public class TakePhotoAndUpload : MonoBehaviour
                 if (devices[i].isFrontFacing)
                 {
                     webCamTexture = new WebCamTexture(devices[i].name);
-                   // cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
+                    // Gán WebCamTexture vào RawImage để hiển thị
+                    //rawImage.texture = webCamTexture;
+                     cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, cameraRotate * 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
                     webCamTexture.Play(); // Bắt đầu camera
                     updateImageCoroutine = StartCoroutine(UpdateImage(webCamTexture));
+
+                    // Xoay camera phù hợp với hướng của thiết bị
+                    //AdjustCameraOrientation();
                     break;
                 }
             }
@@ -81,6 +94,19 @@ public class TakePhotoAndUpload : MonoBehaviour
         else
         {
             Debug.LogError("No camera found on this device!");
+        }
+    }
+
+    private void AdjustCameraOrientation()
+    {
+        // Kiểm tra xoay màn hình của thiết bị
+        int screenOrientation = Screen.orientation == ScreenOrientation.LandscapeLeft || Screen.orientation == ScreenOrientation.LandscapeRight ? 90 : 0;
+
+        // Điều chỉnh góc quay của RawImage để xoay video
+        if (rawImage != null)
+        {
+            // Xoay RawImage để video hiển thị đúng hướng
+            rawImage.transform.rotation = Quaternion.Euler(0, 0, screenOrientation);
         }
     }
 
@@ -111,6 +137,11 @@ public class TakePhotoAndUpload : MonoBehaviour
         {
             // Tạo một Texture2D từ WebCamTexture
             Texture2D texture = new Texture2D(webCamTexture.width, webCamTexture.height);
+            //for (int i = 0; i< cameraRotate; i++)
+            //{
+            //    texture = RotateTexture90DegreesRight(texture); 
+            //}
+
             texture.SetPixels(webCamTexture.GetPixels());
             texture.Apply();
 
@@ -159,26 +190,27 @@ public class TakePhotoAndUpload : MonoBehaviour
     //    rotatedTexture.Apply();
     //    return rotatedTexture;
     //}
-    //private Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
-    //{
-    //    int originalWidth = originalTexture.width;
-    //    int originalHeight = originalTexture.height;
 
-    //    // Tạo texture mới với chiều rộng và chiều cao hoán đổi
-    //    Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
+    private Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
+    {
+        int originalWidth = originalTexture.width;
+        int originalHeight = originalTexture.height;
 
-    //    // Xoay ảnh bằng cách hoán đổi tọa độ pixel
-    //    for (int x = 0; x < originalWidth; x++)
-    //    {
-    //        for (int y = 0; y < originalHeight; y++)
-    //        {
-    //            rotatedTexture.SetPixel(originalHeight - y - 1, x, originalTexture.GetPixel(x, y));
-    //        }
-    //    }
+        // Tạo texture mới với chiều rộng và chiều cao hoán đổi
+        Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
 
-    //    rotatedTexture.Apply();
-    //    return rotatedTexture;
-    //}
+        // Xoay ảnh bằng cách hoán đổi tọa độ pixel
+        for (int x = 0; x < originalWidth; x++)
+        {
+            for (int y = 0; y < originalHeight; y++)
+            {
+                rotatedTexture.SetPixel(originalHeight - y - 1, x, originalTexture.GetPixel(x, y));
+            }
+        }
+
+        rotatedTexture.Apply();
+        return rotatedTexture;
+    }
 
     public void SaveImage()
     { 
@@ -453,6 +485,11 @@ public class TakePhotoAndUpload : MonoBehaviour
             Texture2D texture = SpriteToTexture2D(cameraDisplay.sprite);
 
             Texture2D capturedTexture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false);
+            for (int i = 0; i < cameraRotate; i++)
+            {
+                texture = RotateTexture90DegreesRight(texture);
+            }
+
             capturedTexture.SetPixels(texture.GetPixels());
             capturedTexture.Apply();
 

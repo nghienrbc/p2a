@@ -620,7 +620,7 @@ public class LocationSceneManager : MonoBehaviour
 
     private Vector3 CalculatePopupPosition(Vector3 buttonPosition, Vector2 buttonSize, Vector2 smallPanelSize)
     {
-        float padding = 10f;  // Khoảng cách giữa button và panel nhỏ
+        float padding = 1;  // Khoảng cách giữa button và panel nhỏ
 
         // Lấy vị trí trung tâm của button
         float buttonCenterX = buttonPosition.x;
