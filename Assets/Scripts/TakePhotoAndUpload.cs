@@ -170,26 +170,26 @@ public class TakePhotoAndUpload : MonoBehaviour
 
         return photo;
     }
-    //private Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
-    //{
-    //    int originalWidth = originalTexture.width;
-    //    int originalHeight = originalTexture.height;
+    private Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
+    {
+        int originalWidth = originalTexture.width;
+        int originalHeight = originalTexture.height;
 
-    //    // Tạo texture mới với chiều rộng và chiều cao hoán đổi
-    //    Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
+        // Tạo texture mới với chiều rộng và chiều cao hoán đổi
+        Texture2D rotatedTexture = new Texture2D(originalHeight, originalWidth);
 
-    //    // Xoay ảnh bằng cách hoán đổi tọa độ pixel
-    //    for (int x = 0; x < originalWidth; x++)
-    //    {
-    //        for (int y = 0; y < originalHeight; y++)
-    //        {
-    //            rotatedTexture.SetPixel(y, originalWidth - x - 1, originalTexture.GetPixel(x, y));
-    //        }
-    //    }
+        // Xoay ảnh bằng cách hoán đổi tọa độ pixel
+        for (int x = 0; x < originalWidth; x++)
+        {
+            for (int y = 0; y < originalHeight; y++)
+            {
+                rotatedTexture.SetPixel(y, originalWidth - x - 1, originalTexture.GetPixel(x, y));
+            }
+        }
 
-    //    rotatedTexture.Apply();
-    //    return rotatedTexture;
-    //}
+        rotatedTexture.Apply();
+        return rotatedTexture;
+    }
 
     private Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
     {

@@ -606,7 +606,7 @@ public class LocationSceneManager : MonoBehaviour
                 }
 
                 File.WriteAllBytes(destinationPath, fileRequest.downloadHandler.data);
-                Debug.Log($"Copied {file} to {destinationPath}");
+                //Debug.Log($"Copied {file} to {destinationPath}");
             }
 #else
             // Trên các nền tảng khác: Sao chép file trực tiếp
