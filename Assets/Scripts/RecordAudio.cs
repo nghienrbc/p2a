@@ -218,7 +218,7 @@ public class RecordAudio : MonoBehaviour
 
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
         // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
-        if (audioDataBuffer.Count > 1024*10 && !audioSource.isPlaying && isBeginPlay == false)
+        if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && isBeginPlay == false)
         {
             //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
             Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
@@ -231,7 +231,7 @@ public class RecordAudio : MonoBehaviour
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
-        if (audioDataBuffer.Count > 1024 *10)
+        if (audioDataBuffer.Count > 0)
         {
             byte[] audioBytes = audioDataBuffer.ToArray();
 
@@ -241,8 +241,7 @@ public class RecordAudio : MonoBehaviour
             if (audioClip != null)
             {
                 audioSource.clip = audioClip;
-                audioSource.Play(); 
-                // yield return new WaitForSeconds(audioClip.length);
+                audioSource.Play();  
             }
             else
             {
