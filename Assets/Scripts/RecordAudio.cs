@@ -17,7 +17,8 @@ public class RecordAudio : MonoBehaviour
 {
     public MyakuController myakuController;
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio"; // URL server 
-    private string webSocketUrl = "ws://145.223.21.25:8001/ws/audio-chat"; // URL web socket 
+    private string webSocketUrl = "ws://18.143.171.38:8001/ws/audio-chat"; // URL web socket 
+   // private string webSocketUrl = "ws://145.223.21.25:8001/ws/audio-chat"; // URL web socket 
     private string conversationId = "";
     private AudioClip recordedClip;
     private AudioClip audioClipToPlay; // AudioClip duy nhất dùng để phát
@@ -118,7 +119,7 @@ public class RecordAudio : MonoBehaviour
             if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
             {
                 string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
-                //Debug.Log("Received transcript text: " + content);
+                Debug.Log("Received transcript text: " + content);
 
             }
             else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
@@ -140,7 +141,7 @@ public class RecordAudio : MonoBehaviour
             {
                 Debug.Log("Audio streaming complete."); 
                 //Debug.Log("Play audio 1 lần nào!");
-                EnqueueMainThreadAction(() => StartCoroutine(PlayAudio()));
+                EnqueueMainThreadAction(() => StartCoroutine(WaitForAudioToFinish()));
                 //isReceivingAudio = false; // Dừng nhận âm thanh
                 //EnqueueMainThreadAction(() => SaveAudioToFile(audioDataBufferToSaveFile));
             }
@@ -149,7 +150,20 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogError("Error processing WebSocket response: " + e.Message);
         }
-    } 
+    }
+
+    // Hàm chờ cho đến khi audioSource không còn chơi
+    private IEnumerator WaitForAudioToFinish()
+    {
+        // Chờ cho đến khi audioSource không còn chơi
+        while (audioSource.isPlaying)
+        {
+            yield return null; // Đợi một frame
+        }
+
+        // Sau khi audioSource không còn chơi, gọi EnqueueMainThreadAction
+        StartCoroutine(PlayAudio());
+    }
 
     // Xử lý và thêm audio chunk vào buffer
     private void ProcessAudioChunk(byte[] audioChunk)
@@ -166,7 +180,7 @@ public class RecordAudio : MonoBehaviour
 
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
         // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
-        if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && isBeginPlay == false)
+        if (audioDataBuffer.Count > 4096 && !audioSource.isPlaying && isBeginPlay == false)
         {
             //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
             Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
@@ -179,7 +193,7 @@ public class RecordAudio : MonoBehaviour
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
-        if (audioDataBuffer.Count > 0)
+        if (audioDataBuffer.Count > 4096)
         {
             byte[] audioBytes = audioDataBuffer.ToArray();
 
