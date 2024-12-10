@@ -1,0 +1,182 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    xmlns:tools="http://schemas.android.com/tools"
+4    package="com.unity3d.player" >
+5
+6    <uses-sdk
+7        android:minSdkVersion="22"
+7-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml
+8        android:targetSdkVersion="34" />
+8-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml
+9
+10    <uses-permission
+10-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:3-99
+11        android:name="android.permission.BLUETOOTH_ADMIN"
+11-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:20-69
+12        android:maxSdkVersion="30" />
+12-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:70-96
+13    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+13-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:3-77
+13-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:20-74
+14    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+14-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:3-79
+14-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:20-76
+15    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+15-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:7:3-74
+15-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:7:20-71
+16    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+16-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:3-71
+16-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:20-68
+17    <uses-permission android:name="android.permission.INTERNET" />
+17-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:3-65
+17-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:20-62
+18    <uses-permission android:name="android.permission.CAMERA" />
+18-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:3-63
+18-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:20-60
+19    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+19-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:3-69
+19-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:20-66
+20    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+20-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:3-78
+20-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:20-75
+21    <uses-permission android:name="android.permission.BLUETOOTH" />
+21-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:3-66
+21-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:20-63
+22>
+23    <uses-feature android:glEsVersion="0x00030000" />
+23-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:3-52
+23-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:17-49
+24    <uses-feature
+24-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:3-91
+25        android:name="android.hardware.vulkan.version"
+25-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:17-63
+26        android:required="false" />
+26-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:64-88
+27    <uses-feature
+27-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:3-83
+28        android:name="android.hardware.camera"
+28-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:17-55
+29        android:required="false" />
+29-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:56-80
+30    <uses-feature
+30-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:3-93
+31        android:name="android.hardware.camera.autofocus"
+31-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:17-65
+32        android:required="false" />
+32-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:66-90
+33    <uses-feature
+33-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:3-89
+34        android:name="android.hardware.camera.front"
+34-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:17-61
+35        android:required="false" />
+35-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:62-86
+36    <uses-feature
+36-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:3-87
+37        android:name="android.hardware.microphone"
+37-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:17-59
+38        android:required="false" />
+38-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:60-84
+39    <uses-feature
+39-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:3-88
+40        android:name="android.hardware.touchscreen"
+40-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:17-60
+41        android:required="false" />
+41-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:61-85
+42    <uses-feature
+42-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:3-99
+43        android:name="android.hardware.touchscreen.multitouch"
+43-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:17-71
+44        android:required="false" />
+44-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:72-96
+45    <uses-feature
+45-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:3-108
+46        android:name="android.hardware.touchscreen.multitouch.distinct"
+46-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:17-80
+47        android:required="false" />
+47-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:81-105
+48
+49    <application android:extractNativeLibs="true" >
+49-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:3-38:17
+49-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:16-48
+50        <meta-data
+50-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:5-69
+51            android:name="unity.splash-mode"
+51-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:16-48
+52            android:value="0" />
+52-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:49-66
+53        <meta-data
+53-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:5-74
+54            android:name="unity.splash-enable"
+54-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:16-50
+55            android:value="True" />
+55-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:51-71
+56        <meta-data
+56-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:5-78
+57            android:name="unity.launch-fullscreen"
+57-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:16-54
+58            android:value="True" />
+58-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:55-75
+59        <meta-data
+59-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:5-84
+60            android:name="unity.allow-resizable-window"
+60-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:16-59
+61            android:value="False" />
+61-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:60-81
+62        <meta-data
+62-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:5-81
+63            android:name="notch.config"
+63-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:16-43
+64            android:value="portrait|landscape" />
+64-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:44-78
+65        <meta-data
+65-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:5-84
+66            android:name="unity.auto-report-fully-drawn"
+66-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:16-60
+67            android:value="true" />
+67-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:61-81
+68
+69        <activity
+69-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:5-37:16
+70            android:name="com.unity3d.player.UnityPlayerActivity"
+70-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:15-68
+71            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+71-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:180-361
+72            android:exported="true"
+72-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:432-455
+73            android:hardwareAccelerated="true"
+73-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:397-431
+74            android:launchMode="singleTask"
+74-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:148-179
+75            android:resizeableActivity="false"
+75-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:362-396
+76            android:screenOrientation="fullUser"
+76-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:111-147
+77            android:theme="@style/UnityThemeSelector" >
+77-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:69-110
+78            <intent-filter>
+78-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:7-34:23
+79                <category android:name="android.intent.category.LAUNCHER" />
+79-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:32:9-69
+79-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:32:19-66
+80
+81                <action android:name="android.intent.action.MAIN" />
+81-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:9-61
+81-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:17-58
+82            </intent-filter>
+83
+84            <meta-data
+84-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:7-82
+85                android:name="unityplayer.UnityActivity"
+85-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:18-58
+86                android:value="true" />
+86-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:59-79
+87            <meta-data
+87-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:7-70
+88                android:name="notch_support"
+88-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:18-46
+89                android:value="true" />
+89-->D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:47-67
+90        </activity>
+91    </application>
+92
+93</manifest>

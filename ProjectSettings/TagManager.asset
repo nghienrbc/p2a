@@ -5,6 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Pin
+  - ToggleButton
+  - reshoot
+  - shoot
+  - download
+  - locationPin
+  - map
   layers:
   - Default
   - TransparentFX

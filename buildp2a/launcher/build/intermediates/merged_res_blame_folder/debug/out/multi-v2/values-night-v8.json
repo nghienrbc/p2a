@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "D:\\ASEAN\\Code\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-night-v8\\values-night-v8.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Duc Nguyen\\.gradle\\caches\\transforms-3\\c2dbda91962f42d56d637d95b3fc2bef\\transformed\\gpm-webview\\res\\values-night-v8\\values-night-v8.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "286"
+                    }
+                }
+            ]
+        }
+    ]
+}
