@@ -48,6 +48,7 @@ public class RecordAudio : MonoBehaviour
 
     private int sampleRate = 24000; // Tần số mẫu (có thể thay đổi tùy thuộc vào dữ liệu âm thanh)
     private int channels = 1; // Số kênh âm thanh (mono hoặc stereo)
+    private bool isBeginPlay = false;
 
     private void Awake()
     {
@@ -117,7 +118,7 @@ public class RecordAudio : MonoBehaviour
             if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
             {
                 string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
-                Debug.Log("Received transcript text: " + content);
+                //Debug.Log("Received transcript text: " + content);
 
             }
             else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
@@ -131,78 +132,25 @@ public class RecordAudio : MonoBehaviour
                 string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
                 byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
                 Debug.Log("Received audio chunk");
-                audioDataBufferToSaveFile.AddRange(audioBytes);
+                //audioDataBufferToSaveFile.AddRange(audioBytes);
                 EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
             } 
             // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
             else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "audio_complete")
             {
-                Debug.Log("Audio streaming complete.");
-                //StartCoroutine(PlayAudio());  // Dùng Coroutine để phát âm thanh
+                Debug.Log("Audio streaming complete."); 
                 //Debug.Log("Play audio 1 lần nào!");
                 EnqueueMainThreadAction(() => StartCoroutine(PlayAudio()));
                 //isReceivingAudio = false; // Dừng nhận âm thanh
-                EnqueueMainThreadAction(() => SaveAudioToFile(audioDataBufferToSaveFile));
+                //EnqueueMainThreadAction(() => SaveAudioToFile(audioDataBufferToSaveFile));
             }
         }
         catch (Exception e)
         {
             Debug.LogError("Error processing WebSocket response: " + e.Message);
         }
-    }
+    } 
 
-    private void SaveAudioToFile(List<byte> audioData)
-    {
-        // Lấy đường dẫn thư mục persistentDataPath
-        string filePath = Path.Combine(Application.persistentDataPath, "audioOutput.wav");
-
-        // Ghi dữ liệu vào file
-        try
-        {
-            // Kiểm tra xem file đã tồn tại chưa, nếu có thì xóa trước khi ghi mới
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-
-            // Ghi byte array vào file
-            File.WriteAllBytes(filePath, audioData.ToArray());
-            Debug.Log($"Audio file saved at {filePath}");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error saving audio file: {e.Message}");
-        }
-    }
-
-    // This method should be called every frame to process the queued actions on the main thread
-    void Update()
-    {
-        // Process all actions in the queue on the main thread
-        while (mainThreadActions.Count > 0)
-        {
-            Action action = null;
-
-            lock (mainThreadActions)
-            {
-                action = mainThreadActions.Dequeue();
-            }
-
-            // Execute the action
-            action?.Invoke();
-        }
-    }
-
-    // Enqueue action to execute on the main thread
-    private void EnqueueMainThreadAction(Action action)
-    {
-        lock (mainThreadActions)
-        {
-            mainThreadActions.Enqueue(action);
-        }
-    }
-
-    private bool isBeginPlay = false;
     // Xử lý và thêm audio chunk vào buffer
     private void ProcessAudioChunk(byte[] audioChunk)
     {
@@ -283,7 +231,57 @@ public class RecordAudio : MonoBehaviour
         }
         return floatArray;
     }
+    
+    private void SaveAudioToFile(List<byte> audioData)
+    {
+        // Lấy đường dẫn thư mục persistentDataPath
+        string filePath = Path.Combine(Application.persistentDataPath, "audioOutput.wav");
 
+        // Ghi dữ liệu vào file
+        try
+        {
+            // Kiểm tra xem file đã tồn tại chưa, nếu có thì xóa trước khi ghi mới
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            // Ghi byte array vào file
+            File.WriteAllBytes(filePath, audioData.ToArray());
+            Debug.Log($"Audio file saved at {filePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error saving audio file: {e.Message}");
+        }
+    }
+
+    // This method should be called every frame to process the queued actions on the main thread
+    void Update()
+    {
+        // Process all actions in the queue on the main thread
+        while (mainThreadActions.Count > 0)
+        {
+            Action action = null;
+
+            lock (mainThreadActions)
+            {
+                action = mainThreadActions.Dequeue();
+            }
+
+            // Execute the action
+            action?.Invoke();
+        }
+    }
+
+    // Enqueue action to execute on the main thread
+    private void EnqueueMainThreadAction(Action action)
+    {
+        lock (mainThreadActions)
+        {
+            mainThreadActions.Enqueue(action);
+        }
+    }
 
     public void StartRecording()
     {
@@ -318,7 +316,7 @@ public class RecordAudio : MonoBehaviour
         //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip);
         //string base64Audio = Convert.ToBase64String(audioBytes); 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
-       // WavUtility.Save(audioFilePath, recordedClip);
+        WavUtility.Save(audioFilePath, recordedClip);
        // Debug.Log("Recording saved as " + audioFilePath);
          
 
