@@ -11,13 +11,13 @@ using NAudio.Wave;
 using System.Text; 
 using System.Threading;
 using WebSocketSharp;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq; 
 
 public class RecordAudio : MonoBehaviour
 {
     public MyakuController myakuController;
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio"; // URL server 
-    private string webSocketUrl = "ws://18.143.171.38:8001/ws/audio-chat"; // URL web socket 
+    private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket 
    // private string webSocketUrl = "ws://145.223.21.25:8001/ws/audio-chat"; // URL web socket 
     private string conversationId = "";
     private AudioClip recordedClip;
@@ -50,10 +50,11 @@ public class RecordAudio : MonoBehaviour
     private int sampleRate = 24000; // Tần số mẫu (có thể thay đổi tùy thuộc vào dữ liệu âm thanh)
     private int channels = 1; // Số kênh âm thanh (mono hoặc stereo)
     private bool isBeginPlay = false;
+    private bool isWebSocketOpen = false;
 
     private void Awake()
     {
-        ConnectToWebSocket(webSocketUrl); // Thay URL WebSocket của bạn 
+        WebSocketHandler(webSocketUrl); // Thay URL WebSocket của bạn 
     }
     private void Start()
     {
@@ -63,7 +64,7 @@ public class RecordAudio : MonoBehaviour
     }
 
     // Kết nối WebSocket
-    public void ConnectToWebSocket(string url)
+    public void WebSocketHandler(string url)
     {
         ws = new WebSocket(url);
 
@@ -77,12 +78,14 @@ public class RecordAudio : MonoBehaviour
         // Xử lý khi kết nối thành công
         ws.OnOpen += (sender, e) =>
         {
+            isWebSocketOpen = true;
             Debug.Log("WebSocket Connected!");
         };
          
         // Xử lý khi WebSocket bị đóng
         ws.OnClose += (sender, e) =>
         {
+            isWebSocketOpen = false;
             Debug.Log("WebSocket Closed!");
         };
 
@@ -99,13 +102,52 @@ public class RecordAudio : MonoBehaviour
     {
         if (ws != null)
         {
-            ws.Send(message);
-            Debug.Log("Sent to server: " + message);
+            if (isWebSocketOpen)
+            {
+                ws.Send(message);
+                Debug.Log("Sent to server: " + message);
+
+                myakuController.MyakuThinking();
+            }
+            else
+            {
+                Console.WriteLine("WebSocket is not open.");
+            }
         }
         else
         {
             Debug.LogWarning("WebSocket is not connected.");
         }
+    }
+
+    public void OpenConnection()
+    {
+        if (!isWebSocketOpen)
+        {
+            Console.WriteLine("Connecting to WebSocket...");
+            ws.Connect();
+        }
+    }
+
+    public void CloseConnection()
+    {
+        if (isWebSocketOpen)
+        {
+            Console.WriteLine("Closing WebSocket...");
+            ws.Close();
+        }
+    }
+    // Sử dụng hàm này để đóng và mở WebSocket lại khi cần
+    public void ResetWebSocketConnection()
+    {
+        // Đóng WebSocket nếu đang mở
+        CloseConnection();
+
+        // Sau khi WebSocket đóng, chờ một lúc trước khi mở lại (có thể tùy chỉnh thời gian)
+        System.Threading.Thread.Sleep(100);  // Giả sử thời gian trễ là 500ms
+
+        // Mở lại WebSocket
+        OpenConnection();
     }
 
     // Xử lý dữ liệu trả về từ WebSocket
@@ -163,6 +205,13 @@ public class RecordAudio : MonoBehaviour
 
         // Sau khi audioSource không còn chơi, gọi EnqueueMainThreadAction
         StartCoroutine(PlayAudio());
+        // Dừng các coroutine trước đó nếu có
+        if (audioCoroutine != null)
+        {
+            StopCoroutine(audioCoroutine);
+        }
+
+        audioCoroutine = StartCoroutine(CheckAudioFinished());
     }
 
     // Xử lý và thêm audio chunk vào buffer
@@ -181,7 +230,8 @@ public class RecordAudio : MonoBehaviour
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
         // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
         if (audioDataBuffer.Count > 4096 && !audioSource.isPlaying && isBeginPlay == false)
-        {
+        { 
+            myakuController.MyakuAnswer();
             //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
             Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
             Debug.Log("Play audio nào!");
@@ -296,6 +346,7 @@ public class RecordAudio : MonoBehaviour
             mainThreadActions.Enqueue(action);
         }
     }
+     
 
     public void StartRecording()
     {
@@ -314,11 +365,14 @@ public class RecordAudio : MonoBehaviour
             endAnswerTime = Time.time;
         }
         audioSource.clip = null;
+        audioDataBuffer.Clear();
+        ResetWebSocketConnection();
         if (isRequestInProgress)
         {
             cancellationTokenSource?.Cancel();
             Debug.Log("Cancelling previous request...");
         }
+
     }
 
     public void StopRecording()
@@ -327,23 +381,29 @@ public class RecordAudio : MonoBehaviour
         recordingLength = Time.realtimeSinceStartup - startTime;
         recordedClip = TrimClip(recordedClip, recordingLength);
 
-        //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip);
-        //string base64Audio = Convert.ToBase64String(audioBytes); 
+        //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip); 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
         WavUtility.Save(audioFilePath, recordedClip);
-       // Debug.Log("Recording saved as " + audioFilePath);
-         
+
 
         if (!File.Exists(audioFilePath))
         {
             Debug.LogError("Audio file not found at path: " + audioFilePath);
             return;
         }
-        // Lấy file audio đã ghi âm từ RecordAudio 
+        //Lấy file audio đã ghi âm từ RecordAudio
         byte[] audioBytes = File.ReadAllBytes(audioFilePath);
         string base64Audio = Convert.ToBase64String(audioBytes);
+         
+        beginQuestionTime = Time.time;
+        float timeDifference = beginQuestionTime - endAnswerTime;
 
-        string conversationId = Guid.NewGuid().ToString();
+        if (timeDifference > 15f)
+        {
+            Debug.Log("Đã quá thời gian cho một conversation");
+            conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+        }
+         
         string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
         SendMessageToServer(jsonMessage);
         Debug.Log("Đã send message");
@@ -353,22 +413,23 @@ public class RecordAudio : MonoBehaviour
     // Chuyển AudioClip thành mảng byte[]
     private byte[] ConvertAudioClipToByteArray(AudioClip clip)
     {
-        int sampleCount = clip.samples * clip.channels;
-        float[] audioData = new float[sampleCount];
-        clip.GetData(audioData, 0);
+        float[] samples = new float[clip.samples];
+        clip.GetData(samples, 0); // Lấy tất cả dữ liệu từ AudioClip
 
-        byte[] byteArray = new byte[sampleCount * 2]; // 16-bit âm thanh => 2 bytes mỗi sample
-        int byteIndex = 0;
+        // Chuyển đổi từ float[] sang byte[]
+        Int16[] intData = new Int16[samples.Length];
+        Byte[] bytesData = new Byte[samples.Length * 2]; // Mỗi mẫu 16-bit nên cần *2
 
-        for (int i = 0; i < audioData.Length; i++)
+        const float rescaleFactor = 32767f; // Tỉ lệ từ float (-1 đến 1) sang giá trị PCM 16-bit
+
+        for (int i = 0; i < samples.Length; i++)
         {
-            short sample = (short)(audioData[i] * short.MaxValue); // Chuyển đổi float thành 16-bit
-            byte[] sampleBytes = BitConverter.GetBytes(sample);
-            Array.Copy(sampleBytes, 0, byteArray, byteIndex, 2);
-            byteIndex += 2;
+            intData[i] = (short)(samples[i] * rescaleFactor);
+            Byte[] byteArr = BitConverter.GetBytes(intData[i]);
+            byteArr.CopyTo(bytesData, i * 2); // Copy dữ liệu byte vào mảng
         }
 
-        return byteArray;
+        return bytesData; // Trả về mảng byte[]
     }
 
     // Tạo JSON message

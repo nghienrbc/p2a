@@ -9,7 +9,7 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private bool isHolding = false; // Trạng thái giữ nút
     private bool hasHeldEnoughTime = false; // Kiểm tra đã nhấn đủ lâu chưa
     private float holdTime = 0f; // Thời gian nhấn giữ
-    private float requiredHoldTime = 0.5f; // Thời gian cần để bắt đầu thu âm (ví dụ 0.5 giây)
+    private float requiredHoldTime = 0.3f; // Thời gian cần để bắt đầu thu âm (ví dụ 0.5 giây)
 
 
     public void OnPointerDown(PointerEventData eventData)
