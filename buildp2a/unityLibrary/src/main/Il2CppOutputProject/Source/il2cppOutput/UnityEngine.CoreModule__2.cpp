@@ -5208,7 +5208,7 @@ IL_008b:
 		Type_t* L_33 = ___0_objectType;
 		NullCheck(L_33);
 		Type_t* L_34;
-		L_34 = VirtualFuncInvoker0< Type_t* >::Invoke(115, L_33);
+		L_34 = VirtualFuncInvoker0< Type_t* >::Invoke(116, L_33);
 		___0_objectType = L_34;
 	}
 

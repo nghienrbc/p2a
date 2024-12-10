@@ -274,6 +274,7 @@ struct ArgumentNullException_t327031E412FAB2351B0022DD5DAD47E67E597129;
 struct ArgumentOutOfRangeException_tEA2822DAF62B10EEED00E0E3A341D4BAF78CF85F;
 struct ArrayList_t7A8E5AF0C4378015B5731ABE2BED8F2782FEEF8A;
 struct AsymmetricAlgorithm_t5E7E9D26CE0EDCAABD84F616A44E476473BA2AF8;
+struct AsyncCallback_t7FEF460CBDCFB9C5FA2EF776984778B9A4145F4C;
 struct AuthenticationHeaderValue_t3C43E7065DF4664F8756000FA7D787EF0799860A;
 struct BindIPEndPoint_tCB0143A2E17188ED6D562FEA72A18CC9F2448BDD;
 struct Binder_t91BFCE95A7057FADF4D8A1A342AFE52872246235;
@@ -322,6 +323,7 @@ struct HttpResponseHeaders_tAD02F8CC2960BC561FEFD63E0121701743EAA7A8;
 struct HttpResponseMessage_t5D2737606E4036A6E3E50FB0D651D3F76C61A970;
 struct HttpWebRequest_tDE1EF6EAE715BE99DB1645ED937A6A2AB930E7C9;
 struct HttpWebResponse_tF287E6CE296D3B6912CDEFEDE8FBF5A27D70AE0A;
+struct IAsyncResult_t7B9B5A0ECB35DCEC31B8A8122C37D687369253B5;
 struct IAsyncStateMachine_t0680C7F905C553076B552D5A1A6E39E2F0F36AA2;
 struct ICredentials_t8FDA6AF64B852DA0631D4BE66962B20E51E230F0;
 struct IDictionary_t6D03155AF1FA9083817AA5B6AD7DEEACC26AB220;
@@ -413,6 +415,7 @@ struct U3CGetEnumeratorU3Ed__19_tD285D648AD3721311A2A0BBEABA58122F3E9C531;
 struct HeaderBucket_t4CC67A9DE27ED28E7507D385B084F3369277A2D3;
 struct U3CU3Ec_t37D6644E370F5122DF7821FAB090FD2E2D6AC66A;
 struct U3CU3Ec_t53EE9EA09A43E4E01CCFC060321BF6D2B0B4972C;
+struct KeysCollection_t8FF5FD8704F6F99F6FD4B8A2D27DFAEFD3880F81;
 struct NameObjectEntry_t58A8B38FC7A6ABE5C83153B6C3F2696F88E7A9A2;
 struct SPKey_t3FD8B8DF5F452D3E34F29B5EC1AEC33370B1A6E5;
 struct ReadWriteTask_t0821BF49EE38596C7734E86E1A6A39D769BE2C05;
@@ -1471,6 +1474,7 @@ struct NameObjectCollectionBase_tB6400DF2FA3B64660D79586B79016B4A0BA645FC  : pub
 	RuntimeObject* ____keyComparer;
 	Hashtable_tEFC3B6496E6747787D8BB761B51F2AE3A8CFFE2D* ____entriesTable;
 	NameObjectEntry_t58A8B38FC7A6ABE5C83153B6C3F2696F88E7A9A2* ____nullKeyEntry;
+	KeysCollection_t8FF5FD8704F6F99F6FD4B8A2D27DFAEFD3880F81* ____keys;
 	SerializationInfo_t3C47F63E24BEB9FCE2DC6309E027F238DC5C5E37* ____serializationInfo;
 	int32_t ____version;
 	RuntimeObject* ____syncRoot;
@@ -5845,13 +5849,13 @@ IL_003c:
 		int32_t L_16 = V_2;
 		NullCheck(L_15);
 		String_t* L_17;
-		L_17 = VirtualFuncInvoker1< String_t*, int32_t >::Invoke(22, L_15, L_16);
+		L_17 = VirtualFuncInvoker1< String_t*, int32_t >::Invoke(24, L_15, L_16);
 		V_3 = L_17;
 		WebHeaderCollection_tAF1CF77FB39D8E1EB782174E30566BAF55F71AE8* L_18 = V_1;
 		int32_t L_19 = V_2;
 		NullCheck(L_18);
 		StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248* L_20;
-		L_20 = VirtualFuncInvoker1< StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248*, int32_t >::Invoke(21, L_18, L_19);
+		L_20 = VirtualFuncInvoker1< StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248*, int32_t >::Invoke(23, L_18, L_19);
 		V_4 = L_20;
 		String_t* L_21 = V_3;
 		bool L_22;
@@ -6290,7 +6294,7 @@ IL_0035_1:
 			L_11 = Type_GetTypeFromHandle_m6062B81682F79A4D6DF2640692EE6D9987858C57(L_10, NULL);
 			NullCheck(L_11);
 			FieldInfo_t* L_12;
-			L_12 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(87, L_11, _stringLiteralA61A307FDCB0F9C71F4A9F95633875B8612065E3, ((int32_t)44));
+			L_12 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(88, L_11, _stringLiteralA61A307FDCB0F9C71F4A9F95633875B8612065E3, ((int32_t)44));
 			V_3 = L_12;
 			FieldInfo_t* L_13 = V_3;
 			CancellationToken_t51142D9C6D7C02D314DA34A6A7988C528992FFED L_14 = __this->___cancellationToken;
@@ -6298,20 +6302,20 @@ IL_0035_1:
 			RuntimeObject* L_16 = Box(CancellationToken_t51142D9C6D7C02D314DA34A6A7988C528992FFED_il2cpp_TypeInfo_var, &L_15);
 			NullCheck(L_13);
 			RuntimeObject* L_17;
-			L_17 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(25, L_13, L_16);
+			L_17 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(26, L_13, L_16);
 			V_4 = ((CancellationTokenSource_tAAE1E0033BCFC233801F8CB4CED5C852B350CB7B*)CastclassClass((RuntimeObject*)L_17, CancellationTokenSource_tAAE1E0033BCFC233801F8CB4CED5C852B350CB7B_il2cpp_TypeInfo_var));
 			RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B L_18 = { reinterpret_cast<intptr_t> (CancellationTokenSource_tAAE1E0033BCFC233801F8CB4CED5C852B350CB7B_0_0_0_var) };
 			Type_t* L_19;
 			L_19 = Type_GetTypeFromHandle_m6062B81682F79A4D6DF2640692EE6D9987858C57(L_18, NULL);
 			NullCheck(L_19);
 			FieldInfo_t* L_20;
-			L_20 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(87, L_19, _stringLiteral6469EF8B7568EBEDF116288A944F3E3FF8DEAFC2, ((int32_t)44));
+			L_20 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(88, L_19, _stringLiteral6469EF8B7568EBEDF116288A944F3E3FF8DEAFC2, ((int32_t)44));
 			V_3 = L_20;
 			FieldInfo_t* L_21 = V_3;
 			CancellationTokenSource_tAAE1E0033BCFC233801F8CB4CED5C852B350CB7B* L_22 = V_4;
 			NullCheck(L_21);
 			RuntimeObject* L_23;
-			L_23 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(25, L_21, L_22);
+			L_23 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(26, L_21, L_22);
 			V_5 = ((Timer_t763C1D5F5A36087DC92C7DA4D1F8AB578F83AB00*)CastclassSealed((RuntimeObject*)L_23, Timer_t763C1D5F5A36087DC92C7DA4D1F8AB578F83AB00_il2cpp_TypeInfo_var));
 			Timer_t763C1D5F5A36087DC92C7DA4D1F8AB578F83AB00* L_24 = V_5;
 			if (!L_24)
@@ -6326,14 +6330,14 @@ IL_0035_1:
 			L_26 = Type_GetTypeFromHandle_m6062B81682F79A4D6DF2640692EE6D9987858C57(L_25, NULL);
 			NullCheck(L_26);
 			FieldInfo_t* L_27;
-			L_27 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(87, L_26, _stringLiteralE98AD1E4744FFE2256E84895DDBE2768E3CDF3F0, ((int32_t)44));
+			L_27 = VirtualFuncInvoker2< FieldInfo_t*, String_t*, int32_t >::Invoke(88, L_26, _stringLiteralE98AD1E4744FFE2256E84895DDBE2768E3CDF3F0, ((int32_t)44));
 			V_3 = L_27;
 			MonoWebRequestHandler_tB67B9CA98D0AB9825764AF93ECCFD30053540CDE* L_28 = V_1;
 			FieldInfo_t* L_29 = V_3;
 			Timer_t763C1D5F5A36087DC92C7DA4D1F8AB578F83AB00* L_30 = V_5;
 			NullCheck(L_29);
 			RuntimeObject* L_31;
-			L_31 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(25, L_29, L_30);
+			L_31 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(26, L_29, L_30);
 			il2cpp_codegen_runtime_class_init_inline(TimeSpan_t8195C5B013A2C532FEBDF0B64B6911982E750F5A_il2cpp_TypeInfo_var);
 			TimeSpan_t8195C5B013A2C532FEBDF0B64B6911982E750F5A L_32;
 			L_32 = TimeSpan_FromMilliseconds_mFDCBE9EDA3F6743302C3DD81259AF5D2F00EF775(((double)((*(int64_t*)((int64_t*)(int64_t*)UnBox(L_31, Int64_t092CFB123BE63C28ACDAF65C68F21A526050DBA3_il2cpp_TypeInfo_var))))), NULL);
@@ -8801,7 +8805,7 @@ IL_00a9_1:
 			FixedMemoryStream_tDCEF941500AF29277C42DDF40970FB21B4A66188* L_28 = L_27->___buffer;
 			NullCheck(L_28);
 			int64_t L_29;
-			L_29 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_28, ((int64_t)0), 0);
+			L_29 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(32, L_28, ((int64_t)0), 0);
 			goto IL_00da;
 		}
 	}
@@ -8957,7 +8961,7 @@ IL_002d_1:
 			FixedMemoryStream_tDCEF941500AF29277C42DDF40970FB21B4A66188* L_12 = L_11->___buffer;
 			NullCheck(L_12);
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_13;
-			L_13 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(39, L_12);
+			L_13 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(40, L_12);
 			HttpContent_tD09737BB27CB151BC9688882F785208620211E1C* L_14 = V_1;
 			NullCheck(L_14);
 			FixedMemoryStream_tDCEF941500AF29277C42DDF40970FB21B4A66188* L_15 = L_14->___buffer;
@@ -12204,7 +12208,7 @@ IL_0020:
 		int64_t L_5 = __this->___startPosition;
 		NullCheck(L_4);
 		int64_t L_6;
-		L_6 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(31, L_4, L_5, 0);
+		L_6 = VirtualFuncInvoker2< int64_t, int64_t, int32_t >::Invoke(32, L_4, L_5, 0);
 		goto IL_003c;
 	}
 

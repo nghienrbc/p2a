@@ -2612,7 +2612,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RC532Engine_Init_m63FC13115BBD225974567B
 		RuntimeObject* L_2 = ___1_parameters;
 		NullCheck(L_1);
 		bool L_3;
-		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(120, L_1, L_2);
+		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(121, L_1, L_2);
 		if (!L_3)
 		{
 			goto IL_0033;
@@ -2643,7 +2643,7 @@ IL_0033:
 		RuntimeObject* L_11 = ___1_parameters;
 		NullCheck(L_10);
 		bool L_12;
-		L_12 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(120, L_10, L_11);
+		L_12 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(121, L_10, L_11);
 		if (!L_12)
 		{
 			goto IL_005a;
@@ -3217,7 +3217,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RC564Engine_Init_m6863BFED5F508B21D76FA8
 		RuntimeObject* L_2 = ___1_parameters;
 		NullCheck(L_1);
 		bool L_3;
-		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(120, L_1, L_2);
+		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(121, L_1, L_2);
 		if (L_3)
 		{
 			goto IL_0028;
@@ -7298,7 +7298,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RijndaelEngine_Init_m52C07CC54D8E6E532B7
 		RuntimeObject* L_2 = ___1_parameters;
 		NullCheck(L_1);
 		bool L_3;
-		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(120, L_1, L_2);
+		L_3 = VirtualFuncInvoker1< bool, RuntimeObject* >::Invoke(121, L_1, L_2);
 		if (!L_3)
 		{
 			goto IL_0031;

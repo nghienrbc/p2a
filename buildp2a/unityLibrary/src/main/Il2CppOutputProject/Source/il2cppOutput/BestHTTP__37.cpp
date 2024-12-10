@@ -1804,6 +1804,7 @@ struct Socket_t1F49472CDA22B581C29A258225ABF3ADA9DED67E  : public RuntimeObject
 	CachedEventArgs_tF0692E89962FD1A045B17BC985F838C11FB6822C* ____cachedTaskEventArgs;
 	bool ___is_closed;
 	bool ___is_listening;
+	bool ___useOverlappedIO;
 	int32_t ___linger_timeout;
 	int32_t ___addressFamily;
 	int32_t ___socketType;
@@ -1817,6 +1818,7 @@ struct Socket_t1F49472CDA22B581C29A258225ABF3ADA9DED67E  : public RuntimeObject
 	bool ___is_connected;
 	int32_t ___m_IntCleanedUp;
 	bool ___connect_in_progress;
+	int32_t ___ID;
 };
 struct String_t  : public RuntimeObject
 {
@@ -3350,6 +3352,7 @@ struct Socket_t1F49472CDA22B581C29A258225ABF3ADA9DED67E_StaticFields
 	bool ___s_OSSupportsIPv6;
 	bool ___s_Initialized;
 	bool ___s_LoggingEnabled;
+	bool ___s_PerfCountersEnabled;
 	AsyncCallback_t7FEF460CBDCFB9C5FA2EF776984778B9A4145F4C* ___AcceptAsyncCallback;
 	IOAsyncCallback_tDBBA8BBDA6B203613680E77BD4AD6320A1268388* ___BeginAcceptCallback;
 	IOAsyncCallback_tDBBA8BBDA6B203613680E77BD4AD6320A1268388* ___BeginAcceptReceiveCallback;
@@ -16177,7 +16180,7 @@ IL_0009:
 	{
 		NetworkStream_tF39C3684B6D572BF47F518AD1DB1F4B12CEE4AE0* L_4 = V_0;
 		NullCheck(L_4);
-		VirtualActionInvoker0::Invoke(19, L_4);
+		VirtualActionInvoker0::Invoke(20, L_4);
 		__this->___active = (bool)0;
 		V_0 = (NetworkStream_tF39C3684B6D572BF47F518AD1DB1F4B12CEE4AE0*)NULL;
 		return;
@@ -19607,7 +19610,7 @@ FINALLY_0055:
 			ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_16 = V_1;
 			int32_t L_17 = V_0;
 			NullCheck(L_15);
-			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_15, L_16, 0, L_17);
+			VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_15, L_16, 0, L_17);
 			Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_18 = __this->___fileStream;
 			il2cpp_codegen_runtime_class_init_inline(Extensions_t17B0B2ADA54572D09294EFD3D474C9F4119C3503_il2cpp_TypeInfo_var);
 			Extensions_WriteLine_m71F9D53264285063B77A1CA1A65BD16EAB0C81C4(L_18, NULL);
@@ -19623,7 +19626,7 @@ IL_005c:
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_19 = __this->___fileStream;
 		NullCheck(L_19);
-		VirtualActionInvoker0::Invoke(21, L_19);
+		VirtualActionInvoker0::Invoke(22, L_19);
 	}
 
 IL_0067:
@@ -19649,7 +19652,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FileOutput_Dispose_m878D50A965486ECD5408
 	{
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_1 = __this->___fileStream;
 		NullCheck(L_1);
-		VirtualActionInvoker0::Invoke(19, L_1);
+		VirtualActionInvoker0::Invoke(20, L_1);
 		__this->___fileStream = (Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___fileStream), (void*)(Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE*)NULL);
 	}
@@ -27866,7 +27869,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool JsonMapper_HasInterface_m236AB02374D5D6E
 		String_t* L_1 = ___1_name;
 		NullCheck(L_0);
 		Type_t* L_2;
-		L_2 = VirtualFuncInvoker2< Type_t*, String_t*, bool >::Invoke(118, L_0, L_1, (bool)1);
+		L_2 = VirtualFuncInvoker2< Type_t*, String_t*, bool >::Invoke(119, L_0, L_1, (bool)1);
 		il2cpp_codegen_runtime_class_init_inline(Type_t_il2cpp_TypeInfo_var);
 		bool L_3;
 		L_3 = Type_op_Inequality_m83209C7BB3C05DFBEA3B6199B0BEFE8037301172(L_2, (Type_t*)NULL, NULL);
@@ -31840,7 +31843,7 @@ IL_02c4_1:
 				RuntimeObject* L_143 = ___0_obj;
 				NullCheck(((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)));
 				RuntimeObject* L_144;
-				L_144 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(25, ((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)), L_143);
+				L_144 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(26, ((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)), L_143);
 				JsonWriter_t31398D4706C4C0C52DC8C85F21361C3C87B9E321* L_145 = ___1_writer;
 				bool L_146 = ___2_writer_is_private;
 				int32_t L_147 = ___3_depth;

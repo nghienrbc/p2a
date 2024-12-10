@@ -6736,7 +6736,7 @@ IL_0018:
 		int32_t L_13 = V_0;
 		NullCheck(L_7);
 		int32_t L_14;
-		L_14 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(33, L_7, L_9, L_10, ((int32_t)il2cpp_codegen_subtract(((int32_t)(((RuntimeArray*)L_12)->max_length)), L_13)));
+		L_14 = VirtualFuncInvoker3< int32_t, ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(34, L_7, L_9, L_10, ((int32_t)il2cpp_codegen_subtract(((int32_t)(((RuntimeArray*)L_12)->max_length)), L_13)));
 		int32_t L_15 = L_14;
 		V_1 = L_15;
 		if ((((int32_t)L_15) > ((int32_t)0)))

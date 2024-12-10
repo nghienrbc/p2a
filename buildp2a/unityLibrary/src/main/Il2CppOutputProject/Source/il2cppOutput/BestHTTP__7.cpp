@@ -8269,7 +8269,7 @@ IL_0072:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_34 = V_10;
 		NullCheck(L_34);
 		NullCheck(L_32);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_32, L_33, 0, ((int32_t)(((RuntimeArray*)L_34)->max_length)));
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_32, L_33, 0, ((int32_t)(((RuntimeArray*)L_34)->max_length)));
 		RuntimeObject* L_35 = L_31;
 		NullCheck(L_35);
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_36;

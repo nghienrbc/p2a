@@ -6010,7 +6010,7 @@ IL_00de:
 		Type_t* L_42 = ___0_type;
 		NullCheck(L_42);
 		FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8* L_43;
-		L_43 = VirtualFuncInvoker1< FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8*, int32_t >::Invoke(89, L_42, ((int32_t)52));
+		L_43 = VirtualFuncInvoker1< FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8*, int32_t >::Invoke(90, L_42, ((int32_t)52));
 		V_6 = L_43;
 		V_2 = 0;
 		goto IL_01aa;
@@ -6322,7 +6322,7 @@ IL_000e:
 		Type_t* L_4 = ___0_type;
 		NullCheck(L_4);
 		PropertyInfoU5BU5D_tD81C248B41D0C76207C42DB9C332DC79F490B1D7* L_5;
-		L_5 = VirtualFuncInvoker1< PropertyInfoU5BU5D_tD81C248B41D0C76207C42DB9C332DC79F490B1D7*, int32_t >::Invoke(112, L_4, ((int32_t)52));
+		L_5 = VirtualFuncInvoker1< PropertyInfoU5BU5D_tD81C248B41D0C76207C42DB9C332DC79F490B1D7*, int32_t >::Invoke(113, L_4, ((int32_t)52));
 		V_1 = L_5;
 		V_2 = 0;
 		goto IL_006b;
@@ -6399,7 +6399,7 @@ IL_006b:
 		Type_t* L_23 = ___0_type;
 		NullCheck(L_23);
 		FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8* L_24;
-		L_24 = VirtualFuncInvoker1< FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8*, int32_t >::Invoke(89, L_23, ((int32_t)52));
+		L_24 = VirtualFuncInvoker1< FieldInfoU5BU5D_t50D47CBECF1AEB152F555803E3329D9E34DBF8D8*, int32_t >::Invoke(90, L_23, ((int32_t)52));
 		V_5 = L_24;
 		V_2 = 0;
 		goto IL_0119;
@@ -9795,7 +9795,7 @@ IL_02ad_1:
 				RuntimeObject* L_143 = ___0_obj;
 				NullCheck(((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)));
 				RuntimeObject* L_144;
-				L_144 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(25, ((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)), L_143);
+				L_144 = VirtualFuncInvoker1< RuntimeObject*, RuntimeObject* >::Invoke(26, ((FieldInfo_t*)CastclassClass((RuntimeObject*)L_142, FieldInfo_t_il2cpp_TypeInfo_var)), L_143);
 				JsonWriter_tCAC51646616F448DF0DB8CFE39AC2DFBE5EB27E5* L_145 = ___1_writer;
 				bool L_146 = ___2_writer_is_private;
 				int32_t L_147 = ___3_depth;
@@ -19538,7 +19538,7 @@ IL_0040_1:
 				XmlElement_t9A08B533E9A6B3548A1DE35476186F7ECCDF6FF1* L_15 = L_14;
 				NullCheck(L_15);
 				String_t* L_16;
-				L_16 = VirtualFuncInvoker0< String_t* >::Invoke(31, L_15);
+				L_16 = VirtualFuncInvoker0< String_t* >::Invoke(36, L_15);
 				V_4 = L_16;
 				Dictionary_2_tB6CE3B793B413BC658CEFEF1339D0C1E2DE28904* L_17 = __this->___languagePacks;
 				String_t* L_18 = V_4;
@@ -19568,7 +19568,7 @@ IL_0072_1:
 			{
 				NullCheck(G_B7_0);
 				String_t* L_24;
-				L_24 = VirtualFuncInvoker0< String_t* >::Invoke(33, G_B7_0);
+				L_24 = VirtualFuncInvoker0< String_t* >::Invoke(38, G_B7_0);
 				NullCheck(L_24);
 				String_t* L_25;
 				L_25 = String_Replace_mABDB7003A1D0AEDCAE9FF85E3DFFFBA752D2A166(L_24, _stringLiteral785F17F45C331C415D0A7458E6AAC36966399C51, _stringLiteral00B28FF06B788B9B67C6B259800F404F9F3761FD, NULL);

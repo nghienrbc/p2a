@@ -20,6 +20,7 @@ public class RecordAudio : MonoBehaviour
     private string webSocketUrl = "ws://145.223.21.25:8001/ws/audio-chat"; // URL web socket 
     private string conversationId = "";
     private AudioClip recordedClip;
+    private AudioClip audioClipToPlay; // AudioClip duy nhất dùng để phát
     [SerializeField] AudioSource audioSource;
     private bool isRequestInProgress = false; 
     private float startTime;
@@ -40,10 +41,13 @@ public class RecordAudio : MonoBehaviour
 
     private WebSocket ws;
     private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio
+    private List<byte> audioDataBufferToSaveFile = new List<byte>(); // Buffer để lưu các chunk audio
     private bool isReceivingAudio = false;
 
     private Queue<Action> mainThreadActions = new Queue<Action>();
 
+    private int sampleRate = 24000; // Tần số mẫu (có thể thay đổi tùy thuộc vào dữ liệu âm thanh)
+    private int channels = 1; // Số kênh âm thanh (mono hoặc stereo)
 
     private void Awake()
     {
@@ -53,40 +57,7 @@ public class RecordAudio : MonoBehaviour
     {
         onAudioFinished.AddListener(OnAudioFinished);
         conversationId = Guid.NewGuid().ToString();
-        //StartCoroutine(PlayRadio("http://ice3.somafm.com/defcon-128-mp3"));
-
-
-
-        // Khởi tạo WebSocket và kết nối
-        //ws = new WebSocket(webSocketUrl);
-
-        //// Xử lý khi kết nối thành công
-        //ws.OnOpen += (sender, e) =>
-        //{
-        //    Debug.Log("WebSocket Connected!");
-        //};
-
-        //// Xử lý khi nhận được tin nhắn từ server
-        //ws.OnMessage += (sender, e) =>
-        //{
-        //    Debug.Log("Received from server: " + e.Data);
-        //    HandleWebSocketResponse(e.Data);
-        //};
-
-        //// Xử lý khi WebSocket bị đóng
-        //ws.OnClose += (sender, e) =>
-        //{
-        //    Debug.Log("WebSocket Closed!");
-        //};
-
-        //// Xử lý khi có lỗi xảy ra
-        //ws.OnError += (sender, e) =>
-        //{
-        //    Debug.LogError("WebSocket Error: " + e.Message);
-        //};
-
-        //// Kết nối đến WebSocket server
-        //ws.Connect();
+        //StartCoroutine(PlayRadio("http://ice3.somafm.com/defcon-128-mp3")); 
     }
 
     // Kết nối WebSocket
@@ -97,8 +68,26 @@ public class RecordAudio : MonoBehaviour
         // Khi nhận được thông điệp từ WebSocket
         ws.OnMessage += (sender, e) =>
         {
-            Debug.Log("Received from server: " + e.Data);
+            //Debug.Log("Received from server: " + e.Data);
             HandleWebSocketResponse(e.Data);
+        };
+
+        // Xử lý khi kết nối thành công
+        ws.OnOpen += (sender, e) =>
+        {
+            Debug.Log("WebSocket Connected!");
+        };
+         
+        // Xử lý khi WebSocket bị đóng
+        ws.OnClose += (sender, e) =>
+        {
+            Debug.Log("WebSocket Closed!");
+        };
+
+        // Xử lý khi có lỗi xảy ra
+        ws.OnError += (sender, e) =>
+        {
+            Debug.LogError("WebSocket Error: " + e.Message);
         };
 
         ws.Connect();
@@ -125,7 +114,13 @@ public class RecordAudio : MonoBehaviour
             // Giải mã JSON// Chuyển chuỗi JSON nhận được thành JObject để dễ dàng truy cập các trường
             JObject jsonResponse = JObject.Parse(response);
             // Kiểm tra type có phải là "text_response" không
-            if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
+            if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
+            {
+                string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
+                Debug.Log("Received transcript text: " + content);
+
+            }
+            else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
             {
                 string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
                 Debug.Log("Received text: " + content);
@@ -135,22 +130,48 @@ public class RecordAudio : MonoBehaviour
             {    
                 string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
                 byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
-                Debug.Log("audioBytes.Length: " + audioBytes.Length);
-                // ProcessAudioChunk(audioBytes); // Xử lý và phát âm thanh 
+                Debug.Log("Received audio chunk");
+                audioDataBufferToSaveFile.AddRange(audioBytes);
                 EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
             } 
             // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
             else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "audio_complete")
             {
                 Debug.Log("Audio streaming complete.");
-                isReceivingAudio = false; // Dừng nhận âm thanh
                 //StartCoroutine(PlayAudio());  // Dùng Coroutine để phát âm thanh
-                //EnqueueMainThreadAction(() => StartCoroutine(PlayAudio()));
+                //Debug.Log("Play audio 1 lần nào!");
+                EnqueueMainThreadAction(() => StartCoroutine(PlayAudio()));
+                //isReceivingAudio = false; // Dừng nhận âm thanh
+                EnqueueMainThreadAction(() => SaveAudioToFile(audioDataBufferToSaveFile));
             }
         }
         catch (Exception e)
         {
             Debug.LogError("Error processing WebSocket response: " + e.Message);
+        }
+    }
+
+    private void SaveAudioToFile(List<byte> audioData)
+    {
+        // Lấy đường dẫn thư mục persistentDataPath
+        string filePath = Path.Combine(Application.persistentDataPath, "audioOutput.wav");
+
+        // Ghi dữ liệu vào file
+        try
+        {
+            // Kiểm tra xem file đã tồn tại chưa, nếu có thì xóa trước khi ghi mới
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+
+            // Ghi byte array vào file
+            File.WriteAllBytes(filePath, audioData.ToArray());
+            Debug.Log($"Audio file saved at {filePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error saving audio file: {e.Message}");
         }
     }
 
@@ -181,6 +202,7 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
+    private bool isBeginPlay = false;
     // Xử lý và thêm audio chunk vào buffer
     private void ProcessAudioChunk(byte[] audioChunk)
     {
@@ -192,19 +214,24 @@ public class RecordAudio : MonoBehaviour
 
         //// Thêm audio chunk vào buffer
         audioDataBuffer.AddRange(audioChunk);
+        Debug.Log("nhận thêm dữ liệu: " + audioChunk.Length);
 
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
-        if (audioDataBuffer.Count > 0 && !audioSource.isPlaying)
+        // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
+        if (audioDataBuffer.Count > 1024*10 && !audioSource.isPlaying && isBeginPlay == false)
         {
-            // Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
+            //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
+            Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
+            Debug.Log("Play audio nào!");
+            isBeginPlay = true;
             StartCoroutine(PlayAudio());
         } 
-    }
-     
+    } 
+
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
-        if (audioDataBuffer.Count > 5)
+        if (audioDataBuffer.Count > 1024 *10)
         {
             byte[] audioBytes = audioDataBuffer.ToArray();
 
@@ -214,10 +241,8 @@ public class RecordAudio : MonoBehaviour
             if (audioClip != null)
             {
                 audioSource.clip = audioClip;
-                audioSource.Play();
-                Debug.Log("Play audio nào!");
-                // Wait until audio finishes playing before continuing
-               // yield return new WaitForSeconds(audioClip.length);
+                audioSource.Play(); 
+                // yield return new WaitForSeconds(audioClip.length);
             }
             else
             {
@@ -226,6 +251,7 @@ public class RecordAudio : MonoBehaviour
 
             // Sau khi phát, làm sạch buffer (hoặc tiếp tục nhận thêm dữ liệu âm thanh)
             audioDataBuffer.Clear();
+            isBeginPlay = false;
         }
         yield return null;
     }
@@ -293,8 +319,8 @@ public class RecordAudio : MonoBehaviour
         //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip);
         //string base64Audio = Convert.ToBase64String(audioBytes); 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
-        WavUtility.Save(audioFilePath, recordedClip);
-        Debug.Log("Recording saved as " + audioFilePath);
+       // WavUtility.Save(audioFilePath, recordedClip);
+       // Debug.Log("Recording saved as " + audioFilePath);
          
 
         if (!File.Exists(audioFilePath))

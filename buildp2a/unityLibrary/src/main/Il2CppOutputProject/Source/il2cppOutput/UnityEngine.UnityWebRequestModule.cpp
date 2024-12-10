@@ -76,6 +76,7 @@ struct IntPtrU5BU5D_tFD177F8C806A6921AD7150264CCC62FA00CAD832;
 struct StackTraceU5BU5D_t32FBCB20930EAF5BAE3F450FF75228E5450DA0DF;
 struct StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248;
 struct ArgumentException_tAD90411542A20A9C72D5CDA3A84181D8B947A263;
+struct AsyncCallback_t7FEF460CBDCFB9C5FA2EF776984778B9A4145F4C;
 struct AsyncOperation_tD2789250E4B098DEDA92B366A577E500A92D2D3C;
 struct CertificateHandler_t148B524FA5DB39F3ABADB181CD420FC505C33804;
 struct CodePageDataItem_t52460FA30AE37F4F26ACB81055E58002262F19F2;
@@ -87,6 +88,7 @@ struct EncoderFallback_tD2C40CE114AA9D8E1F7196608B2D088548015293;
 struct Encoding_t65CDEF28CF20A7B8C92E85A4E808920C2465F095;
 struct ExclusiveReference_t411F04D4CC440EB7399290027E1BBABEF4C28837;
 struct Hashtable_tEFC3B6496E6747787D8BB761B51F2AE3A8CFFE2D;
+struct IAsyncResult_t7B9B5A0ECB35DCEC31B8A8122C37D687369253B5;
 struct IDictionary_t6D03155AF1FA9083817AA5B6AD7DEEACC26AB220;
 struct InvalidOperationException_t5DDE4D49B7405FAAB1E4576F4715A42A3FAD4BAB;
 struct MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2;
@@ -2296,7 +2298,7 @@ IL_000f_1:
 				V_1 = ((int32_t)il2cpp_codegen_add(L_9, ((int32_t)il2cpp_codegen_subtract(((int32_t)(((RuntimeArray*)L_10)->max_length)), 1))));
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_11 = V_0;
 				NullCheck(L_11);
-				VirtualActionInvoker1< uint8_t >::Invoke(38, L_11, (uint8_t)((int32_t)32));
+				VirtualActionInvoker1< uint8_t >::Invoke(39, L_11, (uint8_t)((int32_t)32));
 				goto IL_006c_1;
 			}
 
@@ -2347,7 +2349,7 @@ IL_0042_1:
 				uint8_t L_25;
 				L_25 = WWWTranscoder_Hex2Byte_m54AA532B2F56D4EEBF2FE72966F7CA3AC3585C88(L_22, L_24, NULL);
 				NullCheck(L_21);
-				VirtualActionInvoker1< uint8_t >::Invoke(38, L_21, L_25);
+				VirtualActionInvoker1< uint8_t >::Invoke(39, L_21, L_25);
 				goto IL_006c_1;
 			}
 
@@ -2360,7 +2362,7 @@ IL_0060_1:
 				int32_t L_29 = L_28;
 				uint8_t L_30 = (L_27)->GetAt(static_cast<il2cpp_array_size_t>(L_29));
 				NullCheck(L_26);
-				VirtualActionInvoker1< uint8_t >::Invoke(38, L_26, L_30);
+				VirtualActionInvoker1< uint8_t >::Invoke(39, L_26, L_30);
 			}
 
 IL_006c_1:
@@ -2385,7 +2387,7 @@ IL_0071_1:
 				MemoryStream_tAAED1B42172E3390584E4194308AB878E786AAC2* L_35 = V_0;
 				NullCheck(L_35);
 				ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_36;
-				L_36 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(43, L_35);
+				L_36 = VirtualFuncInvoker0< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* >::Invoke(44, L_35);
 				V_5 = L_36;
 				goto IL_0092;
 			}

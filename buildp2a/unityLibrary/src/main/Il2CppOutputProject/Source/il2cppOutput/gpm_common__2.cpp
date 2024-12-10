@@ -5119,7 +5119,7 @@ IL_0002:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_0 = ___0_stream;
 		uint32_t L_1 = __this->____low;
 		NullCheck(L_0);
-		VirtualActionInvoker1< uint8_t >::Invoke(38, L_0, (uint8_t)((int32_t)(uint8_t)((int32_t)((uint32_t)L_1>>((int32_t)24)))));
+		VirtualActionInvoker1< uint8_t >::Invoke(39, L_0, (uint8_t)((int32_t)(uint8_t)((int32_t)((uint32_t)L_1>>((int32_t)24)))));
 		uint32_t L_2 = __this->____range;
 		__this->____range = ((int32_t)((int32_t)L_2<<8));
 		uint32_t L_3 = __this->____low;
@@ -5216,7 +5216,7 @@ IL_0004:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_0 = ___0_stream;
 		uint32_t L_1 = __this->____low;
 		NullCheck(L_0);
-		VirtualActionInvoker1< uint8_t >::Invoke(38, L_0, (uint8_t)((int32_t)(uint8_t)((int32_t)((uint32_t)L_1>>((int32_t)24)))));
+		VirtualActionInvoker1< uint8_t >::Invoke(39, L_0, (uint8_t)((int32_t)(uint8_t)((int32_t)((uint32_t)L_1>>((int32_t)24)))));
 		uint32_t L_2 = __this->____low;
 		__this->____low = ((int32_t)((int32_t)L_2<<8));
 		uint32_t L_3 = V_0;
@@ -5252,7 +5252,7 @@ IL_0019:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_1 = ___0_stream;
 		NullCheck(L_1);
 		int32_t L_2;
-		L_2 = VirtualFuncInvoker0< int32_t >::Invoke(35, L_1);
+		L_2 = VirtualFuncInvoker0< int32_t >::Invoke(36, L_1);
 		__this->____code = ((int32_t)(((int32_t)((int32_t)L_0<<8))|((int32_t)(uint8_t)L_2)));
 		uint32_t L_3 = V_0;
 		V_0 = ((int32_t)il2cpp_codegen_add((int32_t)L_3, 1));
@@ -5283,7 +5283,7 @@ IL_0002:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_1 = ___0_stream;
 		NullCheck(L_1);
 		int32_t L_2;
-		L_2 = VirtualFuncInvoker0< int32_t >::Invoke(35, L_1);
+		L_2 = VirtualFuncInvoker0< int32_t >::Invoke(36, L_1);
 		__this->____code = ((int32_t)(((int32_t)((int32_t)L_0<<8))|((int32_t)(uint8_t)L_2)));
 		uint32_t L_3 = __this->____range;
 		__this->____range = ((int32_t)((int32_t)L_3<<8));
@@ -6294,7 +6294,7 @@ IL_0000:
 		Stream_tF844051B786E8F7F4244DBD218D74E8617B9A2DE* L_3 = ___1_source;
 		NullCheck(L_3);
 		int32_t L_4;
-		L_4 = VirtualFuncInvoker0< int32_t >::Invoke(35, L_3);
+		L_4 = VirtualFuncInvoker0< int32_t >::Invoke(36, L_3);
 		V_0 = L_4;
 		int32_t L_5 = V_0;
 		if ((((int32_t)L_5) >= ((int32_t)0)))
@@ -6522,7 +6522,7 @@ IL_0032:
 		ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031* L_9 = V_0;
 		int32_t L_10 = V_1;
 		NullCheck(L_8);
-		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(36, L_8, L_9, 0, L_10);
+		VirtualActionInvoker3< ByteU5BU5D_tA6237BF417AE52AD70CFB4EF24A7A82613DF9031*, int32_t, int32_t >::Invoke(37, L_8, L_9, 0, L_10);
 	}
 
 IL_003b:
