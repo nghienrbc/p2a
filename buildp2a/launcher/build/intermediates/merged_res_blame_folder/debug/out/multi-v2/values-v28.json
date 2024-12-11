@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\ASEAN\\Code\\p2a\\buildp2a\\launcher\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v28\\values-v28.xml",
+            "outputFile": "com.Duytan.P2A.launcher-mergeDebugResources-10:/values-v28/values-v28.xml",
             "map": [
                 {
                     "source": "D:\\ASEAN\\Code\\p2a\\buildp2a\\unityLibrary\\build\\intermediates\\packaged_res\\debug\\values-v28\\values-v28.xml",

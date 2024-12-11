@@ -1,190 +1,190 @@
 -- Merging decision tree log ---
 manifest
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-39:12
-INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-39:12
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-40:12
+INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-40:12
 	package
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:70-98
 		INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:1-40:12
 		INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml
 	xmlns:tools
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:99-145
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:5-51
 	xmlns:android
 		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:2:11-69
 uses-permission#android.permission.BLUETOOTH_ADMIN
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:3-99
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:3-99
 	android:maxSdkVersion
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:70-96
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:70-96
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:3:20-69
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:20-69
 uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:3-77
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:3-77
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:4:20-74
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:20-74
 uses-permission#android.permission.ACCESS_COARSE_LOCATION
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:3-79
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:6:3-79
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:5:20-76
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:6:20-76
 uses-permission#android.permission.BLUETOOTH_CONNECT
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:7:3-74
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:3-74
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:7:20-71
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:20-71
 uses-permission#android.permission.BLUETOOTH_SCAN
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:3-71
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:3-71
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:8:20-68
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:20-68
 uses-permission#android.permission.INTERNET
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:3-65
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:3-65
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:9:20-62
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:20-62
 uses-permission#android.permission.CAMERA
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:3-63
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:3-63
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:10:20-60
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:20-60
 uses-permission#android.permission.RECORD_AUDIO
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:3-69
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:3-69
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:11:20-66
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:20-66
 uses-permission#android.permission.MODIFY_AUDIO_SETTINGS
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:3-78
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:3-78
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:12:20-75
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:20-75
 uses-permission#android.permission.BLUETOOTH
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:3-66
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:3-66
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:13:20-63
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:20-63
 uses-feature#0x00030000
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:3-52
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:3-52
 	android:glEsVersion
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:14:17-49
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:17-49
 uses-feature#android.hardware.vulkan.version
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:3-91
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:3-91
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:64-88
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:64-88
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:15:17-63
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:17-63
 uses-feature#android.hardware.camera
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:3-83
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:3-83
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:56-80
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:56-80
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:16:17-55
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:17-55
 uses-feature#android.hardware.camera.autofocus
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:3-93
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:3-93
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:66-90
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:66-90
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:17:17-65
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:17-65
 uses-feature#android.hardware.camera.front
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:3-89
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:3-89
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:62-86
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:62-86
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:18:17-61
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:17-61
 uses-feature#android.hardware.microphone
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:3-87
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:3-87
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:60-84
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:60-84
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:19:17-59
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:17-59
 uses-feature#android.hardware.touchscreen
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:3-88
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:3-88
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:61-85
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:61-85
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:20:17-60
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:17-60
 uses-feature#android.hardware.touchscreen.multitouch
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:3-99
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:3-99
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:72-96
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:72-96
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:21:17-71
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:17-71
 uses-feature#android.hardware.touchscreen.multitouch.distinct
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:3-108
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:3-108
 	android:required
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:81-105
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:81-105
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:22:17-80
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:17-80
 application
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:3-38:17
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:3-39:17
 	android:extractNativeLibs
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:23:16-48
-meta-data#unity.splash-mode
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:5-69
-	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:49-66
-	android:name
 		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:24:16-48
+meta-data#unity.splash-mode
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:5-69
+	android:value
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:49-66
+	android:name
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:16-48
 meta-data#unity.splash-enable
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:5-74
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:5-74
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:51-71
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:51-71
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:25:16-50
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:16-50
 meta-data#unity.launch-fullscreen
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:5-78
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:5-78
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:55-75
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:55-75
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:26:16-54
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:16-54
 meta-data#unity.allow-resizable-window
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:5-84
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:5-84
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:60-81
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:60-81
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:27:16-59
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:16-59
 meta-data#notch.config
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:5-81
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:5-81
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:44-78
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:44-78
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:28:16-43
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:16-43
 meta-data#unity.auto-report-fully-drawn
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:5-84
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:5-84
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:61-81
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:61-81
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:29:16-60
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:16-60
 activity#com.unity3d.player.UnityPlayerActivity
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:5-37:16
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:5-38:16
 	android:screenOrientation
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:111-147
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:111-147
 	android:launchMode
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:148-179
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:148-179
 	android:hardwareAccelerated
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:397-431
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:397-431
 	android:exported
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:432-455
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:432-455
 	android:resizeableActivity
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:362-396
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:362-396
 	android:configChanges
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:180-361
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:180-361
 	android:theme
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:69-110
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:69-110
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:30:15-68
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:15-68
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:31:7-34:23
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:32:7-35:23
 category#android.intent.category.LAUNCHER
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:32:9-69
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:9-69
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:32:19-66
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:19-66
 action#android.intent.action.MAIN
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:9-61
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:34:9-61
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:33:17-58
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:34:17-58
 meta-data#unityplayer.UnityActivity
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:7-82
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:7-82
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:59-79
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:59-79
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:35:18-58
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:18-58
 meta-data#notch_support
-ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:7-70
+ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:37:7-70
 	android:value
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:47-67
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:37:47-67
 	android:name
-		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:36:18-46
+		ADDED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml:37:18-46
 uses-sdk
 INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from D:\ASEAN\Code\p2a\buildp2a\unityLibrary\src\main\AndroidManifest.xml

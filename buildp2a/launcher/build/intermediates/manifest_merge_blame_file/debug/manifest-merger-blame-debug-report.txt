@@ -12,17 +12,17 @@
 10-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml
 11
 12    <supports-screens
-12-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:3-163
+12-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:3-163
 13        android:anyDensity="true"
-13-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:135-160
+13-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:135-160
 14        android:largeScreens="true"
-14-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:78-105
+14-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:78-105
 15        android:normalScreens="true"
-15-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:49-77
+15-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:49-77
 16        android:smallScreens="true"
-16-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:21-48
+16-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:21-48
 17        android:xlargeScreens="true" />
-17-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:106-134
+17-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:5:106-134
 18
 19    <uses-permission
 19-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-12:38
@@ -111,164 +111,165 @@
 56-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:47:9-33
 57
 58    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-58-->[:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\c2dbda91962f42d56d637d95b3fc2bef\transformed\gpm-webview\AndroidManifest.xml:12:5-79
-58-->[:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\c2dbda91962f42d56d637d95b3fc2bef\transformed\gpm-webview\AndroidManifest.xml:12:22-76
+58-->[:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:12:5-79
+58-->[:gpm-webview:] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\149517926d2529416d44e5df212fa381\transformed\gpm-webview\AndroidManifest.xml:12:22-76
 59
 60    <permission
-60-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
+60-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
 61        android:name="com.Duytan.P2A.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-61-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
+61-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:23:9-81
 62        android:protectionLevel="signature" />
-62-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
+62-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:24:9-44
 63
 64    <uses-permission android:name="com.Duytan.P2A.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-64-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
-64-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
+64-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:26:5-97
+64-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
 65
 66    <application
-66-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:3:3-83
+66-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:3-83
 67        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-67-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\cb0d44f3a40f1ac71628111490f52eab\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
+67-->[androidx.core:core:1.13.1] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\1d2713afba6c6d77e7cfe2e489f379ba\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 68        android:debuggable="true"
 69        android:extractNativeLibs="true"
 69-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:49:18-50
 70        android:icon="@mipmap/app_icon"
-70-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:3:49-80
-71        android:label="@string/app_name" >
-71-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:3:16-48
-72        <meta-data
-72-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:50:9-52:33
-73            android:name="unity.splash-mode"
-73-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:51:13-45
-74            android:value="0" />
-74-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:52:13-30
-75        <meta-data
-75-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:53:9-55:36
-76            android:name="unity.splash-enable"
-76-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:54:13-47
-77            android:value="True" />
-77-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:55:13-33
-78        <meta-data
-78-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:56:9-58:36
-79            android:name="unity.launch-fullscreen"
-79-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:57:13-51
-80            android:value="True" />
-80-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:58:13-33
-81        <meta-data
-81-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:59:9-61:37
-82            android:name="unity.allow-resizable-window"
-82-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:60:13-56
-83            android:value="False" />
-83-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:61:13-34
-84        <meta-data
-84-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:62:9-64:50
-85            android:name="notch.config"
-85-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:63:13-40
-86            android:value="portrait|landscape" />
-86-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:64:13-47
-87        <meta-data
-87-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:65:9-67:36
-88            android:name="unity.auto-report-fully-drawn"
-88-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:66:13-57
-89            android:value="true" />
-89-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:67:13-33
-90
-91        <activity
-91-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:69:9-90:20
-92            android:name="com.unity3d.player.UnityPlayerActivity"
-92-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:70:13-66
-93            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
-93-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:71:13-194
-94            android:exported="true"
-94-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:72:13-36
-95            android:hardwareAccelerated="true"
-95-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:73:13-47
-96            android:launchMode="singleTask"
-96-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:74:13-44
-97            android:resizeableActivity="false"
-97-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:75:13-47
-98            android:screenOrientation="fullUser"
-98-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:76:13-49
-99            android:theme="@style/UnityThemeSelector" >
-99-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:77:13-54
-100            <intent-filter>
-100-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:78:13-82:29
-101                <category android:name="android.intent.category.LAUNCHER" />
-101-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:79:17-77
-101-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:79:27-74
-102
-103                <action android:name="android.intent.action.MAIN" />
-103-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:81:17-69
-103-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:81:25-66
-104            </intent-filter>
-105
-106            <meta-data
-106-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:84:13-86:40
-107                android:name="unityplayer.UnityActivity"
-107-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:85:17-57
-108                android:value="true" />
-108-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:86:17-37
-109            <meta-data
-109-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:87:13-89:40
-110                android:name="notch_support"
-110-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:88:17-45
-111                android:value="true" />
-111-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:89:17-37
-112        </activity>
-113
-114        <provider
-114-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:24:9-32:20
-115            android:name="androidx.startup.InitializationProvider"
-115-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:25:13-67
-116            android:authorities="com.Duytan.P2A.androidx-startup"
-116-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:26:13-68
-117            android:exported="false" >
-117-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:27:13-37
-118            <meta-data
-118-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
-119                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-119-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
-120                android:value="androidx.startup" />
-120-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
-121        </provider>
-122
-123        <receiver
-123-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
-124            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-124-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
-125            android:directBootAware="false"
-125-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
-126            android:enabled="true"
-126-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
-127            android:exported="true"
-127-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
-128            android:permission="android.permission.DUMP" >
-128-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
-129            <intent-filter>
-129-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
-130                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-130-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
-130-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
-131            </intent-filter>
-132            <intent-filter>
-132-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
-133                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-133-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
-133-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
-134            </intent-filter>
-135            <intent-filter>
-135-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
-136                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-136-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
-136-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
-137            </intent-filter>
-138            <intent-filter>
-138-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
-139                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-139-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
-139-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\dac36bc218d5181efd54ca5e0a4cb164\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
-140            </intent-filter>
-141        </receiver>
-142    </application>
-143
-144</manifest>
+70-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:49-80
+71        android:label="@string/app_name"
+71-->D:\ASEAN\Code\p2a\buildp2a\launcher\src\main\AndroidManifest.xml:4:16-48
+72        android:testOnly="true" >
+73        <meta-data
+73-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:50:9-52:33
+74            android:name="unity.splash-mode"
+74-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:51:13-45
+75            android:value="0" />
+75-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:52:13-30
+76        <meta-data
+76-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:53:9-55:36
+77            android:name="unity.splash-enable"
+77-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:54:13-47
+78            android:value="True" />
+78-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:55:13-33
+79        <meta-data
+79-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:56:9-58:36
+80            android:name="unity.launch-fullscreen"
+80-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:57:13-51
+81            android:value="True" />
+81-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:58:13-33
+82        <meta-data
+82-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:59:9-61:37
+83            android:name="unity.allow-resizable-window"
+83-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:60:13-56
+84            android:value="False" />
+84-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:61:13-34
+85        <meta-data
+85-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:62:9-64:50
+86            android:name="notch.config"
+86-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:63:13-40
+87            android:value="portrait|landscape" />
+87-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:64:13-47
+88        <meta-data
+88-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:65:9-67:36
+89            android:name="unity.auto-report-fully-drawn"
+89-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:66:13-57
+90            android:value="true" />
+90-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:67:13-33
+91
+92        <activity
+92-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:69:9-90:20
+93            android:name="com.unity3d.player.UnityPlayerActivity"
+93-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:70:13-66
+94            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+94-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:71:13-194
+95            android:exported="true"
+95-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:72:13-36
+96            android:hardwareAccelerated="true"
+96-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:73:13-47
+97            android:launchMode="singleTask"
+97-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:74:13-44
+98            android:resizeableActivity="false"
+98-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:75:13-47
+99            android:screenOrientation="fullUser"
+99-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:76:13-49
+100            android:theme="@style/UnityThemeSelector" >
+100-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:77:13-54
+101            <intent-filter>
+101-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:78:13-82:29
+102                <category android:name="android.intent.category.LAUNCHER" />
+102-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:79:17-77
+102-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:79:27-74
+103
+104                <action android:name="android.intent.action.MAIN" />
+104-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:81:17-69
+104-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:81:25-66
+105            </intent-filter>
+106
+107            <meta-data
+107-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:84:13-86:40
+108                android:name="unityplayer.UnityActivity"
+108-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:85:17-57
+109                android:value="true" />
+109-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:86:17-37
+110            <meta-data
+110-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:87:13-89:40
+111                android:name="notch_support"
+111-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:88:17-45
+112                android:value="true" />
+112-->[:unityLibrary] D:\ASEAN\Code\p2a\buildp2a\unityLibrary\build\intermediates\merged_manifest\debug\AndroidManifest.xml:89:17-37
+113        </activity>
+114
+115        <provider
+115-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:24:9-32:20
+116            android:name="androidx.startup.InitializationProvider"
+116-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:25:13-67
+117            android:authorities="com.Duytan.P2A.androidx-startup"
+117-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:26:13-68
+118            android:exported="false" >
+118-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:27:13-37
+119            <meta-data
+119-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+120                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+120-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+121                android:value="androidx.startup" />
+121-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+122        </provider>
+123
+124        <receiver
+124-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+125            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+125-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+126            android:directBootAware="false"
+126-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+127            android:enabled="true"
+127-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+128            android:exported="true"
+128-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+129            android:permission="android.permission.DUMP" >
+129-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+130            <intent-filter>
+130-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+131                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+131-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+131-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+132            </intent-filter>
+133            <intent-filter>
+133-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+134                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+134-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+134-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+135            </intent-filter>
+136            <intent-filter>
+136-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+137                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+137-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+137-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+138            </intent-filter>
+139            <intent-filter>
+139-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+140                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+140-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+140-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Duc Nguyen\.gradle\caches\transforms-3\6c1f6f720a9b46eed4dee5925aff2f6a\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+141            </intent-filter>
+142        </receiver>
+143    </application>
+144
+145</manifest>
