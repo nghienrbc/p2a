@@ -164,6 +164,12 @@ public class RecordAudio : MonoBehaviour
                 Debug.Log("Received transcript text: " + content);
 
             }
+            if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
+            {
+                string content = jsonResponse["language"].ToString();  // Lấy nội dung của "text"
+                Debug.Log("Received language text: " + content);
+
+            }
             else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
             {
                 string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
@@ -229,7 +235,7 @@ public class RecordAudio : MonoBehaviour
 
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
         // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
-        if (audioDataBuffer.Count > 4096 && !audioSource.isPlaying && isBeginPlay == false)
+        if (audioDataBuffer.Count > 4096*5 && !audioSource.isPlaying && isBeginPlay == false)
         { 
             myakuController.MyakuAnswer();
             //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
@@ -243,7 +249,7 @@ public class RecordAudio : MonoBehaviour
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
-        if (audioDataBuffer.Count > 4096)
+        if (audioDataBuffer.Count > 4096 * 5)
         {
             byte[] audioBytes = audioDataBuffer.ToArray();
 
