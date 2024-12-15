@@ -2,23 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Net.Http; 
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Networking;
-using NAudio.Wave;
-using System.Text; 
+using UnityEngine.Events; 
+using NAudio.Wave; 
 using System.Threading;
 using WebSocketSharp;
 using Newtonsoft.Json.Linq; 
 
 public class RecordAudio : MonoBehaviour
 {
-    public MyakuController myakuController;
-    private string serverUrl = "http://145.223.21.25:8001/audio-to-audio"; // URL server 
-    private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket 
-   // private string webSocketUrl = "ws://145.223.21.25:8001/ws/audio-chat"; // URL web socket 
+    public MyakuController myakuController; 
+    private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
     private string conversationId = "";
     private AudioClip recordedClip;
     private AudioClip audioClipToPlay; // AudioClip duy nhất dùng để phát
@@ -41,14 +36,14 @@ public class RecordAudio : MonoBehaviour
     private Coroutine audioCoroutine; // Để lưu coroutine
 
     private WebSocket ws;
-    private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio
-    private List<byte> audioDataBufferToSaveFile = new List<byte>(); // Buffer để lưu các chunk audio
+    private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio 
+    private Queue<List<byte>> audioBuffersQueue = new Queue<List<byte>>(); // Hàng đợi chứa các buffer của từng response
+
     private bool isReceivingAudio = false;
+    private bool isPlayingAudio = false;
 
     private Queue<Action> mainThreadActions = new Queue<Action>();
-
-    private int sampleRate = 24000; // Tần số mẫu (có thể thay đổi tùy thuộc vào dữ liệu âm thanh)
-    private int channels = 1; // Số kênh âm thanh (mono hoặc stereo)
+     
     private bool isBeginPlay = false;
     private bool isWebSocketOpen = false;
 
@@ -79,14 +74,14 @@ public class RecordAudio : MonoBehaviour
         ws.OnOpen += (sender, e) =>
         {
             isWebSocketOpen = true;
-            Debug.Log("WebSocket Connected!");
+            //Debug.Log("WebSocket Connected!");
         };
          
         // Xử lý khi WebSocket bị đóng
         ws.OnClose += (sender, e) =>
         {
             isWebSocketOpen = false;
-            Debug.Log("WebSocket Closed!");
+            //Debug.Log("WebSocket Closed!");
         };
 
         // Xử lý khi có lỗi xảy ra
@@ -139,14 +134,9 @@ public class RecordAudio : MonoBehaviour
     }
     // Sử dụng hàm này để đóng và mở WebSocket lại khi cần
     public void ResetWebSocketConnection()
-    {
-        // Đóng WebSocket nếu đang mở
-        CloseConnection();
-
-        // Sau khi WebSocket đóng, chờ một lúc trước khi mở lại (có thể tùy chỉnh thời gian)
-        System.Threading.Thread.Sleep(100);  // Giả sử thời gian trễ là 500ms
-
-        // Mở lại WebSocket
+    { 
+        CloseConnection(); 
+        System.Threading.Thread.Sleep(100);  // Giả sử thời gian trễ là 500ms 
         OpenConnection();
     }
 
@@ -154,44 +144,52 @@ public class RecordAudio : MonoBehaviour
     private void HandleWebSocketResponse(string response)
     {  
         try
-        {
-            // Giải mã JSON// Chuyển chuỗi JSON nhận được thành JObject để dễ dàng truy cập các trường
+        { 
             JObject jsonResponse = JObject.Parse(response);
-            // Kiểm tra type có phải là "text_response" không
-            if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
+            if (jsonResponse["type"] != null)
             {
-                string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
-                Debug.Log("Received transcript text: " + content);
-
-            }
-            if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "transcript")
-            {
-                string content = jsonResponse["language"].ToString();  // Lấy nội dung của "text"
-                Debug.Log("Received language text: " + content);
-
-            }
-            else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "text_response")
-            {
-                string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
-                Debug.Log("Received text: " + content);
-
-            }
-            else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "audio_chunk")
-            {    
-                string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
-                byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
-                Debug.Log("Received audio chunk");
-                //audioDataBufferToSaveFile.AddRange(audioBytes);
-                EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
-            } 
-            // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
-            else if (jsonResponse["type"] != null && jsonResponse["type"].ToString() == "audio_complete")
-            {
-                Debug.Log("Audio streaming complete."); 
-                //Debug.Log("Play audio 1 lần nào!");
-                EnqueueMainThreadAction(() => StartCoroutine(WaitForAudioToFinish()));
-                //isReceivingAudio = false; // Dừng nhận âm thanh
-                //EnqueueMainThreadAction(() => SaveAudioToFile(audioDataBufferToSaveFile));
+                string responseType = jsonResponse["type"].ToString();
+                // Kiểm tra type có phải là "text_response" không
+                if (responseType == "transcript")
+                {
+                    Debug.Log("Received transcript text: " + jsonResponse["text"].ToString() + " with language: " + jsonResponse["language"].ToString());
+                }
+                else if (responseType == "text_response")
+                {
+                    string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
+                    Debug.Log("Received text_response: " + content);
+                    // nếu đã có chunk trong buffer, tức là đây không phải text_response đầu tiên
+                    // tiến hành lưu toàn bộ buffer vào list buffer và gọi hàm play
+                    if (audioDataBuffer.Count > 0)
+                    {
+                        var bufferCopy = new List<byte>(audioDataBuffer);
+                        audioBuffersQueue.Enqueue(bufferCopy);
+                        Debug.Log("add to queue");
+                        audioDataBuffer.Clear();
+                        EnqueueMainThreadAction(() => HandlePlayAudio()); 
+                    }
+                }
+                else if (responseType == "audio_chunk")
+                {
+                    string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
+                    byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
+                    Debug.Log("Received audio_chunk");
+                    EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
+                }
+                // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
+                else if (responseType == "audio_complete")
+                {
+                    Debug.Log("Audio streaming complete.");
+                    if (audioDataBuffer.Count > 0)
+                    {
+                        var bufferCopy = new List<byte>(audioDataBuffer);
+                        audioBuffersQueue.Enqueue(bufferCopy);
+                        Debug.Log("add to queue final");
+                        audioDataBuffer.Clear();
+                        //EnqueueMainThreadAction(() => HandleAudioComplete());
+                        EnqueueMainThreadAction(() => StartCoroutine(WaitForAudioToFinish()));
+                    }
+                }
             }
         }
         catch (Exception e)
@@ -199,8 +197,85 @@ public class RecordAudio : MonoBehaviour
             Debug.LogError("Error processing WebSocket response: " + e.Message);
         }
     }
+    private void HandlePlayAudio()
+    {
+        // nếu đang không chạy audio
+        if ( !audioSource.isPlaying)
+        {
+            StartCoroutine(PlayCurrentAudio());
+        }
+    }
 
-    // Hàm chờ cho đến khi audioSource không còn chơi
+    private void HandleAudioComplete()
+    {
+        // Xử lý khi nhận được "audio_complete", có thể bắt đầu phát âm thanh nếu còn dữ liệu
+
+        //StartCoroutine(PlayCurrentAudio());
+
+    }
+
+    private IEnumerator PlayCurrentAudio()
+    { 
+        // Sau khi phát xong, dọn dẹp buffer và bắt đầu kiểm tra xem có âm thanh nào tiếp theo
+        yield return new WaitUntil(() => !audioSource.isPlaying); 
+        // Nếu có âm thanh khác trong queue, phát tiếp
+        if (audioBuffersQueue.Count > 0)
+        {
+            myakuController.MyakuAnswer();
+            var nextBuffer = audioBuffersQueue.Dequeue();
+            Debug.Log("dequeue");
+            byte[] nextAudioBytes = nextBuffer.ToArray();
+            AudioClip nextAudioClip = CreateAudioClipFromBytes(nextAudioBytes);
+            audioSource.clip = nextAudioClip;
+            audioSource.Play();
+            isPlayingAudio = true;
+        }
+    }
+
+    private IEnumerator PlayRemainAudioInQueue()
+    { 
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+        if (audioBuffersQueue.Count > 0)
+        {
+            // Tính toán tổng kích thước của tất cả các buffer trong queue
+            int totalLength = 0;
+            foreach (var buffer in audioBuffersQueue)
+            {
+                totalLength += buffer.Count;
+            }
+
+            // Tạo một mảng byte đủ lớn để chứa tất cả dữ liệu âm thanh
+            byte[] allAudioBytes = new byte[totalLength];
+            int currentIndex = 0;
+
+            // Dequeue và gộp tất cả các buffer vào mảng allAudioBytes
+            while (audioBuffersQueue.Count > 0)
+            {
+                var nextBuffer = audioBuffersQueue.Dequeue();
+                Debug.Log("Dequeueing buffer, size: " + nextBuffer.Count);
+
+                // Sao chép dữ liệu từ buffer vào mảng allAudioBytes
+                nextBuffer.CopyTo(0, allAudioBytes, currentIndex, nextBuffer.Count);
+                currentIndex += nextBuffer.Count;
+            }
+
+            // Tạo AudioClip từ mảng byte đã gộp lại
+            AudioClip nextAudioClip = CreateAudioClipFromBytes(allAudioBytes);
+            audioSource.clip = nextAudioClip;
+            audioSource.Play();
+            isPlayingAudio = true;
+
+
+            // Dừng các coroutine trước đó nếu có
+            if (audioCoroutine != null)
+            {
+                StopCoroutine(audioCoroutine);
+            }
+            audioCoroutine = StartCoroutine(CheckAudioFinished());
+        }
+    }
+
+    // Hàm chờ cho đến khi audioSource không còn play
     private IEnumerator WaitForAudioToFinish()
     {
         // Chờ cho đến khi audioSource không còn chơi
@@ -208,16 +283,9 @@ public class RecordAudio : MonoBehaviour
         {
             yield return null; // Đợi một frame
         }
-
         // Sau khi audioSource không còn chơi, gọi EnqueueMainThreadAction
-        StartCoroutine(PlayAudio());
-        // Dừng các coroutine trước đó nếu có
-        if (audioCoroutine != null)
-        {
-            StopCoroutine(audioCoroutine);
-        }
-
-        audioCoroutine = StartCoroutine(CheckAudioFinished());
+        
+        StartCoroutine(PlayRemainAudioInQueue());
     }
 
     // Xử lý và thêm audio chunk vào buffer
@@ -231,25 +299,44 @@ public class RecordAudio : MonoBehaviour
 
         //// Thêm audio chunk vào buffer
         audioDataBuffer.AddRange(audioChunk);
-        Debug.Log("nhận thêm dữ liệu: " + audioChunk.Length);
+        //Debug.Log("nhận thêm dữ liệu: " + audioChunk.Length);
 
         // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
         // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
-        if (audioDataBuffer.Count > 4096*5 && !audioSource.isPlaying && isBeginPlay == false)
-        { 
-            myakuController.MyakuAnswer();
-            //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
-            Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
-            Debug.Log("Play audio nào!");
-            isBeginPlay = true;
-            StartCoroutine(PlayAudio());
-        } 
+        //if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && isBeginPlay == false)
+        //{ 
+        //    myakuController.MyakuAnswer();
+        //    //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
+        //    //Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
+        //    //Debug.Log("Play audio nào!");
+        //    isBeginPlay = true;
+        //    StartCoroutine(PlayAudio());
+        //} 
+        // Nếu đang phát âm thanh, tiếp tục nhận và lưu audio cho response tiếp theo
+        //if (audioSource.isPlaying || isPlayingAudio)
+        //{
+        //    // Lưu các chunk audio vào queue cho các response sau
+        //    if (audioDataBuffer.Count > 0)
+        //    {
+        //        var bufferCopy = new List<byte>(audioDataBuffer);
+        //        audioBuffersQueue.Enqueue(bufferCopy);
+        //    }
+        //}
+        //else
+        //{
+        //    // Khi buffer đầy đủ, chơi âm thanh của response hiện tại
+        //    if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && !isPlayingAudio)
+        //    {
+        //        isPlayingAudio = true;
+        //        StartCoroutine(PlayCurrentAudio());
+        //    }
+        //} 
     } 
 
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
-        if (audioDataBuffer.Count > 4096 * 5)
+        if (audioDataBuffer.Count > 0)
         {
             byte[] audioBytes = audioDataBuffer.ToArray();
 
@@ -301,32 +388,7 @@ public class RecordAudio : MonoBehaviour
         }
         return floatArray;
     }
-    
-    private void SaveAudioToFile(List<byte> audioData)
-    {
-        // Lấy đường dẫn thư mục persistentDataPath
-        string filePath = Path.Combine(Application.persistentDataPath, "audioOutput.wav");
 
-        // Ghi dữ liệu vào file
-        try
-        {
-            // Kiểm tra xem file đã tồn tại chưa, nếu có thì xóa trước khi ghi mới
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-
-            // Ghi byte array vào file
-            File.WriteAllBytes(filePath, audioData.ToArray());
-            Debug.Log($"Audio file saved at {filePath}");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error saving audio file: {e.Message}");
-        }
-    }
-
-    // This method should be called every frame to process the queued actions on the main thread
     void Update()
     {
         // Process all actions in the queue on the main thread
@@ -351,9 +413,7 @@ public class RecordAudio : MonoBehaviour
         {
             mainThreadActions.Enqueue(action);
         }
-    }
-     
-
+    } 
     public void StartRecording()
     {
         myakuController.MyakuListen();
@@ -373,6 +433,14 @@ public class RecordAudio : MonoBehaviour
         audioSource.clip = null;
         audioDataBuffer.Clear();
         ResetWebSocketConnection();
+        // Tùy chọn, giải phóng bộ nhớ nếu cần
+        while (audioBuffersQueue.Count > 0)
+        {
+            var buffer = audioBuffersQueue.Dequeue();
+            buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
+        }
+        audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue
+
         if (isRequestInProgress)
         {
             cancellationTokenSource?.Cancel();
@@ -412,31 +480,8 @@ public class RecordAudio : MonoBehaviour
          
         string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
         SendMessageToServer(jsonMessage);
-        Debug.Log("Đã send message");
-        //UploadAndProcessAudio();
-    }
-
-    // Chuyển AudioClip thành mảng byte[]
-    private byte[] ConvertAudioClipToByteArray(AudioClip clip)
-    {
-        float[] samples = new float[clip.samples];
-        clip.GetData(samples, 0); // Lấy tất cả dữ liệu từ AudioClip
-
-        // Chuyển đổi từ float[] sang byte[]
-        Int16[] intData = new Int16[samples.Length];
-        Byte[] bytesData = new Byte[samples.Length * 2]; // Mỗi mẫu 16-bit nên cần *2
-
-        const float rescaleFactor = 32767f; // Tỉ lệ từ float (-1 đến 1) sang giá trị PCM 16-bit
-
-        for (int i = 0; i < samples.Length; i++)
-        {
-            intData[i] = (short)(samples[i] * rescaleFactor);
-            Byte[] byteArr = BitConverter.GetBytes(intData[i]);
-            byteArr.CopyTo(bytesData, i * 2); // Copy dữ liệu byte vào mảng
-        }
-
-        return bytesData; // Trả về mảng byte[]
-    }
+        Debug.Log("Đã send message: "+ jsonMessage); 
+    } 
 
     // Tạo JSON message
     private string CreateJsonMessage(string conversationId, string base64Audio)
@@ -455,192 +500,6 @@ public class RecordAudio : MonoBehaviour
         trimmedClip.SetData(data, 0);
 
         return trimmedClip;
-    }
-
-    public async void UploadAndProcessAudio()
-    { 
-        // kiểm tra nếu sau 15s không có câu hỏi gì cho myaku thì tạo mới conversationId
-        beginQuestionTime = Time.time;
-        float timeDifference = beginQuestionTime - endAnswerTime;
-
-        if (timeDifference > 15f)
-        {
-            Debug.Log("Đã quá thời gian cho một conversation");
-            conversationId = Guid.NewGuid().ToString(); // Random conversation_id
-        }
-        cancellationTokenSource = new CancellationTokenSource();
-        await SendAudioAndPlayStream();
-    }
-
-    private async Task SendAudioAndPlayStream( )
-    {
-        if (isRequestInProgress)
-        {
-            cancellationTokenSource?.Cancel();
-            Debug.Log("Cancelling previous request...");
-        }
-        // Tạo mới CancellationTokenSource mỗi khi gọi lại hàm
-        cancellationTokenSource = new CancellationTokenSource();
-        CancellationToken cancellationToken = cancellationTokenSource.Token;
-
-        Debug.Log("Bắt đầu SendAudioAndPlayStream");
-        isRequestInProgress = true;
-        myakuController.MyakuThinking();
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
-
-        if (!File.Exists(audioFilePath))
-        {
-            Debug.LogError("Audio file not found at path: " + audioFilePath);
-            return;
-        }
-        // Lấy file audio đã ghi âm từ RecordAudio 
-        byte[] audioData = File.ReadAllBytes(audioFilePath);
-
-        // Tạo một MultipartFormDataContent để gửi file audio
-        var formContent = new MultipartFormDataContent();
-        formContent.Add(new ByteArrayContent(audioData), "audio_file", "audio_sample.wav");
-        formContent.Add(new StringContent(conversationId, Encoding.UTF8), "conversation_id");
-
-        // Tạo HttpRequestMessage với phương thức POST
-        var request = new HttpRequestMessage(HttpMethod.Post, serverUrl)
-        {
-            Content = formContent
-        };
-
-        // Đo thời gian gửi yêu cầu
-        System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        try
-        {
-            // Gửi yêu cầu POST với HttpCompletionOption.ResponseHeadersRead
-            HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken); 
-            response.EnsureSuccessStatusCode();
-
-            // Đo thời gian nhận phản hồi đầu tiên (bao gồm cả headers)
-            stopwatch.Stop();
-            Debug.Log($"Time to receive headers: {stopwatch.ElapsedMilliseconds} ms");
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Phản hồi header đã được nhận
-                Debug.Log("Header received. Start receiving stream...");
-                // Lấy stream âm thanh từ response 
-                using (Stream audioStream = await response.Content.ReadAsStreamAsync())
-                {
-
-                    // Đọc và phát âm thanh từ stream
-                    //await StreamAudioAndPlay(audioStream, audioSource, cancellationToken);
-
-                    AudioClip audioClip = await CreateAudioClipFromStream(audioStream, cancellationToken);
-                    if (audioClip != null)
-                    {
-                        audioSource.clip = audioClip;
-                        audioSource.Play();
-
-                        myakuController.MyakuAnswer();
-                        Debug.Log("Audio is playing...");
-
-                        // Dừng các coroutine trước đó nếu có
-                        if (audioCoroutine != null)
-                        {
-                            StopCoroutine(audioCoroutine);
-                        }
-
-                        audioCoroutine = StartCoroutine(CheckAudioFinished());
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to load audio clip");
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogError("Failed to retrieve audio stream from API");
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.Log("Operation was canceled.");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error: {ex.Message}");
-        }
-        finally
-        {
-            isRequestInProgress = false;
-        } 
-    }
-
-    private async Task StreamAudioAndPlay(Stream audioStream, AudioSource audioSource, CancellationToken cancellationToken)
-    {
-        // Tạo AudioClip có khả năng stream dữ liệu 
-        AudioClip audioClip = AudioClip.Create("StreamingAudio", 24000 * 10, 1, 24000, true); // Giả sử 10 giây âm thanh
-        audioSource.clip = audioClip;
-        audioSource.Play();
-
-        // Đọc dữ liệu từ audioStream và stream vào AudioClip (Unity sẽ tự động xử lý việc phát)
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = await audioStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-        {
-            // Tạo một MemoryStream để xử lý buffer và stream âm thanh vào AudioClip
-            MemoryStream memoryStream = new MemoryStream(buffer, 0, bytesRead);
-
-            // Phát âm thanh từ buffer
-            // Unity sẽ tự động xử lý buffer và phát âm thanh nếu AudioClip được tạo với stream = true
-            audioClip.LoadAudioData();
-        }
-
-        // Đảm bảo âm thanh đã được tải và phát liên tục từ stream
-        Debug.Log("Audio is playing...");
-    }
-
-    // Hàm chuyển đổi byte[] (16-bit PCM) sang float[]
-    private float[] ConvertBytesToFloats(byte[] byteBuffer, int bytesRead)
-    {
-        int sampleCount = bytesRead / 2; // Mỗi mẫu PCM 16-bit chiếm 2 byte
-        float[] floatBuffer = new float[sampleCount];
-
-        for (int i = 0; i < sampleCount; i++)
-        {
-            short sample = BitConverter.ToInt16(byteBuffer, i * 2); // Chuyển đổi 2 byte thành short
-            floatBuffer[i] = sample / 32768f; // Chuyển đổi từ short (-32768 -> 32767) sang float (-1f -> 1f)
-        }
-
-        return floatBuffer;
-    }
-
-
-    private async Task<AudioClip> CreateAudioClipFromStream(Stream audioStream, CancellationToken cancellationToken)
-    {
-        // Tạo mảng byte để lưu dữ liệu âm thanh
-        using (MemoryStream memoryStream = new MemoryStream())
-        {
-            await audioStream.CopyToAsync(memoryStream, cancellationToken);
-            byte[] audioBytes = memoryStream.ToArray(); 
-            float[] audioData = ConvertToFloatArray(audioBytes);  // Cần có hàm chuyển đổi từ byte[] sang float[] nếu cần
-
-            // Tạo AudioClip từ dữ liệu PCM
-            AudioClip audioClip = AudioClip.Create("StreamingAudio", audioData.Length, 1, 24000, false);
-            audioClip.SetData(audioData, 0);
-            Resources.UnloadUnusedAssets();  // Giải phóng tài nguyên không còn sử dụng (tùy chọn)
-            return audioClip;
-        }
-    }
-
-    private float[] ConvertToFloatArray(byte[] audioBytes)
-    { 
-        int sampleCount = audioBytes.Length / 2;  // Giả sử mỗi mẫu là 2 bytes (16 bit)
-        float[] audioData = new float[sampleCount];
-
-        for (int i = 0; i < sampleCount; i++)
-        {
-            short sample = BitConverter.ToInt16(audioBytes, i * 2);  // Đọc 2 bytes làm một sample 16-bit
-            audioData[i] = sample / 32768.0f;  // Chuyển đổi từ short (-32768 to 32767) sang float (-1.0 to 1.0)
-        }
-
-        return audioData;
     } 
      
     private IEnumerator CheckAudioFinished()

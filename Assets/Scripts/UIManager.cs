@@ -409,9 +409,7 @@ public class UIManager : MonoBehaviour
             bluetoothManager.Call("unregisterReceiver");
             bluetoothManager.Call("disconnect"); 
         }
-    }
-     
-
+    } 
     public void BtnStartRecordClick()
     {
         connectionTxt.text = "";
@@ -428,7 +426,7 @@ public class UIManager : MonoBehaviour
 
     public void BtnPlayRecordClick()
     {
-        recorder.UploadAndProcessAudio();
+        //recorder.UploadAndProcessAudio();
        // recorder.PlayRecording();
     }
 
