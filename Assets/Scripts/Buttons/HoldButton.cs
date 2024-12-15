@@ -17,25 +17,26 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         isHolding = true;
         holdTime = 0f; // Reset thời gian khi bắt đầu nhấn
 
+        UIManager.Instance.BtnStartRecordClick();
         // Bắt đầu theo dõi thời gian giữ
-        Debug.Log("Button is being pressed");
+        // Debug.Log("Button is being pressed");
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (isHolding)
         {
-            if (hasHeldEnoughTime)
-            {
+           // if (hasHeldEnoughTime)
+            //{
                 // Nếu đã nhấn đủ lâu, dừng thu âm
                 UIManager.Instance.BtnStopRecordClick();
-            }
+           // }
 
             // Reset trạng thái khi nhả nút
             isHolding = false;
-            hasHeldEnoughTime = false; // Reset trạng thái "nhấn đủ lâu"
-            holdTime = 0f; // Reset thời gian
-            Debug.Log("Button is released");
+           // hasHeldEnoughTime = false; // Reset trạng thái "nhấn đủ lâu"
+           // holdTime = 0f; // Reset thời gian
+           // Debug.Log("Button is released");
         }
     }
 
@@ -51,21 +52,21 @@ public class HoldButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         UIManager.Instance.BtnStopRecordClick();
     }
 
-    private void Update()
-    {
-        if (isHolding)
-        {
-            holdTime += Time.deltaTime; // Cộng dồn thời gian nhấn giữ
+    //private void Update()
+    //{
+    //    if (isHolding)
+    //    {
+    //        holdTime += Time.deltaTime; // Cộng dồn thời gian nhấn giữ
 
-            // Kiểm tra xem thời gian nhấn giữ đã đủ chưa
-            if (holdTime >= requiredHoldTime && !hasHeldEnoughTime)
-            {
-                hasHeldEnoughTime = true;
-                // Nếu nhấn đủ lâu, gọi hàm bắt đầu thu âm
-                UIManager.Instance.BtnStartRecordClick();
-                Debug.Log("Recording started after holding for " + requiredHoldTime + " seconds");
-            }
-        }
-    }
+    //        // Kiểm tra xem thời gian nhấn giữ đã đủ chưa
+    //        if (holdTime >= requiredHoldTime && !hasHeldEnoughTime)
+    //        {
+    //            hasHeldEnoughTime = true;
+    //            // Nếu nhấn đủ lâu, gọi hàm bắt đầu thu âm
+    //            UIManager.Instance.BtnStartRecordClick();
+    //           // Debug.Log("Recording started after holding for " + requiredHoldTime + " seconds");
+    //        }
+    //    }
+    //}
 
 }

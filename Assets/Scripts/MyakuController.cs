@@ -34,7 +34,10 @@ public class MyakuController : MonoBehaviour
             MoveToTarget();
         }
     }
-
+    public void MyakuHello()
+    {
+        animator.SetTrigger("hello");
+    }
     public void MyakuListen()
     {
         animator.SetTrigger("listen");

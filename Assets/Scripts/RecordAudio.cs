@@ -49,13 +49,13 @@ public class RecordAudio : MonoBehaviour
 
     private void Awake()
     {
-        WebSocketHandler(webSocketUrl); // Thay URL WebSocket của bạn 
     }
     private void Start()
     {
         onAudioFinished.AddListener(OnAudioFinished);
         conversationId = Guid.NewGuid().ToString();
         //StartCoroutine(PlayRadio("http://ice3.somafm.com/defcon-128-mp3")); 
+        WebSocketHandler(webSocketUrl); // Thay URL WebSocket của bạn 
     }
 
     // Kết nối WebSocket
@@ -74,14 +74,14 @@ public class RecordAudio : MonoBehaviour
         ws.OnOpen += (sender, e) =>
         {
             isWebSocketOpen = true;
-            //Debug.Log("WebSocket Connected!");
+            Debug.Log("WebSocket Connected!");
         };
          
         // Xử lý khi WebSocket bị đóng
         ws.OnClose += (sender, e) =>
         {
             isWebSocketOpen = false;
-            //Debug.Log("WebSocket Closed!");
+            Debug.Log("WebSocket Closed!");
         };
 
         // Xử lý khi có lỗi xảy ra
@@ -119,7 +119,7 @@ public class RecordAudio : MonoBehaviour
     {
         if (!isWebSocketOpen)
         {
-            Console.WriteLine("Connecting to WebSocket...");
+            Debug.Log("Connecting to WebSocket...");
             ws.Connect();
         }
     }
@@ -128,7 +128,7 @@ public class RecordAudio : MonoBehaviour
     {
         if (isWebSocketOpen)
         {
-            Console.WriteLine("Closing WebSocket...");
+            Debug.Log("Closing WebSocket...");
             ws.Close();
         }
     }
@@ -136,7 +136,7 @@ public class RecordAudio : MonoBehaviour
     public void ResetWebSocketConnection()
     { 
         CloseConnection(); 
-        System.Threading.Thread.Sleep(100);  // Giả sử thời gian trễ là 500ms 
+        System.Threading.Thread.Sleep(50);  // Giả sử thời gian trễ là 500ms 
         OpenConnection();
     }
 
@@ -150,7 +150,15 @@ public class RecordAudio : MonoBehaviour
             {
                 string responseType = jsonResponse["type"].ToString();
                 // Kiểm tra type có phải là "text_response" không
-                if (responseType == "transcript")
+
+                if (responseType == "error")
+                {
+                    string content = jsonResponse["message"].ToString();  // Lấy nội dung của "text" 
+                    Debug.Log("Received error: " + content);
+
+                    EnqueueMainThreadAction(() => HandleAudioError());
+                }
+                else if (responseType == "transcript")
                 {
                     Debug.Log("Received transcript text: " + jsonResponse["text"].ToString() + " with language: " + jsonResponse["language"].ToString());
                 }
@@ -173,7 +181,7 @@ public class RecordAudio : MonoBehaviour
                 {
                     string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
                     byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
-                    Debug.Log("Received audio_chunk");
+                    //Debug.Log("Received audio_chunk");
                     EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
                 }
                 // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
@@ -185,8 +193,7 @@ public class RecordAudio : MonoBehaviour
                         var bufferCopy = new List<byte>(audioDataBuffer);
                         audioBuffersQueue.Enqueue(bufferCopy);
                         Debug.Log("add to queue final");
-                        audioDataBuffer.Clear();
-                        //EnqueueMainThreadAction(() => HandleAudioComplete());
+                        audioDataBuffer.Clear(); 
                         EnqueueMainThreadAction(() => StartCoroutine(WaitForAudioToFinish()));
                     }
                 }
@@ -198,22 +205,19 @@ public class RecordAudio : MonoBehaviour
         }
     }
     private void HandlePlayAudio()
-    {
+    { 
         // nếu đang không chạy audio
-        if ( !audioSource.isPlaying)
+        if (!audioSource.isPlaying)
         {
             StartCoroutine(PlayCurrentAudio());
         }
     }
-
-    private void HandleAudioComplete()
+    private void HandleAudioError()
     {
-        // Xử lý khi nhận được "audio_complete", có thể bắt đầu phát âm thanh nếu còn dữ liệu
-
-        //StartCoroutine(PlayCurrentAudio());
-
+        UIManager.Instance.connectionTxt.text = "I didn't hear your question, please ask again.";
+        myakuController.MyakuHello();
+        
     }
-
     private IEnumerator PlayCurrentAudio()
     { 
         // Sau khi phát xong, dọn dẹp buffer và bắt đầu kiểm tra xem có âm thanh nào tiếp theo
@@ -252,7 +256,16 @@ public class RecordAudio : MonoBehaviour
             while (audioBuffersQueue.Count > 0)
             {
                 var nextBuffer = audioBuffersQueue.Dequeue();
-                Debug.Log("Dequeueing buffer, size: " + nextBuffer.Count);
+                //Debug.Log("Dequeueing buffer, size: " + nextBuffer.Count);
+
+                // Kiểm tra và đảm bảo mảng allAudioBytes có đủ dung lượng
+                if (currentIndex + nextBuffer.Count > allAudioBytes.Length)
+                {
+                    // Tăng kích thước của mảng nếu cần thiết
+                    int newLength = currentIndex + nextBuffer.Count;
+                    Array.Resize(ref allAudioBytes, newLength);
+                    //Debug.Log("Resized allAudioBytes to: " + newLength);
+                }
 
                 // Sao chép dữ liệu từ buffer vào mảng allAudioBytes
                 nextBuffer.CopyTo(0, allAudioBytes, currentIndex, nextBuffer.Count);
@@ -468,7 +481,13 @@ public class RecordAudio : MonoBehaviour
         //Lấy file audio đã ghi âm từ RecordAudio
         byte[] audioBytes = File.ReadAllBytes(audioFilePath);
         string base64Audio = Convert.ToBase64String(audioBytes);
-         
+        string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
+
+        // Lưu chuỗi Base64 vào file text
+        File.WriteAllText(filePath, base64Audio);
+
+
+
         beginQuestionTime = Time.time;
         float timeDifference = beginQuestionTime - endAnswerTime;
 
