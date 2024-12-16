@@ -8,10 +8,12 @@ using UnityEngine.Events;
 using NAudio.Wave; 
 using System.Threading;
 using WebSocketSharp;
-using Newtonsoft.Json.Linq; 
+using Newtonsoft.Json.Linq;
+using TMPro;
 
 public class RecordAudio : MonoBehaviour
 {
+    public TMP_Text transcriptTxt;
     public MyakuController myakuController; 
     private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
     private string conversationId = "";
@@ -156,6 +158,10 @@ public class RecordAudio : MonoBehaviour
                 }
                 else if (responseType == "transcript")
                 {
+                    ;
+                    EnqueueMainThreadAction(() => {
+                        transcriptTxt.text = jsonResponse["text"].ToString();
+                        });
                     Debug.Log("Received transcript text: " + jsonResponse["text"].ToString() + " with language: " + jsonResponse["language"].ToString());
                 }
                 else if (responseType == "text_response")
