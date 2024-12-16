@@ -22,18 +22,12 @@ public class RecordAudio : MonoBehaviour
     private float startTime;
     private float recordingLength;
 
-    public UnityEvent onAudioFinished; // Sự kiện khi audio kết thúc
-
-    private MediaFoundationReader mediaFoundationReader; 
-    private WaveOutEvent waveOut;
-    private WaveOutEvent waveOutEvent;
-    private BufferedWaveProvider waveProvider;
+    public UnityEvent onAudioFinished; // Sự kiện khi audio kết thúc 
 
     private float beginQuestionTime;
-    private float endAnswerTime;
-    private CancellationTokenSource cancellationTokenSource; // Token source để hủy tác vụ
+    private float endAnswerTime; 
     private static HttpClient client = new HttpClient();
-    private Coroutine audioCoroutine; // Để lưu coroutine
+    private Coroutine audioCoroutine; // Để lưu coroutine 
 
     private WebSocket ws;
     private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio 
@@ -53,8 +47,7 @@ public class RecordAudio : MonoBehaviour
     private void Start()
     {
         onAudioFinished.AddListener(OnAudioFinished);
-        conversationId = Guid.NewGuid().ToString();
-        //StartCoroutine(PlayRadio("http://ice3.somafm.com/defcon-128-mp3")); 
+        conversationId = Guid.NewGuid().ToString(); 
         WebSocketHandler(webSocketUrl); // Thay URL WebSocket của bạn 
     }
 
@@ -149,12 +142,17 @@ public class RecordAudio : MonoBehaviour
             if (jsonResponse["type"] != null)
             {
                 string responseType = jsonResponse["type"].ToString();
+                if (responseType != "audio_chunk")
+                { 
+                    Debug.Log("Received message text:" + jsonResponse);
+                } 
+
                 // Kiểm tra type có phải là "text_response" không
 
                 if (responseType == "error")
                 {
                     string content = jsonResponse["message"].ToString();  // Lấy nội dung của "text" 
-                    Debug.Log("Received error: " + content);
+                    Debug.LogError("Received error: " + content);
 
                     EnqueueMainThreadAction(() => HandleAudioError());
                 }
@@ -181,7 +179,7 @@ public class RecordAudio : MonoBehaviour
                 {
                     string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
                     byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
-                    //Debug.Log("Received audio_chunk");
+                    Debug.Log("Received audio_chunk");
                     EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
                 }
                 // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
@@ -215,8 +213,7 @@ public class RecordAudio : MonoBehaviour
     private void HandleAudioError()
     {
         UIManager.Instance.connectionTxt.text = "I didn't hear your question, please ask again.";
-        myakuController.MyakuHello();
-        
+        myakuController.MyakuHello(); 
     }
     private IEnumerator PlayCurrentAudio()
     { 
@@ -430,6 +427,7 @@ public class RecordAudio : MonoBehaviour
     public void StartRecording()
     {
         myakuController.MyakuListen();
+        StopAllCoroutines();
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         if(device != "")
         { 
@@ -453,13 +451,7 @@ public class RecordAudio : MonoBehaviour
             buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
         }
         audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue
-
-        if (isRequestInProgress)
-        {
-            cancellationTokenSource?.Cancel();
-            Debug.Log("Cancelling previous request...");
-        }
-
+          
     }
 
     public void StopRecording()
@@ -484,9 +476,7 @@ public class RecordAudio : MonoBehaviour
         string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
 
         // Lưu chuỗi Base64 vào file text
-        File.WriteAllText(filePath, base64Audio);
-
-
+        File.WriteAllText(filePath, base64Audio); 
 
         beginQuestionTime = Time.time;
         float timeDifference = beginQuestionTime - endAnswerTime;
@@ -539,20 +529,6 @@ public class RecordAudio : MonoBehaviour
         myakuController.animator.SetBool("answer", false);
         audioSource.clip = null;
         Resources.UnloadUnusedAssets();
-    }
-
-    public bool HasRecordedAudio()
-    {
-        return recordedClip != null;
-    }
-
-    // Hàm gọi để hủy tác vụ
-    public void CancelOperation()
-    {
-        if (isRequestInProgress)
-        {
-            cancellationTokenSource?.Cancel();
-            Debug.Log("Cancelling operation...");
-        }
-    }
+    } 
+     
 }
