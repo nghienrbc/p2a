@@ -16,9 +16,7 @@ public class RecordAudio : MonoBehaviour
     private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
     private string conversationId = "";
     private AudioClip recordedClip;
-    private AudioClip audioClipToPlay; // AudioClip duy nhất dùng để phát
     [SerializeField] AudioSource audioSource;
-    private bool isRequestInProgress = false; 
     private float startTime;
     private float recordingLength;
 
@@ -450,46 +448,53 @@ public class RecordAudio : MonoBehaviour
             var buffer = audioBuffersQueue.Dequeue();
             buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
         }
-        audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue
-          
+        audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue 
     }
 
     public void StopRecording()
     {
         Microphone.End(null);
         recordingLength = Time.realtimeSinceStartup - startTime;
-        recordedClip = TrimClip(recordedClip, recordingLength);
-
-        //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip); 
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
-        WavUtility.Save(audioFilePath, recordedClip);
-
-
-        if (!File.Exists(audioFilePath))
+        if (recordedClip != null)
         {
-            Debug.LogError("Audio file not found at path: " + audioFilePath);
-            return;
+            recordedClip = TrimClip(recordedClip, recordingLength);
+
+            //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip); 
+            string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
+            WavUtility.Save(audioFilePath, recordedClip);
+
+
+            if (!File.Exists(audioFilePath))
+            {
+                Debug.LogError("Audio file not found at path: " + audioFilePath);
+                return;
+            }
+            //Lấy file audio đã ghi âm từ RecordAudio
+            byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+            string base64Audio = Convert.ToBase64String(audioBytes);
+            string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
+
+            // Lưu chuỗi Base64 vào file text
+            File.WriteAllText(filePath, base64Audio);
+
+            beginQuestionTime = Time.time;
+            float timeDifference = beginQuestionTime - endAnswerTime;
+
+            if (timeDifference > 15f)
+            {
+                Debug.Log("Đã quá thời gian cho một conversation");
+                conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+            }
+
+            string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
+            SendMessageToServer(jsonMessage);
+            Debug.Log("Đã send message: " + jsonMessage);
         }
-        //Lấy file audio đã ghi âm từ RecordAudio
-        byte[] audioBytes = File.ReadAllBytes(audioFilePath);
-        string base64Audio = Convert.ToBase64String(audioBytes);
-        string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
-
-        // Lưu chuỗi Base64 vào file text
-        File.WriteAllText(filePath, base64Audio); 
-
-        beginQuestionTime = Time.time;
-        float timeDifference = beginQuestionTime - endAnswerTime;
-
-        if (timeDifference > 15f)
+        else
         {
-            Debug.Log("Đã quá thời gian cho một conversation");
-            conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+            UIManager.Instance.connectionTxt.text = "Device cannot record, please check device status";
+            myakuController.MyakuHello();
         }
-         
-        string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
-        SendMessageToServer(jsonMessage);
-        Debug.Log("Đã send message: "+ jsonMessage); 
     } 
 
     // Tạo JSON message
