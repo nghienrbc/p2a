@@ -33,8 +33,8 @@ public class UIManager : MonoBehaviour
     public string functionName = "home";
 
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio";
-    //private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6";
-    private string targetDeviceAddress = "24:DC:C3:9B:BA:7A";
+    private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6"; // myaku 3
+    //private string targetDeviceAddress = "24:DC:C3:9B:BA:7A";
     // Start is called before the first frame update
 
     public PanelMover mapPanel;
@@ -42,6 +42,7 @@ public class UIManager : MonoBehaviour
     public PanelMover mapDetailPanel;
     public PanelMover locationPanel;
     public PanelMover gamePanel;
+    public PanelMover settingPanel;
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
     public MyakuController myakuController;
@@ -127,6 +128,7 @@ public class UIManager : MonoBehaviour
         MovePanel(mapPanel, PanelMover.Direction.Up, true, 0);
         MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 0);
         MovePanel(gamePanel, PanelMover.Direction.Left, true, 0);
+        MovePanel(settingPanel, PanelMover.Direction.Up, true, 0);
     }
 
 
@@ -268,17 +270,17 @@ public class UIManager : MonoBehaviour
     }
 
     // Bắt đầu quét thiết bị
-    public void StartScanning()
+    public void StartScanning(string targetDeviceAdd)
     {
         if (IsBluetoothEnabled())
         {
             isFirsttime = true;
             connectionTxt.text = "Start scan bluetooth device...."; 
-            bluetoothManager.Call("autoConnectToDevice", targetDeviceAddress); 
+            bluetoothManager.Call("autoConnectToDevice", targetDeviceAdd); 
         }
         else
         {
-            connectionTxt.text = "Bluetooth chưa được bật"; 
+            connectionTxt.text = "Bluetooth is not turned on"; 
             EnableBluetooth(); 
         }
     }
@@ -294,7 +296,8 @@ public class UIManager : MonoBehaviour
 
     // Nhận thông tin thiết bị tìm thấy từ BluetoothManager (được gọi từ Java)
     public void OnDeviceFound(string deviceInfo)
-    {
+    { 
+        Debug.Log("Found Myaku Bluetooth, hold down the button and ask something!");
         connectionTxt.text = "Found Myaku Bluetooth, hold down the button and ask something!";
         string[] info = deviceInfo.Split(';');
         if (info.Length == 2)
@@ -333,49 +336,84 @@ public class UIManager : MonoBehaviour
     public void OnDeviceConnected(string statusMessage)
     {
         Debug.Log(statusMessage);
-        //connectionTxt.text = statusMessage;
+        connectionTxt.text = statusMessage;
         // Hiển thị thông báo trên UI nếu cần
     }
 
+    bool isSendHelloData = false;
+    bool isSendInitData = false;
     // Phương thức này sẽ được gọi từ Java để xử lý dữ liệu nhận được
     public void OnDataReceived(string receivedData)
     {
         Debug.Log("Data received: " + receivedData);
-
-        // Xử lý dữ liệu, ví dụ chuyển đổi sang kiểu Boolean
-        if (receivedData.Trim() == "1")
+        // Kiểm tra nếu nhận được chuỗi "ddhello"
+        if (receivedData.Trim() == "ddhello")
         {
-            // Xử lý khi nhận được true, ví dụ bật một đối tượng
-            if (functionName == "camera")
+            if (!isSendHelloData)
             {
-                takePhotoAndUpload.SaveImage();
-            }
-            else
-            {
-                recorder.StartRecording();
-                recordingIndicator.gameObject.SetActive(true);
-                connectionTxt.text = "";
-            }
-            Debug.Log("Button is pressed");
-        }  
-        else if (receivedData.Trim() == "0")
-        {
-            // Xử lý khi nhận được false, ví dụ tắt đối tượng
-            Debug.Log("Button is released");
-            if (functionName == "home")
-            {
-                connectionTxt.text = "Let me think about the answer for a moment!";
-                recorder.StopRecording();
-                recordingIndicator.gameObject.SetActive(false);
-                // xữ lý gửi audio lên API để nhận lại một audio
-                
+                Debug.Log("Received 'ddhello', sending 'ddhello' back...");
+                SendDataToBluetooth("ddhello");
+                isSendHelloData = true;
             }
         }
+        // Kiểm tra nếu nhận được chuỗi ">init>:Arduino-c12"
+        else if (receivedData.Trim() == ">init>:Arduino-c12")
+        {
+            if (!isSendInitData)
+            {
+                isSendInitData = true;
+                Debug.Log("Received '>init>:Arduino-c12', sending '<init<:11' back...");
+                SendDataToBluetooth("<init<:11");
+            }
+        }
+        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
+        else if (receivedData.Trim() == "0.^Q^W1,C,START")
+        {
+            Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!"); 
+        }
+        else
+        {
+            Debug.Log("Received data: " + receivedData);
+        }
+
+
+        //// Xử lý dữ liệu, ví dụ chuyển đổi sang kiểu Boolean
+        //if (receivedData.Trim() == "1")
+        //{
+        //    // Xử lý khi nhận được true, ví dụ bật một đối tượng
+        //    if (functionName == "camera")
+        //    {
+        //        takePhotoAndUpload.SaveImage();
+        //    }
+        //    else
+        //    {
+        //        recorder.StartRecording();
+        //        recordingIndicator.gameObject.SetActive(true);
+        //        connectionTxt.text = "";
+        //    }
+        //    Debug.Log("Button is pressed");
+        //}  
+        //else if (receivedData.Trim() == "0")
+        //{
+        //    // Xử lý khi nhận được false, ví dụ tắt đối tượng
+        //    Debug.Log("Button is released");
+        //    if (functionName == "home")
+        //    {
+        //        connectionTxt.text = "Let me think about the answer for a moment!";
+        //        recorder.StopRecording();
+        //        recordingIndicator.gameObject.SetActive(false);
+        //        // xữ lý gửi audio lên API để nhận lại một audio
+                
+        //    }
+        //}
 
         //connectionTxt.text = receivedData.Trim();
     }
-    
 
+    private void SendDataToBluetooth(string data)
+    {
+        bluetoothManager.Call("sendData", data);
+    }
     // Hàm gọi khi một nút BaseToggleButton được nhấn
     public void OnButtonClicked(BaseToogleButton clickedButton)
     {
@@ -427,7 +465,8 @@ public class UIManager : MonoBehaviour
     public void BtnPlayRecordClick()
     {
         //recorder.UploadAndProcessAudio();
-       // recorder.PlayRecording();
+        // recorder.PlayRecording();
+        bluetoothManager.Call("sendData", "ddhello");
     }
 
     public void BtnTakePhotoClick()

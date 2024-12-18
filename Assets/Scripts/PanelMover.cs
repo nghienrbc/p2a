@@ -26,13 +26,13 @@ public class PanelMover : MonoBehaviour
     {
         if (moveOut && isOffScreen)
         {
-            Debug.Log("Panel is already off-screen, cannot move out further.");
+            //Debug.Log("Panel is already off-screen, cannot move out further.");
             return;
         }
 
         if (!moveOut && !isOffScreen)
         {
-            Debug.Log("Panel is already on-screen, cannot move in further.");
+            //Debug.Log("Panel is already on-screen, cannot move in further.");
             return;
         }
 

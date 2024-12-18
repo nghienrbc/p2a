@@ -15,5 +15,6 @@ public class PlayGameBtn : BaseToogleButton
         UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
         UIManager.Instance.MovePanel(UIManager.Instance.gamePanel, PanelMover.Direction.Left, false, 3000);
+        UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
     }
 }

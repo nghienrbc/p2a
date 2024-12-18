@@ -18,12 +18,14 @@ public class FlagController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (UIManager.Instance.mapPanel.isOffScreen && UIManager.Instance.gamePanel.isOffScreen && UIManager.Instance.cameraPanel.isOffScreen )
+        if (UIManager.Instance.mapPanel.isOffScreen && UIManager.Instance.gamePanel.isOffScreen 
+            && UIManager.Instance.cameraPanel.isOffScreen )
         { 
             // Khi click vào cube, hiển thị panel của nó
             MapPanelManager.Instance.ShowPanel(associatedPanel);
 
             UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, false, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
             //UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Up, false, 3000);
             UIManager.Instance.MoveMyaku(true);
 
