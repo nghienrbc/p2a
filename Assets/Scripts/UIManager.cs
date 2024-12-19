@@ -352,7 +352,7 @@ public class UIManager : MonoBehaviour
             if (!isSendHelloData)
             {
                 Debug.Log("Received 'ddhello', sending 'ddhello' back...");
-                SendDataToBluetooth("ddhello");
+                SendDataToBluetooth("ddhello\n");
                 isSendHelloData = true;
             }
         }
@@ -363,7 +363,7 @@ public class UIManager : MonoBehaviour
             {
                 isSendInitData = true;
                 Debug.Log("Received '>init>:Arduino-c12', sending '<init<:11' back...");
-                SendDataToBluetooth("<init<:11");
+                SendDataToBluetooth("<init<:11\n");
             }
         }
         // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
@@ -466,7 +466,7 @@ public class UIManager : MonoBehaviour
     {
         //recorder.UploadAndProcessAudio();
         // recorder.PlayRecording();
-        bluetoothManager.Call("sendData", "ddhello");
+        bluetoothManager.Call("sendData", "ddhello\n");
     }
 
     public void BtnTakePhotoClick()
