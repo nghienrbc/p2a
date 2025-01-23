@@ -33,8 +33,8 @@ public class UIManager : MonoBehaviour
     public string functionName = "home";
 
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio";
-    private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6"; // myaku 3
-    //private string targetDeviceAddress = "24:DC:C3:9B:BA:7A";
+    //private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6"; // myaku 3
+    private string targetDeviceAddress = "24:DC:C3:9B:BA:7A";
     // Start is called before the first frame update
 
     public PanelMover mapPanel;
@@ -138,8 +138,7 @@ public class UIManager : MonoBehaviour
         string[] permissions = new string[] {
             "android.permission.BLUETOOTH_CONNECT",
             "android.permission.BLUETOOTH_SCAN",
-            "android.permission.ACCESS_FINE_LOCATION",
-            "android.permission.RECORD_AUDIO",
+            "android.permission.ACCESS_FINE_LOCATION", 
         };
 
         using (AndroidJavaClass contextCompat = new AndroidJavaClass("androidx.core.content.ContextCompat"))
@@ -336,12 +335,14 @@ public class UIManager : MonoBehaviour
     public void OnDeviceConnected(string statusMessage)
     {
         Debug.Log(statusMessage);
-        connectionTxt.text = statusMessage;
         // Hiển thị thông báo trên UI nếu cần
+        connectionTxt.text = statusMessage;
+        isSendHelloData = false;
+        isSendInitData = false;
     }
 
     bool isSendHelloData = false;
-    bool isSendInitData = false;
+    bool isSendInitData = false; 
     // Phương thức này sẽ được gọi từ Java để xử lý dữ liệu nhận được
     public void OnDataReceived(string receivedData)
     {
@@ -357,7 +358,7 @@ public class UIManager : MonoBehaviour
             }
         }
         // Kiểm tra nếu nhận được chuỗi ">init>:Arduino-c12"
-        else if (receivedData.Trim() == ">init>:Arduino-c12")
+        else if (receivedData.Trim().Contains(">init>:Arduino-c12") || receivedData.Trim().Contains(">init>:") || receivedData.Trim().Contains("Arduino-c12"))
         {
             if (!isSendInitData)
             {
@@ -367,15 +368,35 @@ public class UIManager : MonoBehaviour
             }
         }
         // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
-        else if (receivedData.Trim() == "0.^Q^W1,C,START")
+        else if (receivedData.Trim().Contains("0.^Q^W1,C,START") || receivedData.Trim().Contains("START"))
         {
             Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!"); 
+
+        }
+        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
+        else if (receivedData.Trim() == "0.^Q^W1,C,STOP" || receivedData.Trim() == "STOP")
+        {
+            Debug.Log("bắt đầu nhận dữ liệu audio từ thiết bị bluetooth!");
+            if (functionName == "camera")
+            {
+                takePhotoAndUpload.SaveImage();
+            }
+            else
+            {
+                // bật biến bắt đầu nhận dữ kiệu audio từ bluetooth
+
+            }
         }
         else
         {
             Debug.Log("Received data: " + receivedData);
-        }
+            // kiểm tra nếu chuổi nhận được bắt đầu bằng |byte|>.&0#256 và kết thúc bằng chuỗi #05
+            string recieveString = receivedData.Trim();
+            if (recieveString.Substring(0,14) == "|byte|>.&0#256" && recieveString.Substring(recieveString.Length - 3, 3) == "#05")
+            {
 
+            }
+        }
 
         //// Xử lý dữ liệu, ví dụ chuyển đổi sang kiểu Boolean
         //if (receivedData.Trim() == "1")
