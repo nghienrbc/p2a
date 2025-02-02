@@ -144,7 +144,7 @@ public class LocationSceneManager : MonoBehaviour
             }
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
 
-            imageScrollRect.verticalNormalizedPosition = 1f; // Đặt về vị trí top
+            imageScrollRect.horizontalNormalizedPosition = 1f; // Đặt về vị trí top
             textScrollRect.verticalNormalizedPosition = 1f; // Đặt về vị trí top
             currentImageIndex = 0;
         }
@@ -324,7 +324,7 @@ public class LocationSceneManager : MonoBehaviour
                 RectTransform imageRectTransform = newImageObj.GetComponent<RectTransform>();
 
                 // Lấy chiều cao của ScrollView
-                float scrollViewHeight = ((RectTransform)content).rect.width;
+                float scrollViewHeight = ((RectTransform)content).rect.height;
 
                 // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
                 imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
