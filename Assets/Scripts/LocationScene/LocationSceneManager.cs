@@ -163,14 +163,12 @@ public class LocationSceneManager : MonoBehaviour
         DisplayImages(imagePaths);
 
         if (imageSpritesOriginal.Count() > 0)
-        {
-            largeImage.sprite = imageSpritesOriginal[0];
-            largeImage.GetComponent<Image>().preserveAspect = true;
-            largeImagePanel.SetActive(true);
-
-            // Reset vị trí và alpha của ảnh
-            largeImageRectTransform.anchoredPosition = Vector2.zero;
-            largeImageCanvasGroup.alpha = originalAlpha;
+        { 
+            largeImagePanel.SetActive(true); 
+            // Lấy texture từ sprite
+            Texture2D texture = imageSpritesOriginal[0].texture; 
+            // Gán sprite mới vào Image
+            ResizeLargeImage(texture); 
         }
         else
         {
@@ -179,6 +177,55 @@ public class LocationSceneManager : MonoBehaviour
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         }
     }
+
+    private void ResizeLargeImage(Texture2D texture)
+    {
+        RectTransform largeImagePanelRectTransform = largeImagePanel.GetComponent<RectTransform>();
+        // Lấy kích thước của panel
+        float panelWidth = largeImagePanelRectTransform.rect.width;
+        float panelHeight = largeImagePanelRectTransform.rect.height;
+
+        // Tính tỷ lệ khung hình của panel (width/height)
+        float panelRatio = panelWidth / panelHeight;
+
+        // Tính tỷ lệ khung hình của texture (width/height)
+        float textureRatio = (float)texture.width / texture.height;
+
+        // Tính toán kích thước mới để phù hợp với panel
+        int newWidth, newHeight;
+        if (textureRatio > panelRatio)
+        {
+            // Nếu texture rộng hơn panel, điều chỉnh chiều cao
+            newHeight = texture.height;
+            newWidth = Mathf.RoundToInt(newHeight * panelRatio);
+        }
+        else
+        {
+            // Nếu texture cao hơn panel, điều chỉnh chiều rộng
+            newWidth = texture.width;
+            newHeight = Mathf.RoundToInt(newWidth / panelRatio);
+        }
+
+        // Tính toán vị trí cắt để giữ nguyên tỷ lệ và không bị méo
+        int offsetX = (texture.width - newWidth) / 2;
+        int offsetY = (texture.height - newHeight) / 2;
+
+        // Tạo Rect mới để cắt texture
+        Rect newRect = new Rect(offsetX, offsetY, newWidth, newHeight);
+
+        // Tạo sprite mới từ texture và Rect
+        Sprite newSprite = Sprite.Create(texture, newRect, new Vector2(0.5f, 0.5f));
+
+        largeImage.sprite = newSprite;
+        // Điều chỉnh kích thước của Image để phù hợp với Panel
+        //largeImage.rectTransform.sizeDelta = new Vector2(panelWidth, panelHeight);
+
+        //largeImage.GetComponent<Image>().preserveAspect = true;
+        // Reset vị trí và alpha của ảnh
+        largeImageRectTransform.anchoredPosition = Vector2.zero;
+        largeImageCanvasGroup.alpha = originalAlpha; 
+    }
+
 
     private string GetDatabasePath(string dbName)
     {
@@ -361,14 +408,8 @@ public class LocationSceneManager : MonoBehaviour
     public void OnImageClick(int imageIndex)
     {
         // Hiển thị ảnh lớn và panel nền tối
-        currentImageIndex = imageIndex;
-        largeImage.sprite = imageSpritesOriginal[imageIndex];
-        largeImage.GetComponent<Image>().preserveAspect = true;
-        largeImagePanel.SetActive(true);
-
-        // Reset vị trí và alpha của ảnh
-        largeImageRectTransform.anchoredPosition = Vector2.zero;
-        largeImageCanvasGroup.alpha = originalAlpha;
+        currentImageIndex = imageIndex; 
+        ResizeLargeImage(imageSpritesOriginal[imageIndex].texture);
     }
 
     // Hàm đóng panel khi swipe lên
@@ -496,9 +537,8 @@ public class LocationSceneManager : MonoBehaviour
     {
         if (currentImageIndex > 0)
         {
-            currentImageIndex--;
-            largeImage.sprite = imageSpritesOriginal[currentImageIndex];
-            ResetImagePositionAndAlpha();
+            currentImageIndex--; 
+            ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
         }
     }
 
@@ -508,16 +548,8 @@ public class LocationSceneManager : MonoBehaviour
         if (currentImageIndex < imageSpritesOriginal.Count - 1)
         {
             currentImageIndex++;
-            largeImage.sprite = imageSpritesOriginal[currentImageIndex];
-            ResetImagePositionAndAlpha();
+            ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
         }
-    }
-
-    // Đặt lại vị trí và alpha của ảnh lớn
-    private void ResetImagePositionAndAlpha()
-    {
-        largeImageRectTransform.anchoredPosition = Vector2.zero;
-        largeImageCanvasGroup.alpha = originalAlpha;
     }
 
     // Hiệu ứng đưa ảnh trở về vị trí ban đầu và khôi phục alpha
