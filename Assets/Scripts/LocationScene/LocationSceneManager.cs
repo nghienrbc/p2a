@@ -93,6 +93,8 @@ public class LocationSceneManager : MonoBehaviour
     private P2ADataService _dataService;
 
     public float changeInterval = 3.0f; // Thời gian giữa các lần đổi ảnh
+    private bool enableAutoChangeImage = false;
+    private Coroutine autoChangeImageCoroutine;
 
     // Start is called before the first frame update
     void Start()
@@ -108,14 +110,22 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup = largeImage.gameObject.GetComponent<CanvasGroup>();
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
 
+         
 
         StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
     }
 
     public void AutoChangePhotoBtnClick()
     {
-
-        StartCoroutine(AutoChangeImage());
+        if (!enableAutoChangeImage)
+        {
+            autoChangeImageCoroutine = StartCoroutine(AutoChangeImage()); 
+        }
+        else
+        {
+            StopCoroutine(autoChangeImageCoroutine);
+        }
+        enableAutoChangeImage = !enableAutoChangeImage;
     }
 
     // Coroutine đổi ảnh tự động
