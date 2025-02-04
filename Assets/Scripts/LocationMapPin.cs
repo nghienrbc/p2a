@@ -18,9 +18,10 @@ public class LocationMapPin : MonoBehaviour
     // Hàm sẽ được gọi khi Button được nhấn
     void OnButtonClick()
     { 
-        Debug.Log("Button clicked!");
+        Debug.Log("Button clicked 111!");
         // gọi hàm hiển thị Location Panel và Mapdetail panel
-        databaseManager.GetComponent<LocationSceneManager>().GetImageByLocationId(GetComponent<RectTransform>(), locationID); 
+        databaseManager.GetComponent<LocationSceneManager>().GetImageByLocationId(GetComponent<RectTransform>(), locationID);
+        UIManager.Instance.locationID = locationID;
     } 
     // Update is called once per frame
     void Update()

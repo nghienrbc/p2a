@@ -62,9 +62,10 @@ public class LocationSceneManager : MonoBehaviour
     public ScrollRect textScrollRect;
 
     public GameObject locationPanel;
-    public Image locationImage; // UI Image lớn hiển thị ảnh
+    public Image locationImage;  
     public TMP_Text locationNameTxt;
     public TMP_Text locationLocationTxt;
+    public TMP_Text cityNameTxt;
     public TMP_Text locationInfoTxt;
     public GameObject largeImagePanel; // Panel bao quanh image lớn (nền tối)
     public Image largeImage; // UI Image lớn hiển thị ảnh
@@ -91,6 +92,8 @@ public class LocationSceneManager : MonoBehaviour
 
     private P2ADataService _dataService;
 
+    public float changeInterval = 3.0f; // Thời gian giữa các lần đổi ảnh
+
     // Start is called before the first frame update
     void Start()
     {
@@ -107,6 +110,26 @@ public class LocationSceneManager : MonoBehaviour
 
 
         StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
+    }
+
+    public void AutoChangePhotoBtnClick()
+    {
+
+        StartCoroutine(AutoChangeImage());
+    }
+
+    // Coroutine đổi ảnh tự động
+    IEnumerator AutoChangeImage()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(changeInterval);
+
+            if (!isDragging) // Chỉ đổi ảnh nếu không có thao tác kéo
+            {
+                ShowNextImage();
+            }
+        }
     }
 
     public void GetImageByLocationId(RectTransform buttonRect, int locationId)
@@ -137,18 +160,24 @@ public class LocationSceneManager : MonoBehaviour
 
             locationNameTxt.text = locations.First().location_name;
             locationInfoTxt.text = locations.First().location_description;
-            locationLocationTxt.text = locations.First().location_location;
+            locationLocationTxt.text = locations.First().location_name;
+            cityNameTxt.text = locations.First().location_location;
             if (images.Count() > 0)
             {
                 DisplaySmallImages(images.First().image_name);
             }
-            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
 
             imageScrollRect.horizontalNormalizedPosition = 1f; // Đặt về vị trí top
             textScrollRect.verticalNormalizedPosition = 1f; // Đặt về vị trí top
             currentImageIndex = 0;
-        }
+        } 
+    }
 
+    public void ShowLocationDetail()
+    {
+        int targetLocationId = UIManager.Instance.locationID;
+        IEnumerable<ImageTable> images = _dataService.GetImageByLocationId(targetLocationId);
+        UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
         List<string> imagePaths = new List<string>();
         // In kết quả ra Console
         foreach (var image in images)
@@ -157,18 +186,18 @@ public class LocationSceneManager : MonoBehaviour
             // Danh sách đường dẫn tới các hình ảnh
             string imageName = image.image_name;
             string imagePath = Path.Combine(Application.persistentDataPath, "Images", imageName) + ".jpg";
-            Debug.Log("imagePath"+ imagePath);
+            Debug.Log("imagePath" + imagePath);
             imagePaths.Add(imagePath);
         }
         DisplayImages(imagePaths);
 
         if (imageSpritesOriginal.Count() > 0)
-        { 
-            largeImagePanel.SetActive(true); 
+        {
+            largeImagePanel.SetActive(true);
             // Lấy texture từ sprite
-            Texture2D texture = imageSpritesOriginal[0].texture; 
+            Texture2D texture = imageSpritesOriginal[0].texture;
             // Gán sprite mới vào Image
-            ResizeLargeImage(texture); 
+            ResizeLargeImage(texture);
         }
         else
         {
@@ -177,7 +206,10 @@ public class LocationSceneManager : MonoBehaviour
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         }
     }
-
+    public void HideLocationDetail()
+    { 
+        UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+    }
     private void ResizeLargeImage(Texture2D texture)
     {
         RectTransform largeImagePanelRectTransform = largeImagePanel.GetComponent<RectTransform>();
@@ -311,12 +343,7 @@ public class LocationSceneManager : MonoBehaviour
             imageComponent.sprite = Sprite.Create(texture, cropRect, new Vector2(0.5f, 0.5f)); ;
              
 
-            locationImage.preserveAspect = false;
-            // Lấy chiều cao của ScrollView
-           // float scrollViewHeight = ((RectTransform)content).rect.height;
-
-            // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
-            //imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight); 
+            locationImage.preserveAspect = false; 
         }
         else
         {
@@ -345,7 +372,10 @@ public class LocationSceneManager : MonoBehaviour
             if (texture != null)
             {
                 // Tạo đối tượng Image từ prefab
-                GameObject newImageObj = Instantiate(imagePrefab, content);
+
+                GameObject imagePanel = Instantiate(imagePrefab, content);
+
+                GameObject newImageObj = imagePanel.transform.Find("Image").gameObject;
 
                 // Lấy component Image của đối tượng và gán sprite cho nó
                 Image imageComponent = newImageObj.GetComponent<Image>();  
@@ -375,7 +405,7 @@ public class LocationSceneManager : MonoBehaviour
 
                 // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
                 imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
-
+                imagePanel.GetComponent<RectTransform>().sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
                 imageSprites.Add(newSprite); // Thêm sprite vào danh sách 
                 imageSpritesOriginal.Add(newSpriteOriginal);
                 int localIndex = i;
@@ -538,8 +568,12 @@ public class LocationSceneManager : MonoBehaviour
         if (currentImageIndex > 0)
         {
             currentImageIndex--; 
-            ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
+        } 
+        else
+        {
+            currentImageIndex = imageSpritesOriginal.Count - 1; // Quay lại ảnh cuối nếu ở ảnh đầu tiên
         }
+        ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
     }
 
     // Chuyển tới ảnh tiếp theo
@@ -548,9 +582,15 @@ public class LocationSceneManager : MonoBehaviour
         if (currentImageIndex < imageSpritesOriginal.Count - 1)
         {
             currentImageIndex++;
-            ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
         }
+        else
+        {
+            currentImageIndex = 0; // Quay lại ảnh đầu tiên nếu hết ảnh
+        }
+        ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
     }
+
+      
 
     // Hiệu ứng đưa ảnh trở về vị trí ban đầu và khôi phục alpha
     IEnumerator SmoothReturnToPosition()

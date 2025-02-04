@@ -26,8 +26,9 @@ public class FlagController : MonoBehaviour
 
             UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, false, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, true, 3000);
             //UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Up, false, 3000);
-            UIManager.Instance.MoveMyaku(true);
+            //UIManager.Instance.MoveMyaku(true);
 
             if (nationTxt != null)
             {

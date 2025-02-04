@@ -31,6 +31,7 @@ public class UIManager : MonoBehaviour
     private List<string> discoveredDevices = new List<string>();
 
     public string functionName = "home";
+    public int locationID = 0;
 
     private string serverUrl = "http://145.223.21.25:8001/audio-to-audio";
     //private string targetDeviceAddress = "9C:9C:1F:EA:F9:E6"; // myaku 3
@@ -43,6 +44,7 @@ public class UIManager : MonoBehaviour
     public PanelMover locationPanel;
     public PanelMover gamePanel;
     public PanelMover settingPanel;
+    public PanelMover appNamePanel;
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
     public MyakuController myakuController;
@@ -527,6 +529,7 @@ public class UIManager : MonoBehaviour
 
             MovePanel(mapPanel, PanelMover.Direction.Up, true, 3000);
             MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+            MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, false, 3000);
             MoveMyaku(false);
         }
     }
