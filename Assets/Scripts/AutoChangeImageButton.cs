@@ -1,8 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using static UnityEditor.FilePathAttribute;
+using UnityEngine.UI; 
 
 public class AutoChangeImageButton : MonoBehaviour
 {
@@ -21,6 +20,15 @@ public class AutoChangeImageButton : MonoBehaviour
     void OnButtonClick()
     {
         lsm.AutoChangePhotoBtnClick();
+        if (lsm.isAutoChangeImage())
+        {
+            myButton.GetComponent<Image>().sprite = toggledImage;
+        }
+        else
+        {
+            myButton.GetComponent<Image>().sprite = defaultImage;
+        }
+
     }
     // Update is called once per frame
     void Update()

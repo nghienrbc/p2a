@@ -92,7 +92,8 @@ public class LocationSceneManager : MonoBehaviour
 
     private P2ADataService _dataService;
 
-    public float changeInterval = 3.0f; // Thời gian giữa các lần đổi ảnh
+    public float changeInterval = 5.0f; // Thời gian giữa các lần đổi ảnh
+    public float smoothDuration = 1.0f; // Thời gian chuyển đổi ảnh mượt mà
     private bool enableAutoChangeImage = false;
     private Coroutine autoChangeImageCoroutine;
 
@@ -109,9 +110,7 @@ public class LocationSceneManager : MonoBehaviour
         // Thêm CanvasGroup vào largeImage để quản lý alpha(độ mờ)
         largeImageCanvasGroup = largeImage.gameObject.GetComponent<CanvasGroup>();
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
-
          
-
         StartCoroutine(CopyFolderFromStreamingAssets("Images")); 
     }
 
@@ -137,8 +136,33 @@ public class LocationSceneManager : MonoBehaviour
 
             if (!isDragging) // Chỉ đổi ảnh nếu không có thao tác kéo
             {
-                ShowNextImage();
+                yield return StartCoroutine(SmoothTransitionToNextImage());
+                //ShowNextImage();
             }
+        }
+    }
+
+    IEnumerator SmoothTransitionToNextImage()
+    {
+        // Tạo hiệu ứng mờ dần ảnh hiện tại
+        float startAlpha = largeImageCanvasGroup.alpha;
+        for (float t = 0; t < smoothDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / smoothDuration;
+            largeImageCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, normalizedTime);
+            yield return null;
+        }
+
+        // Chuyển sang ảnh tiếp theo
+        ShowNextImage();
+
+        // Đưa ảnh mới về trạng thái ban đầu (hiển thị rõ ràng)
+        float targetAlpha = 1.0f;
+        for (float t = 0; t < smoothDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / smoothDuration;
+            largeImageCanvasGroup.alpha = Mathf.Lerp(0f, targetAlpha, normalizedTime);
+            yield return null;
         }
     }
 
@@ -563,6 +587,10 @@ public class LocationSceneManager : MonoBehaviour
             // Reset biến kiểm tra drag
             isDragOnLargeImage = false;
         }
+    }
+    public bool isAutoChangeImage()
+    {
+        return enableAutoChangeImage;
     }
     // Kiểm tra nếu drag bắt đầu trên largeImage
     bool IsPointerOverLargeImage()

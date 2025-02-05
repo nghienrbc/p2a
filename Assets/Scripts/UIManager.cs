@@ -344,7 +344,9 @@ public class UIManager : MonoBehaviour
     }
 
     bool isSendHelloData = false;
-    bool isSendInitData = false; 
+    bool isSendInitData = false;
+
+    bool isStartPushButtonOnMyaku = false;
     // Phương thức này sẽ được gọi từ Java để xử lý dữ liệu nhận được
     public void OnDataReceived(string receivedData)
     {
@@ -372,22 +374,25 @@ public class UIManager : MonoBehaviour
         // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
         else if (receivedData.Trim().Contains("0.^Q^W1,C,START") || receivedData.Trim().Contains("START"))
         {
-            Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!"); 
-
-        }
-        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
-        else if (receivedData.Trim() == "0.^Q^W1,C,STOP" || receivedData.Trim() == "STOP")
-        {
-            Debug.Log("bắt đầu nhận dữ liệu audio từ thiết bị bluetooth!");
-            if (functionName == "camera")
+            if (!isStartPushButtonOnMyaku)
             {
-                takePhotoAndUpload.SaveImage();
+                Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!");
             }
+            // đã thực sự hoàn thành kết nối và bắt đầu nhận dữ liệu khi nhấn nút trên myaku
             else
             {
-                // bật biến bắt đầu nhận dữ kiệu audio từ bluetooth
-
+                isStartPushButtonOnMyaku = false;
+                if (functionName == "camera")
+                {
+                    takePhotoAndUpload.SaveImage();
+                }
             }
+        }
+        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
+        else if (receivedData.Trim().Contains("0.^Q^W1,C,STOP") || receivedData.Trim().Contains("STOP"))
+        {
+            isStartPushButtonOnMyaku = true;
+            Debug.Log("bắt đầu nhấn button trên myaku!"); 
         }
         else
         {
@@ -541,7 +546,7 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            panelMover.FadeOut(speed);
+            if(panelMover) panelMover.FadeOut(speed);
         }
     }
     public void MovePanel(PanelMover panelMover, PanelMover.Direction direction, bool isMoveOut, float speed)
