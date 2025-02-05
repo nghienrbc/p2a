@@ -135,30 +135,28 @@ public class TakePhotoAndUpload : MonoBehaviour
     {
         while (true)
         {
-            // Tạo một Texture2D từ WebCamTexture
             Texture2D texture = new Texture2D(webCamTexture.width, webCamTexture.height);
-            //for (int i = 0; i< cameraRotate; i++)
-            //{
-            //    texture = RotateTexture90DegreesRight(texture); 
-            //}
-
             texture.SetPixels(webCamTexture.GetPixels());
             texture.Apply();
 
-            // Cắt texture để thành hình vuông
             int squareSize = Mathf.Min(texture.width, texture.height);
             Rect squareRect = new Rect(
-                (texture.width - squareSize) / 2, // Cắt ở giữa nếu chiều rộng lớn hơn
-                (texture.height - squareSize) / 2, // Cắt ở giữa nếu chiều cao lớn hơn
+                (texture.width - squareSize) / 2,
+                (texture.height - squareSize) / 2,
                 squareSize, squareSize);
 
-            // Chuyển Texture2D thành Sprite hình vuông
             Sprite cameraSprite = Sprite.Create(texture, squareRect, new Vector2(0.5f, 0.5f));
 
-            // Gán sprite cho Image
+            // Hủy Sprite và Texture cũ trước khi gán mới
+            if (cameraDisplay.sprite != null)
+            {
+                Destroy(cameraDisplay.sprite.texture);
+                Destroy(cameraDisplay.sprite);
+            }
+
             cameraDisplay.sprite = cameraSprite;
 
-            yield return new WaitForSeconds(0.1f); // Cập nhật sau mỗi 0.1 giây
+            yield return new WaitForSeconds(0.1f);
         }
     }
     public Texture2D CaptureImage()
