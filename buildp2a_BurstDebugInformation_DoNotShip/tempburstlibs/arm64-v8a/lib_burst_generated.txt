@@ -23,8 +23,8 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_ge
 --assembly-defines=BestHTTP;
 --assembly-defines=Unity.VisualScripting.Core;
 --assembly-defines=Unity.2D.Animation.Runtime;
---assembly-defines=Unity.2D.Tilemap.Extras;
 --assembly-defines=gpm_webview;
+--assembly-defines=Unity.2D.Tilemap.Extras;
 --assembly-defines=Unity.InternalAPIEngineBridge.001;
 --assembly-defines=Unity.2D.Common.Runtime;
 --assembly-defines=Unity.Timeline;
@@ -34,12 +34,12 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\arm64-v8a\lib_burst_ge
 --assembly-defines=LitJson;
 --assembly-defines=NAudio;
 --assembly-defines=Unity.Collections.LowLevel.ILSupport;
+--assembly-defines=Coffee.SoftMaskForUGUI.R;
 --assembly-defines=Newtonsoft.Json;
 --assembly-defines=DOTween;
 --assembly-defines=Unity.VisualScripting.Antlr3.Runtime;
 --assembly-defines=Unity.Burst.Unsafe;
 --assembly-defines=websocket-sharp;
---assembly-defines=Coffee.SoftMaskForUGUI.R;
 --assembly-defines=Accessibility;
 --assembly-defines=System.Runtime;
 --assembly-defines=netstandard;

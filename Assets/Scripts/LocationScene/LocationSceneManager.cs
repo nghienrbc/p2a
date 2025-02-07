@@ -209,6 +209,8 @@ public class LocationSceneManager : MonoBehaviour
 
     public void ShowLocationDetail()
     {
+        // Giải phóng tài nguyên cũ trước khi tạo mới
+        ClearOldResources();
         int targetLocationId = UIManager.Instance.locationID;
         IEnumerable<ImageTable> images = _dataService.GetImageByLocationId(targetLocationId);
         UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
@@ -240,6 +242,46 @@ public class LocationSceneManager : MonoBehaviour
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         }
     }
+    private void ClearOldResources()
+    {
+        // Giải phóng các Sprite cũ
+        foreach (var sprite in imageSprites)
+        {
+            if (sprite != null && sprite.texture != null)
+            {
+                Destroy(sprite.texture);
+            }
+            Destroy(sprite);
+        }
+        imageSprites.Clear();
+
+        foreach (var sprite in imageSpritesOriginal)
+        {
+            if (sprite != null && sprite.texture != null)
+            {
+                Destroy(sprite.texture);
+            }
+            Destroy(sprite);
+        }
+        imageSpritesOriginal.Clear();
+
+        // Giải phóng các GameObject cũ trong content
+        foreach (Transform child in content)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Giải phóng texture của largeImage nếu có
+        if (largeImage.sprite != null && largeImage.sprite.texture != null)
+        {
+            Destroy(largeImage.sprite.texture);
+        }
+        largeImage.sprite = null;
+        // Giải phóng bộ nhớ không sử dụng
+        Resources.UnloadUnusedAssets();
+        System.GC.Collect();
+    }
+
     public void HideLocationDetail()
     { 
         UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);

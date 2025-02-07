@@ -9,6 +9,7 @@ using System.IO;
 using BestHTTP;
 using MyGame.Enums;
 using UnityEngine.Networking;
+using System.Text;
 
 namespace MyGame.Enums
 {
@@ -48,6 +49,7 @@ public class UIManager : MonoBehaviour
 
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
     public MyakuController myakuController;
+    [SerializeField] AudioSource audioSource;
 
     [System.Serializable]
     public class PanelSettings
@@ -348,6 +350,10 @@ public class UIManager : MonoBehaviour
 
     bool isStartPushButtonOnMyaku = false;
     // Phương thức này sẽ được gọi từ Java để xử lý dữ liệu nhận được
+
+    private StringBuilder audioDataBuffer = new StringBuilder();
+    private bool isCollectingAudioData = false;
+
     public void OnDataReceived(string receivedData)
     {
         Debug.Log("Data received: " + receivedData);
@@ -386,57 +392,85 @@ public class UIManager : MonoBehaviour
                 {
                     takePhotoAndUpload.SaveImage();
                 }
+                else // nếu nhận start khi đã nhấn nút ghi âm trên myaku và không ở chức năng chụp hình
+                { 
+                    ProcessAudioData(audioDataBuffer.ToString());
+                }
             }
-        }
+        } 
         // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
         else if (receivedData.Trim().Contains("0.^Q^W1,C,STOP") || receivedData.Trim().Contains("STOP"))
         {
             isStartPushButtonOnMyaku = true;
+            isCollectingAudioData = true;
+            audioDataBuffer.Clear();
             Debug.Log("bắt đầu nhấn button trên myaku!"); 
         }
-        else
+        else if (receivedData.Trim().StartsWith("|bytes|>.&0#256:") && receivedData.Trim().EndsWith("#05"))
         {
-            Debug.Log("Received data: " + receivedData);
-            // kiểm tra nếu chuổi nhận được bắt đầu bằng |byte|>.&0#256 và kết thúc bằng chuỗi #05
-            string recieveString = receivedData.Trim();
-            if (recieveString.Substring(0,14) == "|byte|>.&0#256" && recieveString.Substring(recieveString.Length - 3, 3) == "#05")
-            {
+            // Trích xuất dữ liệu âm thanh và thêm vào bộ đệm
 
-            }
+            string base64Data = receivedData.Trim()
+                .Replace("|bytes|>.&0#256:", "")
+                .Replace("#05", "");
+
+            // Giải mã Base64
+            byte[] dataBytes = Convert.FromBase64String(base64Data);
+            string decodedData = Encoding.UTF8.GetString(dataBytes);
+
+            Debug.Log("Length: " + decodedData.Length + " audioData: " + decodedData);
+            audioDataBuffer.Append(decodedData);
         }
-
-        //// Xử lý dữ liệu, ví dụ chuyển đổi sang kiểu Boolean
-        //if (receivedData.Trim() == "1")
-        //{
-        //    // Xử lý khi nhận được true, ví dụ bật một đối tượng
-        //    if (functionName == "camera")
-        //    {
-        //        takePhotoAndUpload.SaveImage();
-        //    }
-        //    else
-        //    {
-        //        recorder.StartRecording();
-        //        recordingIndicator.gameObject.SetActive(true);
-        //        connectionTxt.text = "";
-        //    }
-        //    Debug.Log("Button is pressed");
-        //}  
-        //else if (receivedData.Trim() == "0")
-        //{
-        //    // Xử lý khi nhận được false, ví dụ tắt đối tượng
-        //    Debug.Log("Button is released");
-        //    if (functionName == "home")
-        //    {
-        //        connectionTxt.text = "Let me think about the answer for a moment!";
-        //        recorder.StopRecording();
-        //        recordingIndicator.gameObject.SetActive(false);
-        //        // xữ lý gửi audio lên API để nhận lại một audio
-                
-        //    }
-        //}
-
-        //connectionTxt.text = receivedData.Trim();
     }
+    private void ProcessAudioData(string audioData)
+    {
+        Debug.Log("Đã nhận đủ dữ liệu âm thanh. Độ dài: " + audioData.Length);
+
+        // Chuyển chuỗi sang mảng byte (chuyển đổi từ string sang byte array)
+        byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(audioData);
+
+        // Chuyển mảng byte thành Base64
+        //string base64String = Convert.ToBase64String(byteArray);
+        // TODO: Xử lý dữ liệu âm thanh (ví dụ: chuyển đổi thành âm thanh và phát lại)
+        // Ví dụ: Chuyển đổi chuỗi base64 thành byte[] và phát lại
+        //byte[] audioBytes = Convert.FromBase64String(audioData);
+
+        // Tạo AudioClip từ dữ liệu byte
+        AudioClip nextAudioClip = CreateAudioClipFromBytes(byteArray);
+        audioSource.clip = nextAudioClip;
+        audioSource.Play();
+
+    }
+
+    // Tạo AudioClip từ mảng byte
+    private AudioClip CreateAudioClipFromBytes(byte[] audioData)
+    {
+        try
+        {
+            float[] audioFloatArray = ConvertByteArrayToFloatArray(audioData);
+            AudioClip audioClip = AudioClip.Create("WebSocketAudio", audioFloatArray.Length, 1, 24000, false);
+            audioClip.SetData(audioFloatArray, 0);
+            return audioClip;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Failed to create AudioClip: " + e.Message);
+            return null;
+        }
+    }
+
+    // Chuyển đổi byte[] thành float[] để tạo AudioClip (chỉ áp dụng cho PCM audio)
+    private float[] ConvertByteArrayToFloatArray(byte[] byteArray)
+    {
+        float[] floatArray = new float[byteArray.Length / 2]; // PCM 16-bit mono
+        for (int i = 0; i < floatArray.Length; i++)
+        {
+            short sample = BitConverter.ToInt16(byteArray, i * 2);
+            floatArray[i] = sample / 32768f; // Chuyển đổi từ 16-bit PCM sang giá trị float (-1.0f đến 1.0f)
+        }
+        return floatArray;
+    }
+
 
     private void SendDataToBluetooth(string data)
     {
