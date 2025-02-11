@@ -520,6 +520,21 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
+    public void SendQuestionFromMyakyDevice(string base64Audio)
+    {
+
+        beginQuestionTime = Time.time;
+        float timeDifference = beginQuestionTime - endAnswerTime;
+
+        if (timeDifference > 15f)
+        {
+            Debug.Log("Đã quá thời gian cho một conversation");
+            conversationId = Guid.NewGuid().ToString(); // Random conversation_id
+        }
+        Debug.Log("base64Audio: " + base64Audio);
+        string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
+        SendMessageToServer(jsonMessage);
+    }
     // Tạo JSON message
     private string CreateJsonMessage(string conversationId, string base64Audio)
     {

@@ -50,6 +50,7 @@ public class UIManager : MonoBehaviour
     private List<BaseToogleButton> toggleButtons = new List<BaseToogleButton>();
     public MyakuController myakuController;
     [SerializeField] AudioSource audioSource;
+    private RecordAudio recordAudio;
 
     [System.Serializable]
     public class PanelSettings
@@ -79,6 +80,7 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        recordAudio = FindAnyObjectByType<RecordAudio>();
         // Khởi tạo kết nối với lớp BluetoothManager trong Java
         recordingIndicator.gameObject.SetActive(false);
         // Tìm tất cả các nút BaseToggleButton trong scene và lưu vào danh sách
@@ -351,7 +353,10 @@ public class UIManager : MonoBehaviour
     bool isStartPushButtonOnMyaku = false;
     // Phương thức này sẽ được gọi từ Java để xử lý dữ liệu nhận được
 
-    private StringBuilder audioDataBuffer = new StringBuilder();
+    //private StringBuilder audioDataBuffer = new StringBuilder();
+   // private List<byte> audioDataBuffer = new List<byte>();
+    byte[] audioDataBuffer;
+    string base64Audio = "";
     private bool isCollectingAudioData = false;
 
     public void OnDataReceived(string receivedData)
@@ -393,8 +398,14 @@ public class UIManager : MonoBehaviour
                     takePhotoAndUpload.SaveImage();
                 }
                 else // nếu nhận start khi đã nhấn nút ghi âm trên myaku và không ở chức năng chụp hình
-                { 
-                    ProcessAudioData(audioDataBuffer.ToString());
+                {
+                    isCollectingAudioData = false;
+                    ProcessAudioData(audioDataBuffer);
+                    // gửi string base64 lên server để nhận câu trả lời
+                    if(base64Audio != "" && recordAudio != null)
+                    {
+                        recordAudio.SendQuestionFromMyakyDevice(base64Audio);
+                    }
                 }
             }
         } 
@@ -403,62 +414,48 @@ public class UIManager : MonoBehaviour
         {
             isStartPushButtonOnMyaku = true;
             isCollectingAudioData = true;
-            audioDataBuffer.Clear();
+            audioDataBuffer = null;
+            base64Audio = "";
             Debug.Log("bắt đầu nhấn button trên myaku!"); 
         }
-        else if (receivedData.Trim().StartsWith("|bytes|>.&0#256:") && receivedData.Trim().EndsWith("#05"))
+        else 
         {
-            // Trích xuất dữ liệu âm thanh và thêm vào bộ đệm
+            if( isCollectingAudioData == false) return;
+            // Trích xuất dữ liệu âm thanh và thêm vào bộ đệm 
+            base64Audio = receivedData;
+            string filePath = Path.Combine(Application.persistentDataPath, "base64.txt");
 
-            string base64Data = receivedData.Trim()
-                .Replace("|bytes|>.&0#256:", "")
-                .Replace("#05", "");
-
-            // Giải mã Base64
-            byte[] dataBytes = Convert.FromBase64String(base64Data);
-            string decodedData = Encoding.UTF8.GetString(dataBytes);
-
-            Debug.Log("Length: " + decodedData.Length + " audioData: " + decodedData);
-            audioDataBuffer.Append(decodedData);
+            // Ghi nội dung chuỗi vào file
+            File.WriteAllText(filePath, base64Audio);
+            SaveBase64StringAsWav(base64Audio, "audioFromMyaku.wav", 8000, 1);
+            // In ra đường dẫn file để bạn có thể kiểm tra (trên Android, đường dẫn có thể là: 
+            // /data/data/<package_name>/files hoặc /storage/emulated/0/Android/data/<package_name>/files)
+            Debug.Log("File đã được lưu tại: " + filePath);
+            try
+            {
+                // Giải mã Base64
+                audioDataBuffer = Convert.FromBase64String(base64Audio); 
+            }
+            catch (Exception)
+            {
+                Debug.Log("không giải mã được: ");
+                throw;
+            }
         }
     }
-    private void ProcessAudioData(string audioData)
+    private void ProcessAudioData(byte[] audioBytes)
     {
-        Debug.Log("Đã nhận đủ dữ liệu âm thanh. Độ dài: " + audioData.Length);
+        Debug.Log("Đã nhận đủ dữ liệu âm thanh. Độ dài: " + audioBytes.Length);
+        // Chuyển mảng byte thành mảng float
+        float[] audioData = ConvertByteArrayToFloatArray(audioBytes);
 
-        // Chuyển chuỗi sang mảng byte (chuyển đổi từ string sang byte array)
-        byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(audioData);
-
-        // Chuyển mảng byte thành Base64
-        //string base64String = Convert.ToBase64String(byteArray);
-        // TODO: Xử lý dữ liệu âm thanh (ví dụ: chuyển đổi thành âm thanh và phát lại)
-        // Ví dụ: Chuyển đổi chuỗi base64 thành byte[] và phát lại
-        //byte[] audioBytes = Convert.FromBase64String(audioData);
-
-        // Tạo AudioClip từ dữ liệu byte
-        AudioClip nextAudioClip = CreateAudioClipFromBytes(byteArray);
-        audioSource.clip = nextAudioClip;
-        audioSource.Play();
-
+        Debug.Log("Độ dài dữ liệu :" + audioData.Length);
+        // Tạo AudioClip từ mảng float[]
+        AudioClip audioClip = AudioClip.Create("I2SSound", audioData.Length, 1, 8000, false);
+        audioClip.SetData(audioData, 0); 
+        // Phát âm thanh
+        audioSource.PlayOneShot(audioClip);  
     }
-
-    // Tạo AudioClip từ mảng byte
-    private AudioClip CreateAudioClipFromBytes(byte[] audioData)
-    {
-        try
-        {
-            float[] audioFloatArray = ConvertByteArrayToFloatArray(audioData);
-            AudioClip audioClip = AudioClip.Create("WebSocketAudio", audioFloatArray.Length, 1, 24000, false);
-            audioClip.SetData(audioFloatArray, 0);
-            return audioClip;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Failed to create AudioClip: " + e.Message);
-            return null;
-        }
-    }
-
     // Chuyển đổi byte[] thành float[] để tạo AudioClip (chỉ áp dụng cho PCM audio)
     private float[] ConvertByteArrayToFloatArray(byte[] byteArray)
     {
@@ -466,11 +463,82 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < floatArray.Length; i++)
         {
             short sample = BitConverter.ToInt16(byteArray, i * 2);
-            floatArray[i] = sample / 32768f; // Chuyển đổi từ 16-bit PCM sang giá trị float (-1.0f đến 1.0f)
+            floatArray[i] = sample / 32700f; // Chuyển đổi từ 16-bit PCM sang giá trị float (-1.0f đến 1.0f)
         }
         return floatArray;
     }
 
+    public static void SaveBase64StringAsWav(string base64Data, string fileName, int sampleRate = 8000, int channels = 1)
+    {
+        // Giải mã chuỗi Base64 thành mảng byte chứa dữ liệu PCM
+        byte[] pcmData = Convert.FromBase64String(base64Data);
+
+        // Lấy đường dẫn lưu file. Trên Android, Application.persistentDataPath thường là:
+        // /storage/emulated/0/Android/data/<bundle_identifier>/files
+        string filePath = Path.Combine(Application.persistentDataPath, fileName);
+
+        // Tạo file WAV và ghi dữ liệu
+        using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+        {
+            Debug.Log("đây nè");
+            // Ghi header WAV vào file
+            WriteWavHeader(fs, pcmData.Length, sampleRate, channels, 16);
+            // Ghi dữ liệu PCM vào file
+            fs.Write(pcmData, 0, pcmData.Length);
+        }
+
+        Debug.Log("WAV file saved at: " + filePath);
+    }
+
+    /// <summary>
+    /// Ghi header WAV chuẩn vào stream.
+    /// </summary>
+    /// <param name="stream">Stream của file cần ghi header.</param>
+    /// <param name="pcmDataLength">Độ dài dữ liệu PCM (số byte).</param>
+    /// <param name="sampleRate">Tốc độ mẫu (Hz).</param>
+    /// <param name="channels">Số kênh.</param>
+    /// <param name="bitsPerSample">Số bit cho mỗi sample (ví dụ 16).</param>
+    private static void WriteWavHeader(Stream stream, int pcmDataLength, int sampleRate, int channels, int bitsPerSample)
+    {
+        int byteRate = sampleRate * channels * bitsPerSample / 8;
+        int blockAlign = channels * bitsPerSample / 8;
+        int fileSize = 36 + pcmDataLength; // Tổng kích thước file - 8 bytes
+
+        using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
+        {
+
+            Debug.Log("ghi dữ liệu không: ");
+            // RIFF header
+            writer.Write(Encoding.ASCII.GetBytes("RIFF"));
+            writer.Write(fileSize);
+            writer.Write(Encoding.ASCII.GetBytes("WAVE"));
+
+            // "fmt " chunk
+            writer.Write(Encoding.ASCII.GetBytes("fmt "));
+            writer.Write(16); // Subchunk1Size: 16 đối với PCM
+            writer.Write((short)1); // AudioFormat: 1 = PCM (không nén)
+            writer.Write((short)channels);
+            writer.Write(sampleRate);
+            writer.Write(byteRate);
+            writer.Write((short)blockAlign);
+            writer.Write((short)bitsPerSample);
+
+            // "data" chunk
+            writer.Write(Encoding.ASCII.GetBytes("data"));
+            writer.Write(pcmDataLength);
+        }
+    }
+
+    // Chuyển chuỗi thành mảng byte
+    byte[] ConvertStringToByteArray(string input)
+    {
+        byte[] byteArray = new byte[input.Length];
+        for (int i = 0; i < input.Length; i++)
+        {
+            byteArray[i] = (byte)input[i];
+        }
+        return byteArray;
+    } 
 
     private void SendDataToBluetooth(string data)
     {
