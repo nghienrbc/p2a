@@ -21,6 +21,8 @@ public class HomeBtn : BaseToogleButton
             UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, false, 3000);
             UIManager.Instance.MoveMyaku(false);
+            UIManager.Instance.ShowHideTestPanel(false);
+
         } 
         // Gọi hàm ToggleImage từ lớp cơ bản 
         if (isToggled)

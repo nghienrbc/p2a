@@ -18,6 +18,7 @@ public class SettingBtn : BaseToogleButton
             UIManager.Instance.MovePanel(UIManager.Instance.gamePanel, PanelMover.Direction.Left, true, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, false, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.ShowHideTestPanel(false);
 
         }
         base.OnButtonClick();

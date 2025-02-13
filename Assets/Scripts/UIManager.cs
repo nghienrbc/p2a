@@ -52,6 +52,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] AudioSource audioSource;
     private RecordAudio recordAudio;
 
+
+    public GameObject transcriptTxtPanel;
+    public GameObject responseTxtPanel;
+
     [System.Serializable]
     public class PanelSettings
     {
@@ -357,8 +361,11 @@ public class UIManager : MonoBehaviour
    // private List<byte> audioDataBuffer = new List<byte>();
     byte[] audioDataBuffer;
     string base64Audio = "";
+    string base64AudioString = "";
+    
     private bool isCollectingAudioData = false;
 
+    private bool isRecieveStartMarker = false;
     public void OnDataReceived(string receivedData)
     {
         Debug.Log("Data received: " + receivedData);
@@ -385,6 +392,7 @@ public class UIManager : MonoBehaviour
         // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
         else if (receivedData.Trim().Contains("0.^Q^W1,C,START") || receivedData.Trim().Contains("START"))
         {
+            isRecieveStartMarker = true;
             if (!isStartPushButtonOnMyaku)
             {
                 Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!");
@@ -400,47 +408,61 @@ public class UIManager : MonoBehaviour
                 else // nếu nhận start khi đã nhấn nút ghi âm trên myaku và không ở chức năng chụp hình
                 {
                     isCollectingAudioData = false;
-                    ProcessAudioData(audioDataBuffer);
-                    // gửi string base64 lên server để nhận câu trả lời
-                    if(base64Audio != "" && recordAudio != null)
+                    //ProcessAudioData(audioDataBuffer);
+                    try
                     {
-                        recordAudio.SendQuestionFromMyakyDevice(base64Audio);
+                        // Giải mã Base64
+                        recordingIndicator.gameObject.SetActive(false);
+                        audioDataBuffer = Convert.FromBase64String(base64Audio); // cái này dùng để phát tiếng mới ghi âm
+
+                        SaveBase64StringAsWav(base64Audio, "audioFromMyaku.wav", 8000, 1); // chuyển chuỗi base64 thu âm thành file WAV
+
+                        string audioFilePath = Path.Combine(Application.persistentDataPath, "audioFromMyaku.wav");
+                        byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+                        base64AudioString = Convert.ToBase64String(audioBytes); // đây là chuỗi gửi lên server sau khi đọc từ file WAV
+
+                        //string filePath = Path.Combine(Application.persistentDataPath, "base64string.txt");// ghi lại string đọc từ WAV vào file text để xem
+                        // Ghi nội dung chuỗi vào file
+                        //File.WriteAllText(filePath, base64AudioString);  
+
+                        // gửi string base64 lên server để nhận câu trả lời
+                        if (base64AudioString != "" && recordAudio != null)
+                        {
+                            connectionTxt.text = "Let me think about the answer for a moment!";
+                            recordAudio.SendQuestionFromMyakyDevice(base64AudioString);
+                        }
                     }
+                    catch (Exception)
+                    {
+                        Debug.Log("không giải mã được: ");
+                        throw;
+                    }
+                    
                 }
             }
-        } 
-        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
+        }  
         else if (receivedData.Trim().Contains("0.^Q^W1,C,STOP") || receivedData.Trim().Contains("STOP"))
         {
+            // nếu trước đó đã có start thì mới bắt đầu thu âm, tránh trường hợp myaku kết nối sẵn
+            if (!isRecieveStartMarker) return;
+            
             isStartPushButtonOnMyaku = true;
             isCollectingAudioData = true;
             audioDataBuffer = null;
             base64Audio = "";
-            Debug.Log("bắt đầu nhấn button trên myaku!"); 
+            base64AudioString = "";
+            Debug.Log("bắt đầu nhấn button trên myaku!");
+
+            recordingIndicator.gameObject.SetActive(true);
+            connectionTxt.text = "";
+            recordAudio.StartRecordingFromMyaku();
         }
         else 
         {
             if( isCollectingAudioData == false) return;
             // Trích xuất dữ liệu âm thanh và thêm vào bộ đệm 
             base64Audio = receivedData;
-            string filePath = Path.Combine(Application.persistentDataPath, "base64.txt");
-
-            // Ghi nội dung chuỗi vào file
-            File.WriteAllText(filePath, base64Audio);
-            SaveBase64StringAsWav(base64Audio, "audioFromMyaku.wav", 8000, 1);
-            // In ra đường dẫn file để bạn có thể kiểm tra (trên Android, đường dẫn có thể là: 
-            // /data/data/<package_name>/files hoặc /storage/emulated/0/Android/data/<package_name>/files)
-            Debug.Log("File đã được lưu tại: " + filePath);
-            try
-            {
-                // Giải mã Base64
-                audioDataBuffer = Convert.FromBase64String(base64Audio); 
-            }
-            catch (Exception)
-            {
-                Debug.Log("không giải mã được: ");
-                throw;
-            }
+            Debug.Log("Một lần duy nhất");
         }
     }
     private void ProcessAudioData(byte[] audioBytes)
@@ -472,9 +494,7 @@ public class UIManager : MonoBehaviour
     {
         // Giải mã chuỗi Base64 thành mảng byte chứa dữ liệu PCM
         byte[] pcmData = Convert.FromBase64String(base64Data);
-
-        // Lấy đường dẫn lưu file. Trên Android, Application.persistentDataPath thường là:
-        // /storage/emulated/0/Android/data/<bundle_identifier>/files
+         
         string filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         // Tạo file WAV và ghi dữ liệu
@@ -505,9 +525,7 @@ public class UIManager : MonoBehaviour
         int fileSize = 36 + pcmDataLength; // Tổng kích thước file - 8 bytes
 
         using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
-        {
-
-            Debug.Log("ghi dữ liệu không: ");
+        { 
             // RIFF header
             writer.Write(Encoding.ASCII.GetBytes("RIFF"));
             writer.Write(fileSize);
@@ -594,11 +612,14 @@ public class UIManager : MonoBehaviour
 
     public void BtnPlayRecordClick()
     {
-        //recorder.UploadAndProcessAudio();
-        // recorder.PlayRecording();
-        bluetoothManager.Call("sendData", "ddhello\n");
+        //bluetoothManager.Call("sendData", "ddhello\n");
+        ProcessAudioData(audioDataBuffer);
     }
-
+    public void ShowHideTestPanel(bool isShow)
+    {
+        transcriptTxtPanel.SetActive(isShow);
+        responseTxtPanel.SetActive(isShow);
+    }
     public void BtnTakePhotoClick()
     {
         takePhotoAndUpload.StartTakePhoto();
@@ -618,13 +639,10 @@ public class UIManager : MonoBehaviour
     {
         takePhotoAndUpload.UploadPhoto();
     }
-
-
     public void BtnBackClick()
     {
         //SceneManager.LoadScene("PlayGameScene");
     }
-
     public void BtnClosePanelClick()
     {
         // ẩn map và map detail panel

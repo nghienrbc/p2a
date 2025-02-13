@@ -14,6 +14,7 @@ using TMPro;
 public class RecordAudio : MonoBehaviour
 {
     public TMP_Text transcriptTxt;
+    public TMP_Text responseTxt; 
     public MyakuController myakuController;
     private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
     private string conversationId = "";
@@ -39,6 +40,7 @@ public class RecordAudio : MonoBehaviour
 
     private bool isBeginPlay = false;
     private bool isWebSocketOpen = false;
+    private bool isAnswering = false;
 
     private void Awake()
     {
@@ -58,6 +60,7 @@ public class RecordAudio : MonoBehaviour
         // Khi nhận được thông điệp từ WebSocket
         ws.OnMessage += (sender, e) =>
         {
+            //if(isAnswering)
             //Debug.Log("Received from server: " + e.Data);
             HandleWebSocketResponse(e.Data);
         };
@@ -132,6 +135,8 @@ public class RecordAudio : MonoBehaviour
         OpenConnection();
     }
 
+
+
     // Xử lý dữ liệu trả về từ WebSocket
     private void HandleWebSocketResponse(string response)
     {
@@ -156,9 +161,9 @@ public class RecordAudio : MonoBehaviour
                     EnqueueMainThreadAction(() => HandleAudioError());
                 }
                 else if (responseType == "transcript")
-                {
-                    ;
+                { 
                     EnqueueMainThreadAction(() => {
+                        UIManager.Instance.ShowHideTestPanel(true);
                         transcriptTxt.text = jsonResponse["text"].ToString();
                     });
                     Debug.Log("Received transcript text: " + jsonResponse["text"].ToString() + " with language: " + jsonResponse["language"].ToString());
@@ -166,6 +171,11 @@ public class RecordAudio : MonoBehaviour
                 else if (responseType == "text_response")
                 {
                     string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
+                    EnqueueMainThreadAction(() => {
+                        UIManager.Instance.ShowHideTestPanel(true);
+                        responseTxt.text = responseTxt.text + "..." + content + "\n";
+                    });
+
                     Debug.Log("Received text_response: " + content);
                     // nếu đã có chunk trong buffer, tức là đây không phải text_response đầu tiên
                     // tiến hành lưu toàn bộ buffer vào list buffer và gọi hàm play
@@ -220,7 +230,7 @@ public class RecordAudio : MonoBehaviour
         myakuController.MyakuHello();
         audioSource.clip = null;
         Resources.UnloadUnusedAssets();
-
+        isAnswering = false;
     }
     private IEnumerator PlayCurrentAudio()
     {
@@ -456,8 +466,11 @@ public class RecordAudio : MonoBehaviour
             buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
         }
         audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue 
-        
-        string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
+        ResetWebSocketConnection();
+        isAnswering = false;
+        responseTxt.text =  "";
+
+        string device = Microphone.devices.Length > 1 ? Microphone.devices[1] : Microphone.devices[0];
         if (device != "")
         {
             int sampleRate = 44100;
@@ -470,6 +483,36 @@ public class RecordAudio : MonoBehaviour
             Debug.LogError("No microphone device found!");
         }
     }
+
+    public void StartRecordingFromMyaku()
+    {
+        myakuController.MyakuListen();
+        StopAllCoroutines(); 
+
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            endAnswerTime = Time.time;
+        }
+        audioSource.clip = null;
+        Resources.UnloadUnusedAssets();
+
+        mainThreadActions.Clear();
+
+        audioDataBuffer.Clear();
+        // Tùy chọn, giải phóng bộ nhớ nếu cần
+        while (audioBuffersQueue.Count > 0)
+        {
+            var buffer = audioBuffersQueue.Dequeue();
+            buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
+        }
+        audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue  
+
+        ResetWebSocketConnection();
+        isAnswering = false;
+        responseTxt.text = "";
+    }
+
 
     public void StopRecording()
     {
@@ -494,9 +537,9 @@ public class RecordAudio : MonoBehaviour
             byte[] audioBytes = File.ReadAllBytes(audioFilePath);
             string base64Audio = Convert.ToBase64String(audioBytes);
 
-            //string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
+            string filePath = Path.Combine(Application.persistentDataPath, "audioBase64.txt");
             // Lưu chuỗi Base64 vào file text
-            // File.WriteAllText(filePath, base64Audio);
+            File.WriteAllText(filePath, base64Audio);
 
             beginQuestionTime = Time.time;
             float timeDifference = beginQuestionTime - endAnswerTime;
@@ -507,7 +550,6 @@ public class RecordAudio : MonoBehaviour
                 conversationId = Guid.NewGuid().ToString(); // Random conversation_id
             }
 
-            ResetWebSocketConnection();
 
             string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
             SendMessageToServer(jsonMessage);
@@ -521,8 +563,7 @@ public class RecordAudio : MonoBehaviour
     }
 
     public void SendQuestionFromMyakyDevice(string base64Audio)
-    {
-
+    { 
         beginQuestionTime = Time.time;
         float timeDifference = beginQuestionTime - endAnswerTime;
 
