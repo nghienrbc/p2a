@@ -7,7 +7,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using NAudio.Wave;
 using System.Threading;
-using WebSocketSharp;
+using System.Threading.Tasks;
+using NativeWebSocket;
 using Newtonsoft.Json.Linq;
 using TMPro;
 using UnityEngine.Android;
@@ -56,55 +57,56 @@ public class RecordAudio : MonoBehaviour
     }
 
     // Kết nối WebSocket
-    public void WebSocketHandler(string url)
+    public async void WebSocketHandler(string url)
     {
         ws = new WebSocket(url);
 
-        // Khi nhận được thông điệp từ WebSocket
-        ws.OnMessage += (sender, e) =>
-        { 
-            //Debug.Log("Received from server: " + e.Data);
-            HandleWebSocketResponse(e.Data);
-        };
-
-        // Xử lý khi kết nối thành công
-        ws.OnOpen += (sender, e) =>
+        ws.OnOpen += () =>
         {
             isWebSocketOpen = true;
             Debug.Log("WebSocket Connected!");
         };
 
-        // Xử lý khi WebSocket bị đóng
-        ws.OnClose += (sender, e) =>
+        ws.OnError += (e) =>
+        {
+            Debug.LogError("WebSocket Error: " + e);
+        };
+
+        ws.OnClose += (e) =>
         {
             isWebSocketOpen = false;
             Debug.Log("WebSocket Closed!");
         };
 
-        // Xử lý khi có lỗi xảy ra
-        ws.OnError += (sender, e) =>
+        ws.OnMessage += (bytes) =>
         {
-            Debug.LogError("WebSocket Error: " + e.Message);
+            var message = System.Text.Encoding.UTF8.GetString(bytes);
+            HandleWebSocketResponse(message);
         };
 
-        ws.Connect();
+        // Keep trying to connect
+        while (true)
+        {
+            try
+            {
+                await ws.Connect();
+                break;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("WebSocket connection failed: " + e.Message);
+                await Task.Delay(1000); // Delay 1 second before retrying
+            }
+        }
     }
 
-    public void SendMessageToServer(string message)
+    public async void SendMessageToServer(string message)
     {
-        if (ws != null)
+        if (ws != null && ws.State == WebSocketState.Open)
         {
-            if (isWebSocketOpen)
-            {
-                ws.Send(message);
-                Debug.Log("Sent to server: " + message);
-
-                myakuController.MyakuThinking();
-            }
-            else
-            {
-                Console.WriteLine("WebSocket is not open.");
-            }
+            await ws.SendText(message);
+            Debug.Log("Sent to server: " + message);
+            myakuController.MyakuThinking();
         }
         else
         {
@@ -112,32 +114,58 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    public void OpenConnection()
+    public async void OpenConnection()
     {
-        if (!isWebSocketOpen)
+        if (ws.State != WebSocketState.Open)
         {
             Debug.Log("Connecting to WebSocket...");
-            ws.Connect();
+            await ws.Connect();
         }
     }
 
-    public void CloseConnection()
+    public async void CloseConnection()
     {
-        if (isWebSocketOpen)
+        if (ws.State == WebSocketState.Open)
         {
             Debug.Log("Closing WebSocket...");
-            ws.Close();
+            await ws.Close();
         }
     }
-    // Sử dụng hàm này để đóng và mở WebSocket lại khi cần
-    public void ResetWebSocketConnection()
+
+    public async void ResetWebSocketConnection()
     {
-        CloseConnection();
-        System.Threading.Thread.Sleep(50);  // Giả sử thời gian trễ là 500ms 
-        OpenConnection();
+        await ws.Close();
+        await Task.Delay(50); // 50ms delay
+        await ws.Connect();
     }
 
+    private void OnApplicationQuit()
+    {
+        CloseConnection();
+    }
 
+    private void Update()
+    {
+        #if !UNITY_WEBGL || UNITY_EDITOR
+            if (ws != null)
+            {
+                ws.DispatchMessageQueue();
+            }
+        #endif
+
+        // Process all actions in the queue on the main thread
+        while (mainThreadActions.Count > 0)
+        {
+            Action action = null;
+
+            lock (mainThreadActions)
+            {
+                action = mainThreadActions.Dequeue();
+            }
+
+            action?.Invoke();
+        }
+    }
 
     // Xử lý dữ liệu trả về từ WebSocket
     private void HandleWebSocketResponse(string response)
@@ -428,24 +456,6 @@ public class RecordAudio : MonoBehaviour
         return floatArray;
     }
 
-    void Update()
-    {
-        // Process all actions in the queue on the main thread
-        while (mainThreadActions.Count > 0)
-        {
-            Debug.Log("có chạy gì trong này không");
-            Action action = null;
-
-            lock (mainThreadActions)
-            {
-                action = mainThreadActions.Dequeue();
-            }
-
-            // Execute the action
-            action?.Invoke();
-        }
-    }
-
     // Enqueue action to execute on the main thread
     private void EnqueueMainThreadAction(Action action)
     {
@@ -593,7 +603,7 @@ public class RecordAudio : MonoBehaviour
                 conversationId = Guid.NewGuid().ToString(); // Random conversation_id
             }
 
-            ResetWebSocketConnection();
+            //ResetWebSocketConnection();
 
             string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
             SendMessageToServer(jsonMessage);
@@ -681,3 +691,4 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("Đã send message: " + jsonMessage);
     }
 }
+
