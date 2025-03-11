@@ -28,6 +28,7 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_
 --assembly-defines=Unity.InternalAPIEngineBridge.001;
 --assembly-defines=Unity.2D.Common.Runtime;
 --assembly-defines=Unity.Timeline;
+--assembly-defines=endel.nativewebsocket;
 --assembly-defines=Unity.Mathematics;
 --assembly-defines=gpm_communicator;
 --assembly-defines=Unity.VisualScripting.State;

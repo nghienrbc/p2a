@@ -12,11 +12,16 @@ using NativeWebSocket;
 using Newtonsoft.Json.Linq;
 using TMPro;
 using UnityEngine.Android;
+using System.Text.RegularExpressions;
+using System.Linq;
+using UnityEngine.Networking;
+using Newtonsoft.Json;
+using System.Text;
 
 public class RecordAudio : MonoBehaviour
 {
     public TMP_Text transcriptTxt;
-    public TMP_Text responseTxt; 
+    public TMP_Text responseTxt;
     public MyakuController myakuController;
     private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
     private string conversationId = "";
@@ -32,6 +37,7 @@ public class RecordAudio : MonoBehaviour
     private Coroutine audioCoroutine; // Để lưu coroutine 
 
     private WebSocket ws;
+    private WebSocket webSocket;
     private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio 
     private Queue<List<byte>> audioBuffersQueue = new Queue<List<byte>>(); // Hàng đợi chứa các buffer của từng response
 
@@ -46,15 +52,116 @@ public class RecordAudio : MonoBehaviour
 
     private bool isEnableMic = false;
 
+    private bool isEnableRecieveAudioChunkMessage = false;
+
+    private AndroidJavaObject audioPlugin;
+    private bool isRunning = false;
+    private bool isListeningContinuously = true;
+    private AudioClip questionClip;
+
+
+    private StreamBuffer streamBuffer;
+    private Queue<string> processingQueue;
+    private string openAiApiKey = "12345";
+    private Dictionary<string, (string model, string voice)> voiceSettings;
+
+    private bool isProcessing;
+    private bool isActive;
+
+    private class StreamBuffer
+    {
+        private string currentBuffer = "";
+        private readonly int minChunkSize;
+        private static readonly Regex sentenceSplitRegex = new Regex(@"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s");
+
+        public StreamBuffer(int minChunkSize = 50)
+        {
+            this.minChunkSize = minChunkSize;
+        }
+
+        public List<string> AddText(string text)
+        {
+            currentBuffer += text;
+            var sentences = sentenceSplitRegex.Split(currentBuffer);
+            var completeSentences = sentences.Take(sentences.Length - 1).ToList();
+
+            var result = completeSentences
+                .Select(s => s.Trim())
+                .Where(s => s.Length >= minChunkSize || !string.IsNullOrEmpty(s))
+                .ToList();
+
+            currentBuffer = sentences.Length > 0 ? sentences[sentences.Length - 1] : "";
+            return result;
+        }
+
+        public string GetCurrentBuffer()
+        {
+            return currentBuffer;
+        }
+
+        public void ClearBuffer()
+        {
+            currentBuffer = "";
+        }
+    }
+
     private void Awake()
     {
+        streamBuffer = new StreamBuffer();
+        processingQueue = new Queue<string>();
+
+        voiceSettings = new Dictionary<string, (string model, string voice)>
+        {
+            { "default", ("tts-1", "alloy") },
+            { "casual", ("tts-1", "nova") },
+            { "formal", ("tts-1", "onyx") }
+        };
     }
+
     private void Start()
     {
+#if UNITY_ANDROID
+        // Yêu cầu quyền microphone
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+        // Yêu cầu quyền POST_NOTIFICATIONS (Android 13+)
+        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
+        {
+            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
+        }
+
+        // Khởi tạo plugin Android 
+
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
+        }
+        // Bắt đầu thu âm liên tục
+
+        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
+        if (audioPlugin != null)
+        {
+            //audioPlugin.Call("testSendMessage");
+            // Bắt đầu thu âm qua plugin Java
+            audioPlugin.Call("startRecordingFromUnity");
+            audioPlugin.Call("testSendMessage");
+
+            WebSocketHandler(webSocketUrl);
+        }
+#endif
         onAudioFinished.AddListener(OnAudioFinished);
         conversationId = Guid.NewGuid().ToString();
-        WebSocketHandler(webSocketUrl); // Thay URL WebSocket của bạn 
+
+        for (int i = 0; i < Microphone.devices.Length; i++)
+        {
+            Debug.Log("micro device " + i + ": " + Microphone.devices[i]);
+            UIManager.Instance.connectionTxt.text = UIManager.Instance.connectionTxt.text + "micro device " + i + ": " + Microphone.devices[i] + "\n";
+        }
     }
+
 
     // Kết nối WebSocket
     public async void WebSocketHandler(string url)
@@ -78,10 +185,11 @@ public class RecordAudio : MonoBehaviour
             Debug.Log("WebSocket Closed!");
         };
 
+
         ws.OnMessage += (bytes) =>
         {
-            var message = System.Text.Encoding.UTF8.GetString(bytes);
-            HandleWebSocketResponse(message);
+            string message = System.Text.Encoding.UTF8.GetString(bytes);
+            HandleWebSocketResponse1(message);
         };
 
         // Keep trying to connect
@@ -146,12 +254,12 @@ public class RecordAudio : MonoBehaviour
 
     private void Update()
     {
-        #if !UNITY_WEBGL || UNITY_EDITOR
-            if (ws != null)
-            {
-                ws.DispatchMessageQueue();
-            }
-        #endif
+#if !UNITY_WEBGL || UNITY_EDITOR
+        if (ws != null)
+        {
+            ws.DispatchMessageQueue();
+        }
+#endif
 
         // Process all actions in the queue on the main thread
         while (mainThreadActions.Count > 0)
@@ -168,7 +276,7 @@ public class RecordAudio : MonoBehaviour
     }
 
     // Xử lý dữ liệu trả về từ WebSocket
-    private void HandleWebSocketResponse(string response)
+    /*private void HandleWebSocketResponse(string response)
     {
         try
         {
@@ -176,10 +284,10 @@ public class RecordAudio : MonoBehaviour
             if (jsonResponse["type"] != null)
             {
                 string responseType = jsonResponse["type"].ToString();
-                if (responseType != "audio_chunk" && responseType != "text_response")
-                {
-                    Debug.Log("Received message text:" + jsonResponse);
-                }
+                //if (responseType != "audio_chunk" && responseType != "text_response")
+                //{
+                //    Debug.Log("Received message text:" + jsonResponse);
+                //}
 
                 // Kiểm tra type có phải là "text_response" không
 
@@ -192,6 +300,7 @@ public class RecordAudio : MonoBehaviour
                 }
                 else if (responseType == "transcript")
                 {
+                    isEnableRecieveAudioChunkMessage = true;
                     EnqueueMainThreadAction(() =>
                     {
                         UIManager.Instance.ShowHideTestPanel(true);
@@ -201,6 +310,7 @@ public class RecordAudio : MonoBehaviour
                 }
                 else if (responseType == "text_response")
                 {
+                    if (!isEnableRecieveAudioChunkMessage) return;
                     string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
                     EnqueueMainThreadAction(() =>
                     {
@@ -222,15 +332,17 @@ public class RecordAudio : MonoBehaviour
                 }
                 else if (responseType == "audio_chunk")
                 {
+                    if (!isEnableRecieveAudioChunkMessage) return;
                     string content = jsonResponse["audio"].ToString();  // Lấy nội dung của "audio"  
                     byte[] audioBytes = Convert.FromBase64String(content); // Chuyển base64 thành byte[]
                     Debug.Log("Received audio_chunk");
                     audioDataBuffer.AddRange(audioBytes);
-                    //EnqueueMainThreadAction(() => ProcessAudioChunk(audioBytes));
                 }
                 // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
                 else if (responseType == "audio_complete")
                 {
+                    if (!isEnableRecieveAudioChunkMessage) return;
+                    isEnableRecieveAudioChunkMessage = false;
                     Debug.Log("Audio streaming complete.");
                     if (audioDataBuffer.Count > 0)
                     {
@@ -256,7 +368,81 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogError("Error processing WebSocket response: " + e.Message);
         }
+    }*/
+
+    private async void HandleWebSocketResponse1(string response)
+    {
+        try
+        {
+            JObject jsonResponse = JObject.Parse(response);
+            if (jsonResponse["type"] != null)
+            {
+                string responseType = jsonResponse["type"].ToString();
+
+
+                if (responseType == "error")
+                {
+                    string content = jsonResponse["message"].ToString();  // Lấy nội dung của "text" 
+                    Debug.LogError("Received error: " + content);
+
+                    EnqueueMainThreadAction(() => HandleAudioError());
+                }
+                else if (responseType == "transcript")
+                {
+                    isEnableRecieveAudioChunkMessage = true;
+                    EnqueueMainThreadAction(() =>
+                    {
+                        UIManager.Instance.ShowHideTestPanel(true);
+                        transcriptTxt.text = jsonResponse["text"].ToString();
+                    });
+                    Debug.Log("Received transcript text: " + jsonResponse["text"].ToString() + " with language: " + jsonResponse["language"].ToString());
+                }
+                else if (responseType == "text_response")
+                {
+                    if (!isEnableRecieveAudioChunkMessage) return;
+                    string content = jsonResponse["text"].ToString();  // Lấy nội dung của "text"
+                    EnqueueMainThreadAction(() =>
+                    {
+                        UIManager.Instance.ShowHideTestPanel(true);
+                        responseTxt.text = responseTxt.text + "..." + content + "\n";
+                    });
+
+                    Debug.Log("Received text_response: " + content);
+                    processingQueue.Enqueue(content);
+                }
+
+                // Nếu nhận được type "audio_complete", kết thúc việc phát âm thanh
+                else if (responseType == "audio_complete")
+                {
+                    if (!isEnableRecieveAudioChunkMessage) return;
+                    isEnableRecieveAudioChunkMessage = false;
+                    Debug.Log("Audio streaming complete.");
+                    isProcessing = true;
+                    // gọi xữ lý gửi tts
+                    await ProcessQueue();
+                }
+
+                // Nếu phát hiện "OK Google", tạm dừng thu âm liên tục và ghi âm câu hỏi
+                //if (message.Contains("Detected OK Google"))
+                //{
+                //    isListeningContinuously = false;
+                //    StartCoroutine(RecordQuestion());
+                //}
+                //else if (message.Contains("I heard:"))
+                //{
+                //    // Hiển thị câu trả lời từ server
+                //    responseText.text = message;
+                //    // Tiếp tục thu âm liên tục sau khi nhận câu trả lời
+                //    StartCoroutine(ResumeContinuousRecording());
+                //}
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error processing WebSocket response: " + e.Message);
+        }
     }
+
     private void HandlePlayAudio()
     {
         // nếu đang không chạy audio
@@ -270,7 +456,7 @@ public class RecordAudio : MonoBehaviour
         UIManager.Instance.connectionTxt.text = "I didn't hear your question, please ask again.";
         myakuController.MyakuHello();
         audioSource.clip = null;
-        Resources.UnloadUnusedAssets(); 
+        Resources.UnloadUnusedAssets();
     }
     private IEnumerator PlayCurrentAudio()
     {
@@ -355,51 +541,6 @@ public class RecordAudio : MonoBehaviour
         StartCoroutine(PlayRemainAudioInQueue());
     }
 
-    // Xử lý và thêm audio chunk vào buffer
-    private void ProcessAudioChunk(byte[] audioChunk)
-    {
-        //if (!isReceivingAudio)
-        //{
-        //    isReceivingAudio = true;
-        //    audioDataBuffer.Clear(); // Xóa buffer trước khi bắt đầu nhận audio mới
-        //}
-
-        //// Thêm audio chunk vào buffer
-        audioDataBuffer.AddRange(audioChunk);
-        //Debug.Log("nhận thêm dữ liệu: " + audioChunk.Length);
-
-        // Tiến hành phát audio nếu đã có đủ dữ liệu (hoặc có thể phát ngay khi nhận chunk đầu tiên)
-        // kiểm tra để chắc chắn không gọi 2 coroutine cùng lúc khi audio chưa play, vì rất có thể chưa kịp play thì đã nhận chunk tiếp theo
-        //if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && isBeginPlay == false)
-        //{ 
-        //    myakuController.MyakuAnswer();
-        //    //Gọi PlayAudio trong Coroutine để đảm bảo hoạt động trên Main Thread
-        //    //Debug.Log("audioDataBuffer.Count: " + audioDataBuffer.Count);
-        //    //Debug.Log("Play audio nào!");
-        //    isBeginPlay = true;
-        //    StartCoroutine(PlayAudio());
-        //} 
-        // Nếu đang phát âm thanh, tiếp tục nhận và lưu audio cho response tiếp theo
-        //if (audioSource.isPlaying || isPlayingAudio)
-        //{
-        //    // Lưu các chunk audio vào queue cho các response sau
-        //    if (audioDataBuffer.Count > 0)
-        //    {
-        //        var bufferCopy = new List<byte>(audioDataBuffer);
-        //        audioBuffersQueue.Enqueue(bufferCopy);
-        //    }
-        //}
-        //else
-        //{
-        //    // Khi buffer đầy đủ, chơi âm thanh của response hiện tại
-        //    if (audioDataBuffer.Count > 0 && !audioSource.isPlaying && !isPlayingAudio)
-        //    {
-        //        isPlayingAudio = true;
-        //        StartCoroutine(PlayCurrentAudio());
-        //    }
-        //} 
-    }
-
     // Tạo và phát AudioClip từ buffer dữ liệu audio
     private IEnumerator PlayAudio()
     {
@@ -467,17 +608,28 @@ public class RecordAudio : MonoBehaviour
 
     public void StartRecording()
     {
-        //if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-        //{
-        //    // Nếu chưa cấp quyền, yêu cầu cấp quyền
-        //    Debug.Log("chưa cấp quyền sử dụng micro device");
-        //    Permission.RequestUserPermission(Permission.Microphone);
-        //    return;
-        //}
-        //else
-        //{
-        //    isEnableMic = true;
-        //}
+        if (isEnableMic == false)
+        {
+            if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+            {
+                // Nếu chưa cấp quyền, yêu cầu cấp quyền
+                UIManager.Instance.connectionTxt.text = "chưa cấp quyền sử dụng micro device";
+                Debug.Log("chưa cấp quyền sử dụng micro device");
+                Permission.RequestUserPermission(Permission.Microphone);
+                return;
+            }
+            else
+            {
+                isEnableMic = true;
+                //for (int i = 0; i < Microphone.devices.Length; i++)
+                //{
+                //    Debug.Log("micro device " + i + ": " + Microphone.devices[i]);
+                //    UIManager.Instance.connectionTxt.text = UIManager.Instance.connectionTxt.text + "micro device " + i + ": " + Microphone.devices[i] + "\n";
+                //}
+            }
+        }
+
+        isEnableRecieveAudioChunkMessage = false;
 
         UIManager.Instance.recordingIndicator.gameObject.SetActive(true);
         UIManager.Instance.connectionTxt.text = "";
@@ -504,9 +656,9 @@ public class RecordAudio : MonoBehaviour
         }
         audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue 
         //ResetWebSocketConnection();
-        responseTxt.text =  "";
-        
-           
+        responseTxt.text = "";
+
+
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         //for (int i = 0; i < Microphone.devices.Length; i++)
         //{
@@ -533,7 +685,7 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    //public void StartRecordingFromMyaku()
+    /*//public void StartRecordingFromMyaku()
     //{
     //    myakuController.MyakuListen();
     //    StopAllCoroutines(); 
@@ -560,12 +712,12 @@ public class RecordAudio : MonoBehaviour
     //    ResetWebSocketConnection();
     //    isAnswering = false;
     //    responseTxt.text = "";
-    //}
+    //}*/
 
 
     public void StopRecording()
     {
-       // if (!isEnableMic) return;
+        if (!isEnableMic) return;
 
         UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
         UIManager.Instance.recordingIndicator.gameObject.SetActive(false);
@@ -670,10 +822,9 @@ public class RecordAudio : MonoBehaviour
         Resources.UnloadUnusedAssets();
     }
 
-
     public void TestSendFromAudioFile()
     {
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav"); 
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
         if (!File.Exists(audioFilePath))
         {
@@ -682,13 +833,202 @@ public class RecordAudio : MonoBehaviour
         }
         //Lấy file audio đã ghi âm từ RecordAudio
         byte[] audioBytes = File.ReadAllBytes(audioFilePath);
-        string base64Audio = Convert.ToBase64String(audioBytes); 
+        string base64Audio = Convert.ToBase64String(audioBytes);
 
-       // ResetWebSocketConnection();
+        // ResetWebSocketConnection();
 
         string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
         SendMessageToServer(jsonMessage);
         Debug.Log("Đã send message: " + jsonMessage);
     }
+
+
+    private async Task ProcessQueue()
+    {
+        while (isProcessing)
+        {
+            if (processingQueue.Count > 0)
+            {
+                var sentence = processingQueue.Dequeue();
+                Debug.Log("sentence: " + sentence);
+                await ProcessTTS(sentence);
+            }
+            await Task.Delay(100); // Small delay to prevent busy waiting
+        }
+    }
+
+    private async Task ProcessTTS(string sentence)
+    {
+        try
+        {
+            //OnTextResponseReceived?.Invoke(sentence);
+            var audioData = await GenerateAudioFromText(sentence);
+            var audioClip = await ConvertToAudioClip(audioData);
+
+            if (!isProcessing) return;
+
+            PlayAudioClip(audioClip);
+        }
+        catch (Exception e)
+        {
+            //OnError?.Invoke($"TTS error: {e.Message}");
+            Debug.LogError($"TTS processing error: {e.Message}");
+        }
+    }
+    private async Task<byte[]> GenerateAudioFromText(string text, string voiceStyle = "default")
+    {
+        var settings = voiceSettings[voiceStyle];
+
+        using (var client = new HttpClient())
+        {
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAiApiKey}");
+
+            var requestData = new
+            {
+                model = settings.model,
+                voice = settings.voice,
+                input = text,
+                response_format = "wav",
+                speed = 1.0f
+            };
+
+            //var response = await client.PostAsJsonAsync(
+            //    "https://api.openai.com/v1/audio/speech ",
+            //    requestData
+            //);
+
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("https://api.openai.com/v1/audio/speech", jsonContent);
+
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+    }
+
+    private async Task<AudioClip> ConvertToAudioClip(byte[] audioData)
+    {
+        // Create a temporary file to store the WAV data
+        string tempPath = $"{Application.persistentDataPath}/temp_audio.wav";
+        await System.IO.File.WriteAllBytesAsync(tempPath, audioData);
+
+
+        AudioClip audioClip = CreateAudioClipFromBytes(audioData);
+
+
+        //// Use UnityWebRequest to load the audio clip
+        //using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + tempPath, AudioType.WAV))
+        //{
+        //    // Create a TaskCompletionSource to await the UnityWebRequest
+        //    var tcs = new TaskCompletionSource<bool>();
+
+        //    // Send the web request
+        //    var operation = www.SendWebRequest();
+
+        //    // Listen for the completion of the request
+        //    operation.completed += (asyncOp) =>
+        //    {
+        //        if (www.result == UnityWebRequest.Result.Success)
+        //        {
+        //            tcs.SetResult(true); // Mark the task as completed
+        //        }
+        //        else
+        //        {
+        //            tcs.SetException(new Exception($"Failed to load audio clip: {www.error}"));
+        //        }
+        //    };
+
+        //    // Wait for the task to complete
+        //    await tcs.Task;
+
+        //    // Return the audio clip
+        //    return DownloadHandlerAudioClip.GetContent(www);
+        //}
+        return audioClip;
+    }
+
+    private void PlayAudioClip(AudioClip clip)
+    {
+        audioSource.clip = clip;
+        audioSource.Play();
+    }
+
+    IEnumerator RecordQuestion()
+    {
+
+        // Ghi âm trong 10 giây hoặc đến khi im lặng
+        int sampleRate = 16000; // Khớp với SAMPLE_RATE trong Java
+        int lengthSeconds = 10; // Thời gian tối đa 10 giây
+        questionClip = Microphone.Start(null, false, lengthSeconds, sampleRate);
+
+        // Chờ người dùng ngừng nói (hoặc 10 giây)
+        yield return new WaitForSeconds(0.5f); // Đợi 0.5 giây để tránh nhiễu ban đầu
+
+        float maxVolume = 0f;
+        while (Microphone.IsRecording(null))
+        {
+            float[] data = new float[256];
+            int offset = 0;
+            int read = Microphone.GetPosition(null) - offset;
+            if (read > 0)
+            {
+                questionClip.GetData(data, offset);
+                float volume = CalculateVolume(data);
+                maxVolume = Mathf.Max(maxVolume, volume);
+
+                // Nếu im lặng quá lâu (volume thấp), dừng ghi âm
+                if (maxVolume < 0.01f && Time.timeSinceLevelLoad - (Time.timeSinceLevelLoad - 0.5f) > 1f) // Im lặng 1 giây
+                {
+                    Microphone.End(null);
+                    break;
+                }
+            }
+            yield return null;
+        }
+
+        // Gửi câu hỏi qua WebSocket
+        if (questionClip != null)
+        {
+            float[] samplesData = new float[questionClip.samples];
+            questionClip.GetData(samplesData, 0);
+            byte[] byteData = ConvertAudioToBytes(samplesData, sampleRate);
+            string base64Audio = Convert.ToBase64String(byteData);
+            webSocket.SendText(base64Audio);
+            Debug.Log("Sent question as base64");
+        }
+    }
+
+    float CalculateVolume(float[] data)
+    {
+        float sum = 0f;
+        foreach (float sample in data)
+        {
+            sum += sample * sample;
+        }
+        return Mathf.Sqrt(sum / data.Length);
+    }
+    byte[] ConvertAudioToBytes(float[] data, int sampleRate)
+    {
+        short[] shortData = new short[data.Length];
+        for (int i = 0; i < data.Length; i++)
+        {
+            shortData[i] = (short)(data[i] * short.MaxValue);
+        }
+
+        byte[] byteData = new byte[shortData.Length * 2];
+        Buffer.BlockCopy(shortData, 0, byteData, 0, byteData.Length);
+        return byteData;
+    }
+
+    // Nhận dữ liệu âm thanh từ Java
+    public void OnAudioDataReceived(string base64Audio)
+    {
+        UIManager.Instance.connectionTxt.text = base64Audio;
+        //if (isListeningContinuously && webSocket != null && webSocket.State == WebSocketState.Open)
+        //{
+        //webSocket.SendText(base64Audio);
+        Debug.Log("Sent 2s audio as base64");
+        //}
+    }
+
 }
 

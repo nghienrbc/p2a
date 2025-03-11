@@ -368,98 +368,101 @@ public class UIManager : MonoBehaviour
     private bool isRecieveStartMarker = false;
     public void OnDataReceived(string receivedData)
     {
-        //Debug.Log("Data received: " + receivedData);
-        //// Kiểm tra nếu nhận được chuỗi "ddhello"
-        //if (receivedData.Trim() == "ddhello")
-        //{
-        //    if (!isSendHelloData)
-        //    {
-        //        Debug.Log("Received 'ddhello', sending 'ddhello' back...");
-        //        SendDataToBluetooth("ddhello\n");
-        //        isSendHelloData = true;
-        //    }
-        //}
-        //// Kiểm tra nếu nhận được chuỗi ">init>:Arduino-c12"
-        //else if (receivedData.Trim().Contains(">init>:Arduino-c12") || receivedData.Trim().Contains(">init>:") || receivedData.Trim().Contains("Arduino-c12"))
-        //{
-        //    if (!isSendInitData)
-        //    {
-        //        isSendInitData = true;
-        //        Debug.Log("Received '>init>:Arduino-c12', sending '<init<:11' back...");
-        //        SendDataToBluetooth("<init<:11\n");
-        //    }
-        //}
-        //// Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
-        //else if (receivedData.Trim().Contains("0.^Q^W1,C,START") || receivedData.Trim().Contains("START"))
-        //{
-        //    isRecieveStartMarker = true;
-        //    if (!isStartPushButtonOnMyaku)
-        //    {
-        //        Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!");
-        //    }
-        //    // đã thực sự hoàn thành kết nối và bắt đầu nhận dữ liệu khi nhấn nút trên myaku
-        //    else
-        //    {
-        //        isStartPushButtonOnMyaku = false;
-        //        if (functionName == "camera")
-        //        {
-        //            takePhotoAndUpload.SaveImage();
-        //        }
-        //        else // nếu nhận start khi đã nhấn nút ghi âm trên myaku và không ở chức năng chụp hình
-        //        {
-        //            isCollectingAudioData = false;
-        //            //ProcessAudioData(audioDataBuffer);
-        //            try
-        //            {
-        //                // Giải mã Base64
-        //                recordingIndicator.gameObject.SetActive(false);
-        //                audioDataBuffer = Convert.FromBase64String(base64Audio); // cái này dùng để phát tiếng mới ghi âm
+        Debug.Log("Data received: " + receivedData);
+        // Kiểm tra nếu nhận được chuỗi "ddhello"
+        if (receivedData.Trim() == "ddhello")
+        {
+            if (!isSendHelloData)
+            {
+                Debug.Log("Received 'ddhello', sending 'ddhello' back...");
+                SendDataToBluetooth("ddhello\n");
+                isSendHelloData = true;
+            }
+        }
+        // Kiểm tra nếu nhận được chuỗi ">init>:Arduino-c12"
+        else if (receivedData.Trim().Contains(">init>:Arduino-c12") || receivedData.Trim().Contains(">init>:") || receivedData.Trim().Contains("Arduino-c12"))
+        {
+            if (!isSendInitData)
+            {
+                isSendInitData = true;
+                Debug.Log("Received '>init>:Arduino-c12', sending '<init<:11' back...");
+                SendDataToBluetooth("<init<:11\n");
+            }
+        }
+        // Kiểm tra nếu nhận được chuỗi "0.^Q^W1,C,START" để thông báo kết nối
+        else if (receivedData.Trim().Contains("START"))
+        {
+            isRecieveStartMarker = true;
+            if (!isStartPushButtonOnMyaku)
+            {
+                Debug.Log("bắt đầu có thể nhận dữ liệu audio từ thiết bị bluetooth!");
+            }
+            // đã thực sự hoàn thành kết nối và bắt đầu nhận dữ liệu khi nhấn nút trên myaku
+            else
+            {
+                isStartPushButtonOnMyaku = false;
+                if (functionName == "camera")
+                {
+                    takePhotoAndUpload.SaveImage();
+                }
+                else // nếu nhận start khi đã nhấn nút ghi âm trên myaku và không ở chức năng chụp hình
+                {
+                    isCollectingAudioData = false;
+                    BtnStopRecordClick();
+                    //ProcessAudioData(audioDataBuffer);
+                    //try
+                    //{
+                    //    // Giải mã Base64
+                    //    recordingIndicator.gameObject.SetActive(false);
+                    //    audioDataBuffer = Convert.FromBase64String(base64Audio); // cái này dùng để phát tiếng mới ghi âm
 
-        //                SaveBase64StringAsWav(base64Audio, "audioFromMyaku.wav", 8000, 1); // chuyển chuỗi base64 thu âm thành file WAV
+                    //    SaveBase64StringAsWav(base64Audio, "audioFromMyaku.wav", 8000, 1); // chuyển chuỗi base64 thu âm thành file WAV
 
-        //                string audioFilePath = Path.Combine(Application.persistentDataPath, "audioFromMyaku.wav");
-        //                byte[] audioBytes = File.ReadAllBytes(audioFilePath);
-        //                base64AudioString = Convert.ToBase64String(audioBytes); // đây là chuỗi gửi lên server sau khi đọc từ file WAV
+                    //    string audioFilePath = Path.Combine(Application.persistentDataPath, "audioFromMyaku.wav");
+                    //    byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+                    //    base64AudioString = Convert.ToBase64String(audioBytes); // đây là chuỗi gửi lên server sau khi đọc từ file WAV
 
-        //                //string filePath = Path.Combine(Application.persistentDataPath, "base64string.txt");// ghi lại string đọc từ WAV vào file text để xem
-        //                // Ghi nội dung chuỗi vào file
-        //                //File.WriteAllText(filePath, base64AudioString);  
+                    //    //string filePath = Path.Combine(Application.persistentDataPath, "base64string.txt");// ghi lại string đọc từ WAV vào file text để xem
+                    //    // Ghi nội dung chuỗi vào file
+                    //    //File.WriteAllText(filePath, base64AudioString);  
 
-        //                // gửi string base64 lên server để nhận câu trả lời
-        //                if (base64AudioString != "" && recordAudio != null)
-        //                {
-        //                    connectionTxt.text = "Let me think about the answer for a moment!";
-        //                    //recordAudio.SendQuestionFromMyakyDevice(base64AudioString);
-        //                }
-        //            }
-        //            catch (Exception)
-        //            {
-        //                Debug.Log("không giải mã được: ");
-        //                throw;
-        //            }
-                    
-        //        }
-        //    }
-        //}  
-        //else if (receivedData.Trim().Contains("0.^Q^W1,C,STOP") || receivedData.Trim().Contains("STOP"))
+                    //    // gửi string base64 lên server để nhận câu trả lời
+                    //    if (base64AudioString != "" && recordAudio != null)
+                    //    {
+                    //        connectionTxt.text = "Let me think about the answer for a moment!";
+                    //        //recordAudio.SendQuestionFromMyakyDevice(base64AudioString);
+                    //    }
+                    //}
+                    //catch (Exception)
+                    //{
+                    //    Debug.Log("không giải mã được: ");
+                    //    throw;
+                    //}
+
+                }
+            }
+        }
+        else if (receivedData.Trim().Contains("STOP"))
+        {
+            // nếu trước đó đã có start thì mới bắt đầu thu âm, tránh trường hợp myaku kết nối sẵn
+            if (!isRecieveStartMarker) return;
+
+            isStartPushButtonOnMyaku = true;
+            isCollectingAudioData = true;
+            audioDataBuffer = null;
+            base64Audio = "";
+            base64AudioString = "";
+            Debug.Log("bắt đầu nhấn button trên myaku!");
+
+            //recordingIndicator.gameObject.SetActive(true);
+            //connectionTxt.text = "";
+            //recordAudio.StartRecordingFromMyaku(); 
+            if (functionName == "camera") return;
+            BtnStartRecordClick();
+        }
+        //else
         //{
-        //    // nếu trước đó đã có start thì mới bắt đầu thu âm, tránh trường hợp myaku kết nối sẵn
-        //    if (!isRecieveStartMarker) return;
-            
-        //    isStartPushButtonOnMyaku = true;
-        //    isCollectingAudioData = true;
-        //    audioDataBuffer = null;
-        //    base64Audio = "";
-        //    base64AudioString = "";
-        //    Debug.Log("bắt đầu nhấn button trên myaku!");
-
-        //    recordingIndicator.gameObject.SetActive(true);
-        //    connectionTxt.text = "";
-        //    //recordAudio.StartRecordingFromMyaku();
-        //}
-        //else 
-        //{
-        //    if( isCollectingAudioData == false) return;
+        //    if (isCollectingAudioData == false) return;
         //    // Trích xuất dữ liệu âm thanh và thêm vào bộ đệm 
         //    base64Audio = receivedData;
         //    Debug.Log("Một lần duy nhất");
