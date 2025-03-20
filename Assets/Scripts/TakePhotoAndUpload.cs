@@ -81,7 +81,7 @@ public class TakePhotoAndUpload : MonoBehaviour
                     webCamTexture = new WebCamTexture(devices[i].name);
                     // Gán WebCamTexture vào RawImage để hiển thị
                     //rawImage.texture = webCamTexture;
-                     cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, cameraRotate * 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
+                    cameraDisplay.rectTransform.localEulerAngles = new Vector3(0, 0, cameraRotate * 90); // xữ lý xoay image 90 độ vì để bình thường thì hinhar ảnh render ra lại nằm ngang
                     webCamTexture.Play(); // Bắt đầu camera
                     updateImageCoroutine = StartCoroutine(UpdateImage(webCamTexture));
 
@@ -131,6 +131,7 @@ public class TakePhotoAndUpload : MonoBehaviour
         Debug.Log("Camera stopped and resources released.");
     }
 
+    // gọi liên tục để cập nhật hình ảnh từ camera
     IEnumerator UpdateImage(WebCamTexture webCamTexture)
     {
         while (true)
@@ -159,15 +160,16 @@ public class TakePhotoAndUpload : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
     }
+
     public Texture2D CaptureImage()
     {
         // Tạo một Texture2D để lưu ảnh chụp từ camera
         Texture2D photo = new Texture2D(webCamTexture.width, webCamTexture.height);
         photo.SetPixels(webCamTexture.GetPixels());
         photo.Apply();
-
         return photo;
     }
+
     private Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
     {
         int originalWidth = originalTexture.width;
