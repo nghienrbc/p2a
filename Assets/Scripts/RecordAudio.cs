@@ -23,7 +23,7 @@ public class RecordAudio : MonoBehaviour
     public TMP_Text transcriptTxt;
     public TMP_Text responseTxt;
     public MyakuController myakuController;
-    private string webSocketUrl = "ws://13.250.59.163:8001/ws/audio-chat"; // URL web socket  
+    private string webSocketUrl = "ws://157.10.52.193:8000/ws/audio-chat/3899ac92-049f-43ae-a8a9-820e88e3d267/null/c5e91ec3-322c-48f9-b2e6-f8450c506400"; // URL web socket  
     private string conversationId = "";
     private AudioClip recordedClip;
     [SerializeField] AudioSource audioSource;
@@ -37,7 +37,7 @@ public class RecordAudio : MonoBehaviour
     private Coroutine audioCoroutine; // Để lưu coroutine 
 
     private WebSocket ws;
-    private WebSocket webSocket;
+    //private WebSocket webSocket;
     private List<byte> audioDataBuffer = new List<byte>(); // Buffer để lưu các chunk audio 
     private Queue<List<byte>> audioBuffersQueue = new Queue<List<byte>>(); // Hàng đợi chứa các buffer của từng response
 
@@ -67,6 +67,17 @@ public class RecordAudio : MonoBehaviour
 
     private bool isProcessing;
     private bool isActive;
+
+    // Ping interval để duy trì kết nối
+    private float pingInterval = 10f; // Gửi PING mỗi 10 giây
+    private float lastPingTime = 0f;
+    public bool isWakeWordDetected = false;
+    public bool isSpeaking = false;
+    public string status = "Initializing...";
+    public float audioLevel = 0f;
+    public bool isConnected = false;
+    public string transcript = "";
+    public string response = "";
 
     private class StreamBuffer
     {
@@ -172,6 +183,8 @@ public class RecordAudio : MonoBehaviour
         {
             isWebSocketOpen = true;
             Debug.Log("WebSocket Connected!");
+            status = "Listening for wake word 123...";
+            UpdateUI();
         };
 
         ws.OnError += (e) =>
@@ -189,7 +202,8 @@ public class RecordAudio : MonoBehaviour
         ws.OnMessage += (bytes) =>
         {
             string message = System.Text.Encoding.UTF8.GetString(bytes);
-            HandleWebSocketResponse1(message);
+            Debug.Log("Message nhận được từ ws: " + message);
+            HandleWebSocketMessage(message);
         };
 
         // Keep trying to connect
@@ -254,6 +268,13 @@ public class RecordAudio : MonoBehaviour
 
     private void Update()
     {
+        // Gửi PING định kỳ để duy trì kết nối
+        if (Time.time - lastPingTime >= pingInterval)
+        {
+            SendPing();
+            lastPingTime = Time.time;
+        }
+
 #if !UNITY_WEBGL || UNITY_EDITOR
         if (ws != null)
         {
@@ -272,6 +293,13 @@ public class RecordAudio : MonoBehaviour
             }
 
             action?.Invoke();
+        }
+    }
+    private void SendPing()
+    {
+        if (ws != null && ws.State == WebSocketState.Open)
+        {
+            ws.SendText("{\"type\":\"ping\"}");
         }
     }
 
@@ -992,7 +1020,7 @@ public class RecordAudio : MonoBehaviour
             questionClip.GetData(samplesData, 0);
             byte[] byteData = ConvertAudioToBytes(samplesData, sampleRate);
             string base64Audio = Convert.ToBase64String(byteData);
-            webSocket.SendText(base64Audio);
+            ws.SendText(base64Audio);
             Debug.Log("Sent question as base64");
         }
     }
@@ -1022,13 +1050,130 @@ public class RecordAudio : MonoBehaviour
     // Nhận dữ liệu âm thanh từ Java
     public void OnAudioDataReceived(string base64Audio)
     {
-        UIManager.Instance.connectionTxt.text = base64Audio;
-        //if (isListeningContinuously && webSocket != null && webSocket.State == WebSocketState.Open)
+        // UIManager.Instance.connectionTxt.text = base64Audio;
+
+        // Debug.Log("nhận dữ liệu từ code java");
+        // Gửi dữ liệu âm thanh qua WebSocket
+        if (ws != null && ws.State == WebSocketState.Open)
+        {
+            try
+            {
+                // Chuyển base64 thành bytes và gửi qua WebSocket
+                byte[] audioBytes = Convert.FromBase64String(base64Audio);
+                Debug.Log($"Decoded length: {audioBytes.Length}");
+                ws.Send(audioBytes);
+                Debug.Log("Sent audio data to WebSocket server");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to send audio data: {e.Message}");
+                ReconnectWebSocket();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("WebSocket is not open, cannot send audio data");
+        }
+
+        // Cập nhật UI (tạm thời hiển thị base64Audio)
+        //if (UIManager.Instance != null)
         //{
-        //webSocket.SendText(base64Audio);
-        Debug.Log("Sent 2s audio as base64");
+        //    UIManager.Instance.connectionTxt.text = "Sent 100ms audio as base64";
         //}
     }
+    private async void ReconnectWebSocket()
+    {
+        if (ws != null)
+        {
+            await ws.Close();
+        }
+        await Task.Delay(2000); // Đợi 2 giây trước khi reconnect
+        WebSocketHandler(webSocketUrl);
+    }
+    private void HandleWebSocketMessage(string message)
+    {
+        try
+        {
+            // Giả định message là JSON, sử dụng SimpleJSON hoặc Newtonsoft.Json để parse 
+            JObject data = JObject.Parse(response);
 
+            string type = data["type"].ToString(); 
+
+            switch (type)
+            {
+                case "wake_word_detected":
+                    isWakeWordDetected = true;
+                    status = "I am hearing ...";
+                    Debug.Log("Wake word detected!");
+                    break;
+
+                case "speech_started":
+                    isSpeaking = true;
+                    status = "Listening to your command...";
+                    break;
+
+                case "please_continue":
+                    status = "Ask anything you want";
+                    break;
+
+                case "speech_ended":
+                    isSpeaking = false;
+                    status = "Processing your command...";
+                    break;
+
+                case "transcript":
+                    transcript = data["text"].ToString();
+                    status = "Transcript: " + transcript;
+                    break;
+
+                case "log":
+                    Debug.Log("Log: " + data["message"]);
+                    break;
+
+                case "text_response":
+                    response += data["text"];
+                    status = data["text"].ToString();
+                    break;
+
+                case "listening_for_wake_word":
+                    isWakeWordDetected = false;
+                    isSpeaking = false;
+                    status = "Listening for wake word nè...";
+                    // Reset transcript và response sau 5 giây
+                    Invoke(nameof(ResetTranscriptAndResponse), 5f);
+                    break;
+
+                case "error":
+                    Debug.LogError($"Error: {data["message"]}");
+                    status = "Error occurred. Listening for wake word...";
+                    break;
+            }
+
+            UpdateUI();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to parse WebSocket message: {e.Message}");
+        }
+    }
+
+    private void ResetTranscriptAndResponse()
+    {
+        transcript = "";
+        response = "";
+        UpdateUI();
+    }
+
+    private void UpdateUI()
+    {
+        // Cập nhật UI (tương tự code TypeScript)
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.connectionTxt.text = status;
+            // Cập nhật các UI element khác nếu cần (ví dụ: audioLevel, transcript, response)
+            transcriptTxt.text = transcript;
+            responseTxt.text = response;
+        }
+    }
 }
 
