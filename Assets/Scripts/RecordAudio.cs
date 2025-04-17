@@ -23,7 +23,10 @@ public class RecordAudio : MonoBehaviour
     public TMP_Text transcriptTxt;
     public TMP_Text responseTxt;
     public MyakuController myakuController;
-    private string webSocketUrl = "ws://157.10.52.193:8000/ws/audio-chat/3899ac92-049f-43ae-a8a9-820e88e3d267/null/c5e91ec3-322c-48f9-b2e6-f8450c506400"; // URL web socket  
+
+    private string webSocketUrl = "ws://157.10.52.193:8000/ws/audio-chat/186462d7-3150-4b47-93e8-a349db63b307/null/f836ce6c-5910-47b7-8931-d3a11b65c8e5"; // URL web socket  
+                                                                                                                                                          //private string webSocketUrl = "ws://157.10.52.193:8000/ws/audio-chat/05f92190-303a-4e27-b0aa-a0bbfc0309bb/null/0c77c804-4ef5-48b8-98f4-68d3fa77bf63"; // URL web socket  
+
     private string conversationId = "";
     private AudioClip recordedClip;
     [SerializeField] AudioSource audioSource;
@@ -62,7 +65,8 @@ public class RecordAudio : MonoBehaviour
 
     private StreamBuffer streamBuffer;
     private Queue<string> processingQueue;
-    private string openAiApiKey = "12345";
+    private string openAiApiKey = "";
+    private string groqKey = "";
     private Dictionary<string, (string model, string voice)> voiceSettings;
 
     private bool isProcessing;
@@ -78,6 +82,14 @@ public class RecordAudio : MonoBehaviour
     public bool isConnected = false;
     public string transcript = "";
     public string response = "";
+
+    // Thêm biến để theo dõi stream audio
+    private Queue<AudioClip> audioClipQueue = new Queue<AudioClip>();
+    private bool isPlayingStreamAudio = false;
+    private const int CHUNK_SIZE = 8192; // Tăng kích thước chunk để giảm số lần xử lý
+    private const int SAMPLE_RATE = 24000; // Đảm bảo sample rate nhất quán
+    private List<byte> audioBuffer = new List<byte>(); // Buffer tạm để tích lũy WAV header
+    private bool isFirstChunk = true;
 
     private class StreamBuffer
     {
@@ -116,6 +128,14 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
+    // Class để deserialize JSON
+    [System.Serializable]
+    public class Config
+    {
+        public string openAIApiKey;
+        public string groqKey;
+    }
+
     private void Awake()
     {
         streamBuffer = new StreamBuffer();
@@ -127,10 +147,27 @@ public class RecordAudio : MonoBehaviour
             { "casual", ("tts-1", "nova") },
             { "formal", ("tts-1", "onyx") }
         };
+
+        // Đọc file Config.json từ thư mục Resources
+        TextAsset configFile = Resources.Load<TextAsset>("config");
+        if (configFile != null)
+        {
+            Config config = JsonUtility.FromJson<Config>(configFile.text);
+            openAiApiKey = config.openAIApiKey;
+            groqKey = config.groqKey;
+            Debug.Log("API Key loaded: " + openAiApiKey);
+            Debug.Log("groq Key loaded: " + groqKey);
+        }
+        else
+        {
+            Debug.LogError("Không tìm thấy file Config.json trong Resources!");
+        }
+
     }
 
     private void Start()
     {
+        //ConnectWebSocket();
 #if UNITY_ANDROID
         // Yêu cầu quyền microphone
         if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
@@ -155,12 +192,8 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
         if (audioPlugin != null)
         {
-            //audioPlugin.Call("testSendMessage");
             // Bắt đầu thu âm qua plugin Java
             audioPlugin.Call("startRecordingFromUnity");
-            audioPlugin.Call("testSendMessage");
-
-            WebSocketHandler(webSocketUrl);
         }
 #endif
         onAudioFinished.AddListener(OnAudioFinished);
@@ -173,6 +206,15 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
+    private async void ConnectWebSocket()
+    {
+        if (ws != null)
+        {
+            await ws.Close();
+        }
+        await Task.Delay(2000); // Đợi 2 giây trước khi reconnect
+        WebSocketHandler(webSocketUrl);
+    }
 
     // Kết nối WebSocket
     public async void WebSocketHandler(string url)
@@ -185,6 +227,7 @@ public class RecordAudio : MonoBehaviour
             Debug.Log("WebSocket Connected!");
             status = "Listening for wake word 123...";
             UpdateUI();
+
         };
 
         ws.OnError += (e) =>
@@ -269,11 +312,11 @@ public class RecordAudio : MonoBehaviour
     private void Update()
     {
         // Gửi PING định kỳ để duy trì kết nối
-        if (Time.time - lastPingTime >= pingInterval)
-        {
-            SendPing();
-            lastPingTime = Time.time;
-        }
+        //if (Time.time - lastPingTime >= pingInterval)
+        //{
+        //    SendPing();
+        //    lastPingTime = Time.time;
+        //}
 
 #if !UNITY_WEBGL || UNITY_EDITOR
         if (ws != null)
@@ -449,20 +492,6 @@ public class RecordAudio : MonoBehaviour
                     // gọi xữ lý gửi tts
                     await ProcessQueue();
                 }
-
-                // Nếu phát hiện "OK Google", tạm dừng thu âm liên tục và ghi âm câu hỏi
-                //if (message.Contains("Detected OK Google"))
-                //{
-                //    isListeningContinuously = false;
-                //    StartCoroutine(RecordQuestion());
-                //}
-                //else if (message.Contains("I heard:"))
-                //{
-                //    // Hiển thị câu trả lời từ server
-                //    responseText.text = message;
-                //    // Tiếp tục thu âm liên tục sau khi nhận câu trả lời
-                //    StartCoroutine(ResumeContinuousRecording());
-                //}
             }
         }
         catch (Exception e)
@@ -686,20 +715,7 @@ public class RecordAudio : MonoBehaviour
         //ResetWebSocketConnection();
         responseTxt.text = "";
 
-
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
-        //for (int i = 0; i < Microphone.devices.Length; i++)
-        //{
-        //    Debug.Log("micro device " + i + ": " + Microphone.devices[i]);
-        //    if (Microphone.devices[i].Contains("JBL TUNE520BT") || Microphone.devices[i].Contains("BluetoothHFP"))
-        //    {
-        //        device = Microphone.devices[i];
-        //    }
-        //}
-        //if (device == "" && Microphone.devices.Length > 0)
-        //{
-        //    device = Microphone.devices[0];
-        //}
         if (device != "")
         {
             int sampleRate = 44100;
@@ -712,36 +728,6 @@ public class RecordAudio : MonoBehaviour
             Debug.LogError("No microphone device found!");
         }
     }
-
-    /*//public void StartRecordingFromMyaku()
-    //{
-    //    myakuController.MyakuListen();
-    //    StopAllCoroutines(); 
-
-    //    if (audioSource.isPlaying)
-    //    {
-    //        audioSource.Stop();
-    //        endAnswerTime = Time.time;
-    //    }
-    //    audioSource.clip = null;
-    //    Resources.UnloadUnusedAssets();
-
-    //    mainThreadActions.Clear();
-
-    //    audioDataBuffer.Clear();
-    //    // Tùy chọn, giải phóng bộ nhớ nếu cần
-    //    while (audioBuffersQueue.Count > 0)
-    //    {
-    //        var buffer = audioBuffersQueue.Dequeue();
-    //        buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
-    //    }
-    //    audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue  
-
-    //    ResetWebSocketConnection();
-    //    isAnswering = false;
-    //    responseTxt.text = "";
-    //}*/
-
 
     public void StopRecording()
     {
@@ -796,21 +782,6 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    //public void SendQuestionFromMyakyDevice(string base64Audio)
-    //{ 
-    //    beginQuestionTime = Time.time;
-    //    float timeDifference = beginQuestionTime - endAnswerTime;
-
-    //    if (timeDifference > 15f)
-    //    {
-    //        Debug.Log("Đã quá thời gian cho một conversation");
-    //        conversationId = Guid.NewGuid().ToString(); // Random conversation_id
-    //    }
-    //    Debug.Log("base64Audio: " + base64Audio);
-    //    string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
-    //    SendMessageToServer(jsonMessage);
-    //}
-
     // Tạo JSON message
     private string CreateJsonMessage(string conversationId, string base64Audio)
     {
@@ -850,7 +821,7 @@ public class RecordAudio : MonoBehaviour
         Resources.UnloadUnusedAssets();
     }
 
-    public void TestSendFromAudioFile()
+    /*public void TestSendFromAudioFile()
     {
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record.wav");
 
@@ -868,8 +839,7 @@ public class RecordAudio : MonoBehaviour
         string jsonMessage = CreateJsonMessage(conversationId, base64Audio);
         SendMessageToServer(jsonMessage);
         Debug.Log("Đã send message: " + jsonMessage);
-    }
-
+    }*/
 
     private async Task ProcessQueue()
     {
@@ -889,23 +859,25 @@ public class RecordAudio : MonoBehaviour
     {
         try
         {
-            //OnTextResponseReceived?.Invoke(sentence);
-            var audioData = await GenerateAudioFromText(sentence);
-            var audioClip = await ConvertToAudioClip(audioData);
-
-            if (!isProcessing) return;
-
-            PlayAudioClip(audioClip);
+            // Bắt đầu stream audio
+            await StreamAudioFromText(sentence);
+            // Bắt đầu phát audio
+            StartCoroutine(PlayStreamAudio());
         }
         catch (Exception e)
         {
-            //OnError?.Invoke($"TTS error: {e.Message}");
             Debug.LogError($"TTS processing error: {e.Message}");
         }
     }
-    private async Task<byte[]> GenerateAudioFromText(string text, string voiceStyle = "default")
+
+    private async Task StreamAudioFromText(string text, string voiceStyle = "default")
     {
         var settings = voiceSettings[voiceStyle];
+        isFirstChunk = true;
+        audioBuffer.Clear();
+        
+        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Bắt đầu stream audio cho text: {text}");
+        float startTime = Time.realtimeSinceStartup;
 
         using (var client = new HttpClient())
         {
@@ -920,108 +892,199 @@ public class RecordAudio : MonoBehaviour
                 speed = 1.0f
             };
 
-            //var response = await client.PostAsJsonAsync(
-            //    "https://api.openai.com/v1/audio/speech ",
-            //    requestData
-            //);
+            var jsonContent = new StringContent(
+                JsonConvert.SerializeObject(requestData), 
+                Encoding.UTF8, 
+                "application/json"
+            );
 
-            var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
-            var response = await client.PostAsync("https://api.openai.com/v1/audio/speech", jsonContent);
+            using (var response = await client.PostAsync(
+                "https://api.openai.com/v1/audio/speech",
+                jsonContent))
+            {
+                response.EnsureSuccessStatusCode();
+                Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Nhận response từ API sau {(Time.realtimeSinceStartup - startTime):F2} giây");
 
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsByteArrayAsync();
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                {
+                    byte[] buffer = new byte[CHUNK_SIZE];
+                    int bytesRead;
+                    int chunkCount = 0;
+
+                    // Đọc WAV header (44 bytes đầu tiên)
+                    byte[] wavHeader = new byte[44];
+                    await stream.ReadAsync(wavHeader, 0, 44);
+                    audioBuffer.AddRange(wavHeader);
+                    Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Đã đọc WAV header");
+
+                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    {
+                        chunkCount++;
+                        byte[] chunk = new byte[bytesRead];
+                        Array.Copy(buffer, chunk, bytesRead);
+                        audioBuffer.AddRange(chunk);
+
+                        // Khi buffer đủ lớn, xử lý thành audio clip
+                        if (audioBuffer.Count >= CHUNK_SIZE * 2)
+                        {
+                            Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Xử lý chunk #{chunkCount}, kích thước: {audioBuffer.Count} bytes");
+                            await ProcessAudioChunk(audioBuffer.ToArray());
+                            audioBuffer.Clear();
+                            audioBuffer.AddRange(wavHeader);
+                        }
+                    }
+
+                    // Xử lý bytes còn lại trong buffer
+                    if (audioBuffer.Count > 44)
+                    {
+                        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Xử lý chunk cuối cùng, kích thước: {audioBuffer.Count} bytes");
+                        await ProcessAudioChunk(audioBuffer.ToArray());
+                    }
+
+                    Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Hoàn thành stream, tổng số chunk: {chunkCount}");
+                }
+            }
         }
     }
 
-    private async Task<AudioClip> ConvertToAudioClip(byte[] audioData)
+    private async Task ProcessAudioChunk(byte[] wavData)
     {
-        // Create a temporary file to store the WAV data
-        string tempPath = $"{Application.persistentDataPath}/temp_audio.wav";
-        await System.IO.File.WriteAllBytesAsync(tempPath, audioData);
-
-
-        AudioClip audioClip = CreateAudioClipFromBytes(audioData);
-
-
-        //// Use UnityWebRequest to load the audio clip
-        //using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + tempPath, AudioType.WAV))
-        //{
-        //    // Create a TaskCompletionSource to await the UnityWebRequest
-        //    var tcs = new TaskCompletionSource<bool>();
-
-        //    // Send the web request
-        //    var operation = www.SendWebRequest();
-
-        //    // Listen for the completion of the request
-        //    operation.completed += (asyncOp) =>
-        //    {
-        //        if (www.result == UnityWebRequest.Result.Success)
-        //        {
-        //            tcs.SetResult(true); // Mark the task as completed
-        //        }
-        //        else
-        //        {
-        //            tcs.SetException(new Exception($"Failed to load audio clip: {www.error}"));
-        //        }
-        //    };
-
-        //    // Wait for the task to complete
-        //    await tcs.Task;
-
-        //    // Return the audio clip
-        //    return DownloadHandlerAudioClip.GetContent(www);
-        //}
-        return audioClip;
-    }
-
-    private void PlayAudioClip(AudioClip clip)
-    {
-        audioSource.clip = clip;
-        audioSource.Play();
-    }
-
-    IEnumerator RecordQuestion()
-    {
-
-        // Ghi âm trong 10 giây hoặc đến khi im lặng
-        int sampleRate = 16000; // Khớp với SAMPLE_RATE trong Java
-        int lengthSeconds = 10; // Thời gian tối đa 10 giây
-        questionClip = Microphone.Start(null, false, lengthSeconds, sampleRate);
-
-        // Chờ người dùng ngừng nói (hoặc 10 giây)
-        yield return new WaitForSeconds(0.5f); // Đợi 0.5 giây để tránh nhiễu ban đầu
-
-        float maxVolume = 0f;
-        while (Microphone.IsRecording(null))
+        try
         {
-            float[] data = new float[256];
-            int offset = 0;
-            int read = Microphone.GetPosition(null) - offset;
-            if (read > 0)
-            {
-                questionClip.GetData(data, offset);
-                float volume = CalculateVolume(data);
-                maxVolume = Mathf.Max(maxVolume, volume);
+            float chunkStartTime = Time.realtimeSinceStartup;
+            
+            // Bỏ qua WAV header nếu không phải chunk đầu tiên
+            int startIndex = isFirstChunk ? 44 : 44;
+            int dataLength = wavData.Length - startIndex;
 
-                // Nếu im lặng quá lâu (volume thấp), dừng ghi âm
-                if (maxVolume < 0.01f && Time.timeSinceLevelLoad - (Time.timeSinceLevelLoad - 0.5f) > 1f) // Im lặng 1 giây
+            // Chuyển đổi WAV data thành float array
+            float[] audioFloatArray = new float[dataLength / 2];
+            for (int i = 0; i < audioFloatArray.Length; i++)
+            {
+                short sample = BitConverter.ToInt16(wavData, startIndex + i * 2);
+                audioFloatArray[i] = sample / 32768f;
+            }
+
+            // Tạo AudioClip
+            AudioClip audioClip = AudioClip.Create(
+                "StreamChunk", 
+                audioFloatArray.Length,
+                1, // mono
+                SAMPLE_RATE,
+                false
+            );
+            audioClip.SetData(audioFloatArray, 0);
+
+            float processingTime = Time.realtimeSinceStartup - chunkStartTime;
+            Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Chunk xử lý xong sau {processingTime:F3}s, độ dài audio: {audioClip.length:F2}s");
+
+            // Thêm vào queue để phát
+            lock (audioClipQueue)
+            {
+                audioClipQueue.Enqueue(audioClip);
+                Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Đã thêm chunk vào queue, số lượng trong queue: {audioClipQueue.Count}");
+            }
+
+            isFirstChunk = false;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[{DateTime.Now:HH:mm:ss.fff}] Error processing audio chunk: {e.Message}");
+        }
+    }
+
+    private IEnumerator PlayStreamAudio()
+    {
+        isPlayingStreamAudio = true;
+        AudioClip currentClip = null;
+        int playedChunks = 0;
+
+        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Bắt đầu phát stream audio");
+
+        while (isPlayingStreamAudio)
+        {
+            // Nếu không đang phát audio
+            if (!audioSource.isPlaying)
+            {
+                // Lấy clip tiếp theo từ queue nếu có
+                lock (audioClipQueue)
                 {
-                    Microphone.End(null);
-                    break;
+                    if (audioClipQueue.Count > 0)
+                    {
+                        currentClip = audioClipQueue.Dequeue();
+                        playedChunks++;
+                        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Phát chunk #{playedChunks}, độ dài: {currentClip.length:F2}s, còn lại trong queue: {audioClipQueue.Count}");
+                    }
+                }
+
+                if (currentClip != null)
+                {
+                    audioSource.clip = currentClip;
+                    audioSource.Play();
+                    
+                    // Đợi cho đến khi phát xong clip hiện tại
+                    yield return new WaitForSeconds(currentClip.length);
+                    
+                    // Giải phóng clip đã phát
+                    Destroy(currentClip);
+                    currentClip = null;
+                }
+                else
+                {
+                    // Kiểm tra xem còn đang nhận stream không
+                    if (audioClipQueue.Count == 0)
+                    {
+                        yield return new WaitForSeconds(0.1f);
+                    }
                 }
             }
             yield return null;
         }
 
-        // Gửi câu hỏi qua WebSocket
-        if (questionClip != null)
+        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Kết thúc phát stream audio, tổng số chunk đã phát: {playedChunks}");
+
+        // Cleanup khi kết thúc
+        if (currentClip != null)
         {
-            float[] samplesData = new float[questionClip.samples];
-            questionClip.GetData(samplesData, 0);
-            byte[] byteData = ConvertAudioToBytes(samplesData, sampleRate);
-            string base64Audio = Convert.ToBase64String(byteData);
-            ws.SendText(base64Audio);
-            Debug.Log("Sent question as base64");
+            Destroy(currentClip);
+        }
+        
+        lock (audioClipQueue)
+        {
+            while (audioClipQueue.Count > 0)
+            {
+                var clip = audioClipQueue.Dequeue();
+                Destroy(clip);
+            }
+        }
+    }
+
+    // Sửa lại phương thức ProcessTTSCoroutine
+    private IEnumerator ProcessTTSCoroutine(string text)
+    {
+        // Reset trạng thái
+        isPlayingStreamAudio = false;
+        isFirstChunk = true;
+        audioBuffer.Clear();
+        
+        lock (audioClipQueue)
+        {
+            while (audioClipQueue.Count > 0)
+            {
+                var clip = audioClipQueue.Dequeue();
+                Destroy(clip);
+            }
+        }
+
+        var task = ProcessTTS(text);
+        while (!task.IsCompleted)
+        {
+            yield return null;
+        }
+
+        if (task.IsFaulted)
+        {
+            Debug.LogError($"ProcessTTS failed: {task.Exception}");
         }
     }
 
@@ -1034,6 +1097,7 @@ public class RecordAudio : MonoBehaviour
         }
         return Mathf.Sqrt(sum / data.Length);
     }
+
     byte[] ConvertAudioToBytes(float[] data, int sampleRate)
     {
         short[] shortData = new short[data.Length];
@@ -1047,12 +1111,199 @@ public class RecordAudio : MonoBehaviour
         return byteData;
     }
 
+
+    IEnumerator RecordQuestion()
+    {
+        // Khởi tạo các biến theo dõi thời gian và âm lượng
+        int sampleRate = 16000;
+        string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
+        questionClip = Microphone.Start(device, false, 30, sampleRate); // Tăng thời gian tối đa lên 30s để đủ buffer
+
+        float startTime = Time.time;
+        float lastSoundTime = startTime;
+        bool hasSoundDetected = false;
+        float silenceThreshold = 0.01f; // Ngưỡng để xác định im lặng
+        
+        // Đợi 0.5s để tránh nhiễu ban đầu
+        yield return new WaitForSeconds(0.5f);
+
+        while (Microphone.IsRecording(null))
+        {
+            float[] data = new float[256];
+            int position = Microphone.GetPosition(null);
+            if (position > 0)
+            {
+                questionClip.GetData(data, position - data.Length);
+                float volume = CalculateVolume(data);
+
+                // Nếu phát hiện có âm thanh (volume lớn hơn ngưỡng)
+                if (volume > silenceThreshold)
+                {
+                    hasSoundDetected = true;
+                    lastSoundTime = Time.time;
+                }
+
+                // Kiểm tra các điều kiện dừng
+                float currentTime = Time.time;
+                
+                // Điều kiện 1: Nếu chưa phát hiện âm thanh và đã im lặng quá 5s
+                if (!hasSoundDetected && (currentTime - startTime > 5f))
+                {
+                    Debug.Log("Không phát hiện tiếng nói trong 5s đầu, hủy ghi âm");
+                    Microphone.End(null);
+                    yield break; // Thoát khỏi coroutine
+                }
+
+                // Điều kiện 2: Nếu đã phát hiện âm thanh và im lặng quá 3s
+                if (hasSoundDetected && (currentTime - lastSoundTime > 3f))
+                {
+                    Debug.Log("Phát hiện im lặng 3s sau khi có tiếng nói, kết thúc ghi âm");
+                    break; // Thoát khỏi vòng lặp để xử lý audio
+                }
+            }
+            yield return null;
+        }
+
+        // Dừng ghi âm
+        Microphone.End(null);
+
+        // Chỉ xử lý audio nếu đã phát hiện có tiếng nói
+        if (hasSoundDetected && questionClip != null)
+        {
+            Debug.Log("Kết thúc ghi âm, xử lý audio");
+            string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
+            WavUtility.Save(audioFilePath, questionClip);
+
+            if (!File.Exists(audioFilePath))
+            {
+                Debug.LogError("Audio file not found at path: " + audioFilePath);
+                yield break;
+            }
+
+            byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+            Debug.Log($"Audio file saved at: {audioFilePath}, size: {audioBytes.Length} bytes");
+
+            yield return SendAudioToWhisper(audioBytes, (transcription) =>
+            {
+                if (transcription != null)
+                {
+                    Debug.Log($"Received transcription: {transcription}");
+                    StartCoroutine(SendTextToChatCompletions(transcription, (answer) =>
+                    {
+                        if (answer != null)
+                        {
+                            Debug.Log($"Received answer: {answer}");
+                            if (UIManager.Instance != null)
+                            {
+                                UIManager.Instance.connectionTxt.text = answer;
+                                StartCoroutine(ProcessTTSCoroutine(answer));
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to get answer from Chat Completions API");
+                        }
+                    }));
+                }
+                else
+                {
+                    Debug.LogError("Failed to get transcription from Whisper API");
+                }
+            });
+        }
+        else
+        {
+            Debug.Log("Không phát hiện tiếng nói, hủy xử lý audio");
+        }
+    }
+
+
+
+    IEnumerator SendAudioToWhisper(byte[] wavData, System.Action<string> onTranscriptionReceived)
+    {
+        string url = "https://api.groq.com/openai/v1/audio/transcriptions";
+        string apiKey = groqKey;
+
+        WWWForm form = new WWWForm();
+        form.AddBinaryData("file", wavData, "audio.wav", "audio/wav");
+        form.AddField("model", "whisper-large-v3");
+        form.AddField("temperature", 0);
+        form.AddField("response_format", "verbose_json");
+
+        using (UnityWebRequest request = UnityWebRequest.Post(url, form))
+        {
+            request.SetRequestHeader("Authorization", $"Bearer {apiKey}");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string response = request.downloadHandler.text;
+                JObject json = JObject.Parse(response);
+                string transcription = json["text"].Value<string>();
+                Debug.Log($"Transcription: {transcription}");
+                onTranscriptionReceived?.Invoke(transcription);
+            }
+            else
+            {
+                Debug.LogError($"Whisper API error: {request.error}");
+                onTranscriptionReceived?.Invoke(null);
+            }
+        }
+    }
+
+    IEnumerator SendTextToChatCompletions(string questionText, System.Action<string> onAnswerReceived)
+    {
+        string url = "https://api.openai.com/v1/chat/completions";
+        string apiKey = openAiApiKey;
+
+        var payload = new
+        {
+            model = "gpt-4o",
+            messages = new[]
+            {
+                new { role= "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN"},
+                new { role= "system", content = "Trả lời người dùng ngắn gọn 1,2 câu"},
+                new { role = "user", content = questionText }
+            },
+            temperature = 0.7
+        };
+
+        //string jsonPayload = JsonUtility.ToJson(payload);
+        string jsonPayload = JsonConvert.SerializeObject(payload);
+        Debug.Log("jsonPayload: " + jsonPayload);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", $"Bearer {apiKey}");
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string response = request.downloadHandler.text;
+                JObject json = JObject.Parse(response);
+                string answer = json["choices"][0]["message"]["content"].Value<string>();
+                Debug.Log($"Answer: {answer}");
+                onAnswerReceived?.Invoke(answer);
+            }
+            else
+            {
+                Debug.LogError($"Chat Completions API error: {request.error}");
+                onAnswerReceived?.Invoke(null);
+            }
+        }
+    }
+
     // Nhận dữ liệu âm thanh từ Java
     public void OnAudioDataReceived(string base64Audio)
     {
-        // UIManager.Instance.connectionTxt.text = base64Audio;
-
-        // Debug.Log("nhận dữ liệu từ code java");
+        Debug.Log($"Received base64 string: {base64Audio}");
+        Debug.Log($"Base64 string length: {base64Audio.Length}");
         // Gửi dữ liệu âm thanh qua WebSocket
         if (ws != null && ws.State == WebSocketState.Open)
         {
@@ -1067,44 +1318,44 @@ public class RecordAudio : MonoBehaviour
             catch (Exception e)
             {
                 Debug.LogError($"Failed to send audio data: {e.Message}");
-                ReconnectWebSocket();
+                //ConnectWebSocket();
             }
         }
         else
         {
             Debug.LogWarning("WebSocket is not open, cannot send audio data");
         }
+    }
 
-        // Cập nhật UI (tạm thời hiển thị base64Audio)
-        //if (UIManager.Instance != null)
-        //{
-        //    UIManager.Instance.connectionTxt.text = "Sent 100ms audio as base64";
-        //}
-    }
-    private async void ReconnectWebSocket()
-    {
-        if (ws != null)
-        {
-            await ws.Close();
-        }
-        await Task.Delay(2000); // Đợi 2 giây trước khi reconnect
-        WebSocketHandler(webSocketUrl);
-    }
+
     private void HandleWebSocketMessage(string message)
     {
         try
         {
             // Giả định message là JSON, sử dụng SimpleJSON hoặc Newtonsoft.Json để parse 
-            JObject data = JObject.Parse(response);
+            JObject data = JObject.Parse(message);
 
-            string type = data["type"].ToString(); 
-
+            string type = data["type"].ToString();
             switch (type)
             {
                 case "wake_word_detected":
                     isWakeWordDetected = true;
                     status = "I am hearing ...";
                     Debug.Log("Wake word detected!");
+                    
+                    // Thông báo cho Java plugin về việc phát hiện wake word
+                    if (audioPlugin != null)
+                    {
+                        audioPlugin.Call("notifyWakeWordDetected");
+                        Debug.Log("Notified Java plugin about wake word detection");
+                    }
+                    else
+                    {
+                        Debug.LogError("audioPlugin is null, cannot notify about wake word");
+                    }
+                    
+                    // Đợi một khoảng thời gian để cho phép service xử lý và mở app nếu cần
+                    StartCoroutine(StartRecordingAfterDelay());
                     break;
 
                 case "speech_started":
@@ -1140,7 +1391,7 @@ public class RecordAudio : MonoBehaviour
                     isSpeaking = false;
                     status = "Listening for wake word nè...";
                     // Reset transcript và response sau 5 giây
-                    Invoke(nameof(ResetTranscriptAndResponse), 5f);
+                    //Invoke(nameof(ResetTranscriptAndResponse), 5f);
                     break;
 
                 case "error":
@@ -1166,14 +1417,24 @@ public class RecordAudio : MonoBehaviour
 
     private void UpdateUI()
     {
-        // Cập nhật UI (tương tự code TypeScript)
         if (UIManager.Instance != null)
         {
             UIManager.Instance.connectionTxt.text = status;
-            // Cập nhật các UI element khác nếu cần (ví dụ: audioLevel, transcript, response)
             transcriptTxt.text = transcript;
             responseTxt.text = response;
         }
+    }
+    public void StartAudioService()
+    {
+        StartCoroutine(RecordQuestion());
+    }
+
+    private IEnumerator StartRecordingAfterDelay()
+    {
+        // Đợi để ứng dụng có thời gian mở lên
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("Starting to record question after delay");
+        StartCoroutine(RecordQuestion());
     }
 }
 
