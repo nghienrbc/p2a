@@ -41,6 +41,7 @@ public class MyakuController : MonoBehaviour
     public void MyakuListen()
     {
         animator.SetTrigger("listen");
+        UIManager.Instance.connectionTxt.text = "I'm hearing!";
     }
     public void MyakuThinking()
     {
@@ -53,6 +54,12 @@ public class MyakuController : MonoBehaviour
         animator.SetBool("answer", true);
         
         UIManager.Instance.connectionTxt.text = "OK! Here is my answer";
+    }
+    public void MyakuStopAnswer()
+    { 
+        animator.SetBool("answer", false);
+
+        UIManager.Instance.connectionTxt.text = "Ask more questions please!";
     }
     public void MyakuCountForShootPhoto()
     {
