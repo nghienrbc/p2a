@@ -234,20 +234,6 @@ public class RecordAudio : MonoBehaviour
         Resources.UnloadUnusedAssets();
     }
 
-    //private async Task ProcessQueue()
-    //{
-    //    while (isProcessing)
-    //    {
-    //        if (processingQueue.Count > 0)
-    //        {
-    //            var sentence = processingQueue.Dequeue();
-    //            Debug.Log("sentence: " + sentence);
-    //            await ProcessTTS(sentence);
-    //        }
-    //        await Task.Delay(100); // Small delay to prevent busy waiting
-    //    }
-    //}
-     
     // Tạo và quản lý quy trình xử lý âm thanh hoàn chỉnh
     IEnumerator RecordQuestion()
     {
@@ -451,8 +437,6 @@ public class RecordAudio : MonoBehaviour
             }
         }
 
-        // Chuẩn bị giao diện
-        //myakuController.MyakuAnswer();
 
         // Gọi API TextToSpeech
         var settings = voiceSettings["default"];
@@ -560,6 +544,10 @@ public class RecordAudio : MonoBehaviour
             );
             audioClip.SetData(audioFloatArray, 0);
 
+
+            // Chuẩn bị giao diện
+            myakuController.MyakuAnswer();
+
             // Phát audio
             audioSource.clip = audioClip;
             audioSource.Play();
@@ -577,213 +565,6 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    private async Task ProcessTTS(string sentence)
-    {
-        try
-        {
-            // Bắt đầu stream audio
-            myakuController.MyakuAnswer();
-            await StreamAudioFromText(sentence);
-            // Bắt đầu phát audio
-
-            UIManager.Instance.connectionTxt.text = "Bắt đầu phát audio";
-            StartCoroutine(PlayStreamAudio());
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"TTS processing error: {e.Message}");
-        }
-    }
-
-    private async Task StreamAudioFromText(string text, string voiceStyle = "default")
-    {
-        var settings = voiceSettings[voiceStyle];
-        isFirstChunk = true;
-        audioBuffer.Clear();
-
-        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Bắt đầu stream audio cho text: {text}");
-        float startTime = Time.realtimeSinceStartup;
-
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAiApiKey}");
-
-            var requestData = new
-            {
-                model = settings.model,
-                voice = settings.voice,
-                input = text,
-                response_format = "wav",
-                speed = 1.0f
-            };
-
-            var jsonContent = new StringContent(
-                JsonConvert.SerializeObject(requestData),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            using (var response = await client.PostAsync(
-                "https://api.openai.com/v1/audio/speech",
-                jsonContent))
-            {
-                response.EnsureSuccessStatusCode();
-                Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Nhận response từ API sau {(Time.realtimeSinceStartup - startTime):F2} giây");
-
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                {
-                    byte[] buffer = new byte[CHUNK_SIZE];
-                    int bytesRead;
-                    int chunkCount = 0;
-
-                    // Đọc WAV header (44 bytes đầu tiên)
-                    byte[] wavHeader = new byte[44];
-                    await stream.ReadAsync(wavHeader, 0, 44);
-                    audioBuffer.AddRange(wavHeader);
-                    Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Đã đọc WAV header");
-
-                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                    {
-                        chunkCount++;
-                        byte[] chunk = new byte[bytesRead];
-                        Array.Copy(buffer, chunk, bytesRead);
-                        audioBuffer.AddRange(chunk);
-
-                        // Khi buffer đủ lớn, xử lý thành audio clip
-                        if (audioBuffer.Count >= CHUNK_SIZE * 2)
-                        {
-                            Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Xử lý chunk #{chunkCount}, kích thước: {audioBuffer.Count} bytes");
-                            await ProcessAudioChunk(audioBuffer.ToArray());
-                            audioBuffer.Clear();
-                            audioBuffer.AddRange(wavHeader);
-                        }
-                    }
-
-                    // Xử lý bytes còn lại trong buffer
-                    if (audioBuffer.Count > 44)
-                    {
-                        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Xử lý chunk cuối cùng, kích thước: {audioBuffer.Count} bytes");
-                        await ProcessAudioChunk(audioBuffer.ToArray());
-                    }
-
-                    Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Hoàn thành stream, tổng số chunk: {chunkCount}");
-                }
-            }
-        }
-    }
-
-    private async Task ProcessAudioChunk(byte[] wavData)
-    {
-        try
-        {
-            float chunkStartTime = Time.realtimeSinceStartup;
-
-            // Bỏ qua WAV header nếu không phải chunk đầu tiên
-            int startIndex = isFirstChunk ? 44 : 44;
-            int dataLength = wavData.Length - startIndex;
-
-            // Chuyển đổi WAV data thành float array
-            float[] audioFloatArray = new float[dataLength / 2];
-            for (int i = 0; i < audioFloatArray.Length; i++)
-            {
-                short sample = BitConverter.ToInt16(wavData, startIndex + i * 2);
-                audioFloatArray[i] = sample / 32768f;
-            }
-
-            // Tạo AudioClip
-            AudioClip audioClip = AudioClip.Create(
-                "StreamChunk",
-                audioFloatArray.Length,
-                1, // mono
-                SAMPLE_RATE,
-                false
-            );
-            audioClip.SetData(audioFloatArray, 0);
-
-            float processingTime = Time.realtimeSinceStartup - chunkStartTime;
-            Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Chunk xử lý xong sau {processingTime:F3}s, độ dài audio: {audioClip.length:F2}s");
-
-            // Thêm vào queue để phát
-            lock (audioClipQueue)
-            {
-                audioClipQueue.Enqueue(audioClip);
-                Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Đã thêm chunk vào queue, số lượng trong queue: {audioClipQueue.Count}");
-            }
-
-            isFirstChunk = false;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[{DateTime.Now:HH:mm:ss.fff}] Error processing audio chunk: {e.Message}");
-        }
-    }
-
-    private IEnumerator PlayStreamAudio()
-    {
-        isPlayingStreamAudio = true;
-        AudioClip currentClip = null;
-        int playedChunks = 0;
-
-        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Bắt đầu phát stream audio");
-
-        while (isPlayingStreamAudio)
-        {
-            // Nếu không đang phát audio
-            if (!audioSource.isPlaying)
-            {
-                // Lấy clip tiếp theo từ queue nếu có
-                lock (audioClipQueue)
-                {
-                    if (audioClipQueue.Count > 0)
-                    {
-                        currentClip = audioClipQueue.Dequeue();
-                        playedChunks++;
-                        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Phát chunk #{playedChunks}, độ dài: {currentClip.length:F2}s, còn lại trong queue: {audioClipQueue.Count}");
-                    }
-                }
-
-                if (currentClip != null)
-                {
-                    audioSource.clip = currentClip;
-                    audioSource.Play();
-
-                    // Đợi cho đến khi phát xong clip hiện tại
-                    yield return new WaitForSeconds(currentClip.length);
-
-                    // Giải phóng clip đã phát
-                    Destroy(currentClip);
-                    currentClip = null;
-                }
-                else
-                {
-                    // Kiểm tra xem còn đang nhận stream không
-                    if (audioClipQueue.Count == 0)
-                    {
-                        yield return new WaitForSeconds(0.1f);
-                    }
-                }
-            }
-            yield return null;
-        }
-
-        Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] Kết thúc phát stream audio, tổng số chunk đã phát: {playedChunks}");
-        myakuController.MyakuStopAnswer();
-        // Cleanup khi kết thúc
-        if (currentClip != null)
-        {
-            Destroy(currentClip);
-        }
-
-        lock (audioClipQueue)
-        {
-            while (audioClipQueue.Count > 0)
-            {
-                var clip = audioClipQueue.Dequeue();
-                Destroy(clip);
-            }
-        }
-    }
-
     float CalculateVolume(float[] data)
     {
         float sum = 0f;
@@ -793,36 +574,7 @@ public class RecordAudio : MonoBehaviour
         }
         return Mathf.Sqrt(sum / data.Length);
     }
-
-    byte[] ConvertAudioToBytes(float[] data, int sampleRate)
-    {
-        short[] shortData = new short[data.Length];
-        for (int i = 0; i < data.Length; i++)
-        {
-            shortData[i] = (short)(data[i] * short.MaxValue);
-        }
-
-        byte[] byteData = new byte[shortData.Length * 2];
-        Buffer.BlockCopy(shortData, 0, byteData, 0, byteData.Length);
-        return byteData;
-    }
-
-    private void ResetTranscriptAndResponse()
-    {
-        transcript = "";
-        response = "";
-        UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-        if (UIManager.Instance != null)
-        {
-            UIManager.Instance.connectionTxt.text = status;
-            transcriptTxt.text = transcript;
-            responseTxt.text = response;
-        }
-    }
+    
 
     public void StartAudioService()
     {
@@ -863,7 +615,6 @@ public class RecordAudio : MonoBehaviour
         StartCoroutine(StartRecordingAfterDelay());
         myakuController.MyakuListen();
     }
-
 
     private void OnApplicationQuit()
     {

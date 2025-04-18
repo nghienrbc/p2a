@@ -57,7 +57,7 @@ public class MyakuController : MonoBehaviour
     }
     public void MyakuStopAnswer()
     { 
-        animator.SetBool("answer", false);
+        animator.SetBool("answer", false); 
 
         UIManager.Instance.connectionTxt.text = "Ask more questions please!";
     }
