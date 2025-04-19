@@ -11,7 +11,7 @@ public class HomeBtn : BaseToogleButton
             Debug.Log("Home button click");
             UIManager.Instance.BtnStopCameraClick();
             UIManager.Instance.functionName = "home";
-            UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
+            UIManager.Instance.connectionTxt.text = "Say 'Hey, DT' or tap the record button on the screen then ask me some questions.";
             //
             UIManager.Instance.ShowHidePanel(UIManager.Instance.locationPanel, MyGame.Enums.ShowHide.Hide, 0.5f);
             UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, true, 3000);

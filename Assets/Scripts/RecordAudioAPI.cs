@@ -288,7 +288,7 @@ public class RecordAudioAPI: MonoBehaviour
     private void OnAudioFinished()
     {
         Debug.Log("Audio finished playing!"); 
-        UIManager.Instance.connectionTxt.text = "Tap the record button on the screen or press the button on Myaku to ask me some question.";
+        UIManager.Instance.connectionTxt.text = "Say 'Hey, DT' or tap the record button on the screen then ask me some questions.";
         myakuController.animator.SetBool("answer", false);
         audioSource.clip = null;
         Resources.UnloadUnusedAssets();
