@@ -50,6 +50,7 @@ public class MyakuController : MonoBehaviour
     }
     public void MyakuAnswer()
     {
+        Debug.Log("begin answer");
         animator.SetBool("thinking", false);
         animator.SetBool("answer", true);
         

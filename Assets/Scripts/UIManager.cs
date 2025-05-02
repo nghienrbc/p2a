@@ -601,12 +601,12 @@ public class UIManager : MonoBehaviour
     } 
     public void BtnStartRecordClick()
     {
-        //recorder.StartRecording();
+        recorder.StartRecording();
     }
 
     public void BtnStopRecordClick()
     { 
-        //recorder.StopRecording();
+        recorder.StopRecording();
     }
 
     public void BtnPlayRecordClick()
