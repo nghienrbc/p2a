@@ -2,25 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using NAudio.Wave;
-using System.Threading;
-using System.Threading.Tasks;
-using NativeWebSocket;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TMPro;
-using UnityEngine.Android;
 using System.Text.RegularExpressions;
-using System.Linq;
 using UnityEngine.Networking;
-using Newtonsoft.Json;
-using System.Text;
-
-using Google.Cloud.TextToSpeech.V1;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
+using UnityEngine.Android;
 
 public class RecordAudio : MonoBehaviour
 {
@@ -28,57 +22,144 @@ public class RecordAudio : MonoBehaviour
     public TMP_Text responseTxt;
     public MyakuController myakuController;
 
-    private string webSocketUrl = "ws://157.10.52.193:8000/ws/audio-chat/186462d7-3150-4b47-93e8-a349db63b307/null/f836ce6c-5910-47b7-8931-d3a11b65c8e5";
+    [SerializeField] private AudioSource audioSource;
     private string conversationId = "";
     private AudioClip recordedClip;
-    [SerializeField] AudioSource audioSource;
     private float startTime;
     private float recordingLength;
 
     public UnityEvent onAudioFinished;
-    private float beginQuestionTime;
     private float endAnswerTime;
-    private Coroutine audioCoroutine;
-    private List<byte> audioDataBuffer = new List<byte>();
-    private Queue<List<byte>> audioBuffersQueue = new Queue<List<byte>>();
-    private bool isReceivingAudio = false;
-    private bool isPlayingAudio = false;
-    private Queue<Action> mainThreadActions = new Queue<Action>();
-    private bool isBeginPlay = false;
-    private bool isWebSocketOpen = false;
-    private bool isAnswering = false;
-    private bool isEnableMic = false;
-    private bool isEnableRecieveAudioChunkMessage = false;
-    private AndroidJavaObject audioPlugin;
-    private bool isRunning = false;
-    private bool isListeningContinuously = true;
-    private AudioClip questionClip;
     private StreamBuffer streamBuffer;
-    private Queue<string> processingQueue;
     private string openAiApiKey = "";
     private string groqKey = "";
-    private Dictionary<string, (string model, string voice)> voiceSettings;
-    private bool isProcessing;
-    private bool isActive;
-    private float pingInterval = 10f;
-    private float lastPingTime = 0f;
-    public bool isWakeWordDetected = false;
-    public bool isSpeaking = false;
-    public string status = "Initializing...";
-    public float audioLevel = 0f;
-    public bool isConnected = false;
-    public string transcript = "";
-    public string response = "";
+    private string googleApiKey = "";
+    private string preferredLanguage = "en-US"; // Ngôn ngữ mặc định là tiếng Anh
     private List<(int index, AudioClip clip)> audioClips = new List<(int, AudioClip)>();
-    private bool isPlayingStreamAudio = false;
-    private const int CHUNK_SIZE = 8192;
     private const int SAMPLE_RATE = 24000;
-    private List<byte> audioBuffer = new List<byte>();
-    private bool isFirstChunk = true;
+    private bool isEnableMic = false;
 
     // Lịch sử chat
     private List<(string question, string answer)> chatHistory = new List<(string, string)>();
     private const float SESSION_TIMEOUT = 60f; // 1 phút
+
+    // Danh sách ngôn ngữ được Google Cloud TTS hỗ trợ
+    private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
+    {
+        { "af-ZA", "Afrikaans (South Africa)" },
+        { "ar-XA", "Arabic" },
+        { "bn-IN", "Bengali (India)" },
+        { "bg-BG", "Bulgarian (Bulgaria)" },
+        { "ca-ES", "Catalan (Spain)" },
+        { "zh-CN", "Chinese (Mandarin/China)" },
+        { "zh-TW", "Chinese (Mandarin/Taiwan)" },
+        { "hr-HR", "Croatian (Croatia)" },
+        { "cs-CZ", "Czech (Czech Republic)" },
+        { "da-DK", "Danish (Denmark)" },
+        { "nl-NL", "Dutch (Netherlands)" },
+        { "en-AU", "English (Australia)" },
+        { "en-IN", "English (India)" },
+        { "en-GB", "English (UK)" },
+        { "en-US", "English (US)" },
+        { "fi-FI", "Finnish (Finland)" },
+        { "fr-FR", "French (France)" },
+        { "fr-CA", "French (Canada)" },
+        { "de-DE", "German (Germany)" },
+        { "el-GR", "Greek (Greece)" },
+        { "gu-IN", "Gujarati (India)" },
+        { "he-IL", "Hebrew (Israel)" },
+        { "hi-IN", "Hindi (India)" },
+        { "hu-HU", "Hungarian (Hungary)" },
+        { "id-ID", "Indonesian (Indonesia)" },
+        { "it-IT", "Italian (Italy)" },
+        { "ja-JP", "Japanese (Japan)" },
+        { "kn-IN", "Kannada (India)" },
+        { "ko-KR", "Korean (South Korea)" },
+        { "lv-LV", "Latvian (Latvia)" },
+        { "lt-LT", "Lithuanian (Lithuania)" },
+        { "ms-MY", "Malay (Malaysia)" },
+        { "ml-IN", "Malayalam (India)" },
+        { "mr-IN", "Marathi (India)" },
+        { "nb-NO", "Norwegian (Norway)" },
+        { "pl-PL", "Polish (Poland)" },
+        { "pt-BR", "Portuguese (Brazil)" },
+        { "pt-PT", "Portuguese (Portugal)" },
+        { "pa-IN", "Punjabi (India)" },
+        { "ro-RO", "Romanian (Romania)" },
+        { "ru-RU", "Russian (Russia)" },
+        { "sr-RS", "Serbian (Serbia)" },
+        { "sk-SK", "Slovak (Slovakia)" },
+        { "sl-SI", "Slovenian (Slovenia)" },
+        { "es-ES", "Spanish (Spain)" },
+        { "es-US", "Spanish (US)" },
+        { "sw-TZ", "Swahili (Tanzania)" },
+        { "sv-SE", "Swedish (Sweden)" },
+        { "ta-IN", "Tamil (India)" },
+        { "te-IN", "Telugu (India)" },
+        { "th-TH", "Thai (Thailand)" },
+        { "tr-TR", "Turkish (Turkey)" },
+        { "uk-UA", "Ukrainian (Ukraine)" },
+        { "vi-VN", "Vietnamese (Vietnam)" }
+    };
+
+    // Ánh xạ ngôn ngữ với giọng nói chuẩn
+    private static readonly Dictionary<string, string> VoiceMappings = new Dictionary<string, string>
+    {
+        { "af-ZA", "af-ZA-Standard-A" },
+        { "ar-XA", "ar-XA-Standard-A" },
+        { "bn-IN", "bn-IN-Standard-A" },
+        { "bg-BG", "bg-BG-Standard-A" },
+        { "ca-ES", "ca-ES-Standard-A" },
+        { "zh-CN", "cmn-CN-Standard-A" },
+        { "zh-TW", "cmn-TW-Standard-A" },
+        { "hr-HR", "hr-HR-Standard-A" },
+        { "cs-CZ", "cs-CZ-Standard-A" },
+        { "da-DK", "da-DK-Standard-A" },
+        { "nl-NL", "nl-NL-Standard-A" },
+        { "en-AU", "en-AU-Standard-A" },
+        { "en-IN", "en-IN-Standard-A" },
+        { "en-GB", "en-GB-Standard-A" },
+        { "en-US", "en-US-Standard-A" },
+        { "fi-FI", "fi-FI-Standard-A" },
+        { "fr-FR", "fr-FR-Standard-A" },
+        { "fr-CA", "fr-CA-Standard-A" },
+        { "de-DE", "de-DE-Standard-A" },
+        { "el-GR", "el-GR-Standard-A" },
+        { "gu-IN", "gu-IN-Standard-A" },
+        { "he-IL", "he-IL-Standard-A" },
+        { "hi-IN", "hi-IN-Standard-A" },
+        { "hu-HU", "hu-HU-Standard-A" },
+        { "id-ID", "id-ID-Standard-A" },
+        { "it-IT", "it-IT-Standard-A" },
+        { "ja-JP", "ja-JP-Standard-A" },
+        { "kn-IN", "kn-IN-Standard-A" },
+        { "ko-KR", "ko-KR-Standard-A" },
+        { "lv-LV", "lv-LV-Standard-A" },
+        { "lt-LT", "lt-LT-Standard-A" },
+        { "ms-MY", "ms-MY-Standard-A" },
+        { "ml-IN", "ml-IN-Standard-A" },
+        { "mr-IN", "mr-IN-Standard-A" },
+        { "nb-NO", "nb-NO-Standard-A" },
+        { "pl-PL", "pl-PL-Standard-A" },
+        { "pt-BR", "pt-BR-Standard-A" },
+        { "pt-PT", "pt-PT-Standard-A" },
+        { "pa-IN", "pa-IN-Standard-A" },
+        { "ro-RO", "ro-RO-Standard-A" },
+        { "ru-RU", "ru-RU-Standard-A" },
+        { "sr-RS", "sr-RS-Standard-A" },
+        { "sk-SK", "sk-SK-Standard-A" },
+        { "sl-SI", "sl-SI-Standard-A" },
+        { "es-ES", "es-ES-Standard-A" },
+        { "es-US", "es-US-Standard-A" },
+        { "sw-TZ", "sw-TZ-Standard-A" },
+        { "sv-SE", "sv-SE-Standard-A" },
+        { "ta-IN", "ta-IN-Standard-A" },
+        { "te-IN", "te-IN-Standard-A" },
+        { "th-TH", "th-TH-Standard-A" },
+        { "tr-TR", "tr-TR-Standard-A" },
+        { "uk-UA", "uk-UA-Standard-A" },
+        { "vi-VN", "vi-VN-Standard-A" }
+    };
 
     private class StreamBuffer
     {
@@ -122,85 +203,58 @@ public class RecordAudio : MonoBehaviour
     {
         public string openAIApiKey;
         public string groqKey;
+        public string googleApiKey;
+        public string preferredLanguage; // Ngôn ngữ TTS mặc định
     }
 
     private void Awake()
     {
         streamBuffer = new StreamBuffer();
-        processingQueue = new Queue<string>();
 
-        voiceSettings = new Dictionary<string, (string model, string voice)>
-        {
-            { "default", ("tts-1", "alloy") },
-            { "casual", ("tts-1", "nova") },
-            { "formal", ("tts-1", "onyx") }
-        };
-
+        // Load config
         TextAsset configFile = Resources.Load<TextAsset>("config");
         if (configFile != null)
         {
             Config config = JsonUtility.FromJson<Config>(configFile.text);
             openAiApiKey = config.openAIApiKey;
             groqKey = config.groqKey;
+            googleApiKey = config.googleApiKey;
+            preferredLanguage = string.IsNullOrEmpty(config.preferredLanguage) ? "en-US" : config.preferredLanguage;
+
+            // Kiểm tra ngôn ngữ được chọn có hợp lệ không
+            if (!SupportedLanguages.ContainsKey(preferredLanguage))
+            {
+                Debug.LogWarning($"Ngôn ngữ mặc định {preferredLanguage} không được hỗ trợ. Chuyển về en-US.");
+                preferredLanguage = "en-US";
+            }
         }
         else
         {
             Debug.LogError("Không tìm thấy file Config.json trong Resources!");
         }
+
+        // Kiểm tra quyền microphone trên Android
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+            {
+                Permission.RequestUserPermission(Permission.Microphone);
+            }
+        }
     }
 
     private void Start()
     {
-#if UNITY_ANDROID
-        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-        {
-            Permission.RequestUserPermission(Permission.Microphone);
-        }
-        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
-        {
-            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
-        }
-
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
-        }
-
-        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
-        if (audioPlugin != null)
-        {
-            audioPlugin.Call("startRecordingFromUnity");
-        }
-#endif
         onAudioFinished.AddListener(OnAudioFinished);
         conversationId = Guid.NewGuid().ToString();
     }
 
     private void Update()
     {
-        while (mainThreadActions.Count > 0)
-        {
-            Action action = null;
-            lock (mainThreadActions)
-            {
-                action = mainThreadActions.Dequeue();
-            }
-            action?.Invoke();
-        }
-
         // Kiểm tra timeout session
         if (endAnswerTime > 0 && Time.time - endAnswerTime > SESSION_TIMEOUT)
         {
             ResetSession();
-        }
-    }
-
-    private void EnqueueMainThreadAction(Action action)
-    {
-        lock (mainThreadActions)
-        {
-            mainThreadActions.Enqueue(action);
         }
     }
 
@@ -210,7 +264,7 @@ public class RecordAudio : MonoBehaviour
         myakuController.MyakuStopAnswer();
         audioSource.clip = null;
         Resources.UnloadUnusedAssets();
-        endAnswerTime = Time.time; // Cập nhật thời gian kết thúc trả lời
+        endAnswerTime = Time.time;
     }
 
     private void ResetSession()
@@ -234,10 +288,7 @@ public class RecordAudio : MonoBehaviour
 
     private IEnumerator RecordQuestion()
     {
-        // Kiểm tra và reset session nếu cần
         yield return StartCoroutine(ResetSessionIfNeeded());
-
-        // Giai đoạn 1: Ghi âm câu hỏi
         bool recordingSuccess = false;
         yield return StartCoroutine(RecordAudioPhase((success) => recordingSuccess = success));
 
@@ -249,7 +300,6 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        // Giai đoạn 2: Chuyển đổi âm thanh thành văn bản
         string transcription = null;
         yield return StartCoroutine(TranscribeAudioPhase((trans) => transcription = trans));
 
@@ -264,7 +314,6 @@ public class RecordAudio : MonoBehaviour
         Debug.Log($"Văn bản nhận dạng được: {transcription}");
         UIManager.Instance.connectionTxt.text = transcription;
 
-        // Giai đoạn 3: Tạo câu trả lời
         string answer = null;
         yield return StartCoroutine(GenerateAnswerPhase(transcription, (ans) => answer = ans));
 
@@ -276,7 +325,6 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        // Lưu câu hỏi và câu trả lời vào lịch sử
         lock (chatHistory)
         {
             chatHistory.Add((transcription, answer));
@@ -285,13 +333,11 @@ public class RecordAudio : MonoBehaviour
         Debug.Log($"Câu trả lời: {answer}");
         UIManager.Instance.connectionTxt.text = answer;
 
-        // Giai đoạn 4 & 5: Chuyển đổi văn bản thành giọng nói và phát âm thanh
         yield return StartCoroutine(TextToSpeechAndPlayPhase(answer));
 
         Debug.Log("Hoàn tất quy trình RecordQuestion");
     }
 
-    // Giai đoạn 0: Kiểm tra và reset session nếu cần
     private IEnumerator ResetSessionIfNeeded()
     {
         if (endAnswerTime > 0 && Time.time - endAnswerTime > SESSION_TIMEOUT)
@@ -301,10 +347,26 @@ public class RecordAudio : MonoBehaviour
         yield return null;
     }
 
-    // Giai đoạn 1: Ghi âm câu hỏi
     private IEnumerator RecordAudioPhase(Action<bool> onComplete)
     {
-        Debug.Log("Bắt đầu ghi âm câu hỏi sau khi phát hiện wake word");
+        Debug.Log("Bắt đầu ghi âm câu hỏi");
+
+        // Kiểm tra quyền microphone trên Android
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+            {
+                Permission.RequestUserPermission(Permission.Microphone);
+                yield return new WaitUntil(() => Permission.HasUserAuthorizedPermission(Permission.Microphone));
+                if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+                {
+                    Debug.LogError("Quyền microphone bị từ chối trên Android");
+                    UIManager.Instance.connectionTxt.text = "Vui lòng cấp quyền microphone để ghi âm";
+                    onComplete?.Invoke(false);
+                    yield break;
+                }
+            }
+        }
 
         float limitTimeRecord = PlayerPrefs.GetFloat("LimitTimeRecord", 10f);
         Debug.Log($"Thời gian giới hạn thu âm: {limitTimeRecord} giây");
@@ -314,12 +376,12 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(device))
         {
             Debug.LogError("Không tìm thấy thiết bị microphone");
+            UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
             onComplete?.Invoke(false);
             yield break;
         }
 
-        questionClip = Microphone.Start(device, false, (int)limitTimeRecord, sampleRate);
-
+        AudioClip questionClip = Microphone.Start(device, false, (int)limitTimeRecord, sampleRate);
         float startTime = Time.time;
         float lastSoundTime = startTime;
         bool hasSoundDetected = false;
@@ -336,7 +398,6 @@ public class RecordAudio : MonoBehaviour
             {
                 questionClip.GetData(data, position - data.Length);
                 float volume = CalculateVolume(data);
-                audioLevel = volume;
 
                 if (volume > silenceThreshold)
                 {
@@ -373,6 +434,7 @@ public class RecordAudio : MonoBehaviour
         if (!hasSoundDetected || questionClip == null)
         {
             Debug.Log("Không phát hiện tiếng nói, hủy xử lý");
+            UIManager.Instance.connectionTxt.text = "Không phát hiện tiếng nói, vui lòng thử lại";
             onComplete?.Invoke(false);
             yield break;
         }
@@ -395,14 +457,11 @@ public class RecordAudio : MonoBehaviour
         onComplete?.Invoke(true);
     }
 
-    // Giai đoạn 2: Chuyển đổi âm thanh thành văn bản
     private IEnumerator TranscribeAudioPhase(Action<string> onComplete)
     {
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
         byte[] audioBytes = File.ReadAllBytes(audioFilePath);
         Debug.Log($"Đã đọc file audio: {audioFilePath}, kích thước: {audioBytes.Length} bytes");
-
-        Debug.Log("Bắt đầu chuyển đổi audio thành văn bản");
 
         WWWForm form = new WWWForm();
         form.AddBinaryData("file", audioBytes, "audio.wav", "audio/wav");
@@ -433,16 +492,15 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    // Giai đoạn 3: Tạo câu trả lời
     private IEnumerator GenerateAnswerPhase(string transcription, Action<string> onComplete)
     {
         Debug.Log("Gửi câu hỏi và nhận câu trả lời");
 
         var messages = new List<object>
-    {
-        new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN" },
-        new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." }
-    };
+        {
+            new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN" },
+            new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." }
+        };
 
         lock (chatHistory)
         {
@@ -463,7 +521,7 @@ public class RecordAudio : MonoBehaviour
         };
 
         string jsonPayload = JsonConvert.SerializeObject(payload);
-        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
 
         using (UnityWebRequest request = new UnityWebRequest("https://api.openai.com/v1/chat/completions", "POST"))
         {
@@ -491,199 +549,74 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    // Giai đoạn 4 & 5: Chuyển đổi văn bản thành giọng nói và phát âm thanh
     private IEnumerator TextToSpeechAndPlayPhase(string answer)
     {
-        // Ghi lại thời gian bắt đầu xử lý TTS
         float startTime = Time.realtimeSinceStartup;
         Debug.Log($"Bắt đầu xử lý Text-to-Speech tại: {startTime}");
 
-        Debug.Log("Chuyển đổi câu trả lời thành giọng nói và phát liên tục");
+        if (string.IsNullOrEmpty(googleApiKey))
+        {
+            Debug.LogError("Google API Key chưa được thiết lập trong config.json");
+            UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy Google API Key";
+            yield break;
+        }
 
-        // Chia câu trả lời thành các câu
         List<string> sentences = streamBuffer.AddText(answer + " ");
         if (streamBuffer.GetCurrentBuffer().Length > 0)
-    {
+        {
             sentences.Add(streamBuffer.GetCurrentBuffer());
             streamBuffer.ClearBuffer();
         }
 
-        // Xử lý và phát audio liên tục
-        List<Coroutine> ttsCoroutines = new List<Coroutine>();
-        int completedTtsCount = 0;
-        int currentPlayIndex = 0; 
+        // Hiển thị ngôn ngữ được phát hiện cho câu đầu tiên
+        if (sentences.Count > 0)
+        {
+            string detectedLanguage = DetectLanguage(sentences[0]);
+            string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
+            Debug.Log($"Ngôn ngữ được phát hiện: {languageName} ({detectedLanguage})");
+            UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
+        }
+
+        int currentPlayIndex = 0;
         bool isFirstSentencePlayed = false;
 
-        // Hàm xử lý TTS cho một câu
-        IEnumerator ProcessTTSSentence(int index, string sentence)
-        {
-            if (string.IsNullOrWhiteSpace(sentence))
-            {
-                lock (audioClips)
-                {
-                    completedTtsCount++;
-                    Debug.Log($"Câu {index} trắng, tăng completedTtsCount: {completedTtsCount}/{sentences.Count}");
-                }
-                yield break;
-            }
+        audioClips.Clear();
+        List<Coroutine> runningCoroutines = new List<Coroutine>();
 
-            Debug.Log($"Chuyển đổi câu {index}: {sentence}");
-
-            var settings = voiceSettings["default"];
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAiApiKey}");
-                client.Timeout = TimeSpan.FromSeconds(30);
-
-                var ttsRequestData = new
-                {
-                    model = settings.model,
-                    voice = settings.voice,
-                    input = sentence,
-                    response_format = "wav",
-                    speed = 1.0f
-                };
-
-                var jsonContent = new StringContent(
-                    JsonConvert.SerializeObject(ttsRequestData),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-
-                Debug.Log($"Gửi request TTS cho câu {index}: {sentence}");
-                var ttsTask = client.PostAsync("https://api.openai.com/v1/audio/speech", jsonContent);
-                while (!ttsTask.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                HttpResponseMessage ttsResponse;
-                try
-                {
-                    if (ttsTask.IsFaulted)
-                    {
-                        throw ttsTask.Exception;
-                    }
-                    ttsResponse = ttsTask.Result;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Lỗi khi gửi request TTS cho câu {index}: {e.Message}");
-                    lock (audioClips)
-                    {
-                        completedTtsCount++;
-                        Debug.Log($"Câu {index} lỗi, tăng completedTtsCount: {completedTtsCount}/{sentences.Count}");
-                    }
-                    yield break;
-                }
-
-                if (!ttsResponse.IsSuccessStatusCode)
-                {
-                    Debug.LogError($"Lỗi TTS API cho câu {index}: {ttsResponse.StatusCode}, {ttsResponse.ReasonPhrase}");
-                    lock (audioClips)
-                    {
-                        completedTtsCount++;
-                        Debug.Log($"Câu {index} lỗi, tăng completedTtsCount: {completedTtsCount}/{sentences.Count}");
-                    }
-                    yield break;
-                }
-
-                Debug.Log($"Nhận response TTS thành công cho câu {index}");
-                var streamTask = ttsResponse.Content.ReadAsStreamAsync();
-                while (!streamTask.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                if (streamTask.IsFaulted)
-                {
-                    Debug.LogError($"Lỗi khi đọc stream cho câu {index}: {streamTask.Exception}");
-                    lock (audioClips)
-                    {
-                        completedTtsCount++;
-                        Debug.Log($"Câu {index} lỗi, tăng completedTtsCount: {completedTtsCount}/{sentences.Count}");
-                    }
-                    yield break;
-                }
-
-                var stream = streamTask.Result;
-                MemoryStream memoryStream = new MemoryStream();
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    memoryStream.Write(buffer, 0, bytesRead);
-                    yield return null;
-                }
-
-                byte[] wavData = memoryStream.ToArray();
-                int headerSize = 44;
-                float[] audioFloatArray = new float[(wavData.Length - headerSize) / 2];
-                for (int i = 0; i < audioFloatArray.Length; i++)
-                {
-                    short sample = BitConverter.ToInt16(wavData, headerSize + i * 2);
-                    audioFloatArray[i] = sample / 32768f;
-                }
-
-                AudioClip audioClip = AudioClip.Create(
-                    $"TTS_Sentence_{index}",
-                    audioFloatArray.Length,
-                    1,
-                    SAMPLE_RATE,
-                    false
-                );
-                audioClip.SetData(audioFloatArray, 0);
-
-                lock (audioClips)
-                {
-                    audioClips.Add((index, audioClip));
-                    completedTtsCount++;
-                    Debug.Log($"Đã thêm AudioClip cho câu {index}. completedTtsCount: {completedTtsCount}/{sentences.Count}");
-                }
-            }
-        }
-
-        // Bắt đầu xử lý TTS cho tất cả các câu
-        lock (audioClips)
-        {
-            audioClips.Clear();
-        }
         for (int i = 0; i < sentences.Count; i++)
         {
-            ttsCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i])));
+            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i])));
         }
 
-        // Phát audio liên tục theo thứ tự
         while (currentPlayIndex < sentences.Count)
         {
-            AudioClip nextClip = null;
+            AudioClip clipToPlay = null;
             lock (audioClips)
             {
-                var clipItem = audioClips.FirstOrDefault(x => x.index == currentPlayIndex);
-                if (clipItem.clip != null)
+                var found = audioClips.FirstOrDefault(x => x.index == currentPlayIndex);
+                if (found.clip != null)
                 {
-                    nextClip = clipItem.clip;
-                    audioClips.Remove(clipItem);
+                    clipToPlay = found.clip;
+                    audioClips.Remove(found);
                 }
             }
 
-            if (nextClip != null && !audioSource.isPlaying)
+            if (clipToPlay != null && !audioSource.isPlaying)
             {
                 Debug.Log($"Phát câu {currentPlayIndex}: {sentences[currentPlayIndex]}");
                 myakuController.MyakuAnswer();
-                audioSource.clip = nextClip;
+                audioSource.clip = clipToPlay;
                 audioSource.Play();
-                // Ghi lại thời gian khi phát câu đầu tiên
-                if (currentPlayIndex == 0 && !isFirstSentencePlayed)
+
+                if (!isFirstSentencePlayed)
                 {
-                    float endTime = Time.realtimeSinceStartup;
-                    float waitTime = endTime - startTime;
-                    Debug.Log($"Thời gian chờ từ bắt đầu TTS đến phát câu đầu tiên: {waitTime:F2} giây");
+                    float waitTime = Time.realtimeSinceStartup - startTime;
+                    Debug.Log($"Thời gian chờ phát câu đầu tiên: {waitTime:F2} giây");
                     isFirstSentencePlayed = true;
                 }
 
                 yield return new WaitUntil(() => !audioSource.isPlaying);
-                Destroy(nextClip);
+                Destroy(clipToPlay);
                 currentPlayIndex++;
             }
             else
@@ -692,7 +625,6 @@ public class RecordAudio : MonoBehaviour
             }
         }
 
-        // Dọn dẹp
         lock (audioClips)
         {
             foreach (var (_, clip) in audioClips)
@@ -702,7 +634,7 @@ public class RecordAudio : MonoBehaviour
             audioClips.Clear();
         }
 
-        foreach (var coroutine in ttsCoroutines)
+        foreach (var coroutine in runningCoroutines)
         {
             if (coroutine != null)
             {
@@ -710,11 +642,175 @@ public class RecordAudio : MonoBehaviour
             }
         }
 
-        Debug.Log("Hoàn tất phát tất cả câu, gọi MyakuStopAnswer");
+        Debug.Log("Phát xong tất cả câu.");
         myakuController.MyakuStopAnswer();
         onAudioFinished.Invoke();
     }
-    float CalculateVolume(float[] data)
+
+    private IEnumerator ProcessTTSSentence(int index, string sentence)
+    {
+        if (string.IsNullOrWhiteSpace(sentence))
+        {
+            lock (audioClips)
+            {
+                Debug.Log($"Câu {index} trắng, bỏ qua.");
+            }
+            yield break;
+        }
+
+        Debug.Log($"Đang xử lý câu {index}: {sentence}");
+
+        string languageCode = DetectLanguage(sentence);
+        if (!SupportedLanguages.ContainsKey(languageCode))
+        {
+            Debug.LogWarning($"Ngôn ngữ {languageCode} không được hỗ trợ. Chuyển về {preferredLanguage}.");
+            languageCode = preferredLanguage;
+        }
+
+        Task<HttpResponseMessage> ttsTask = SynthesizeSpeechAsync(sentence, languageCode);
+        yield return StartCoroutine(RunTask(ttsTask));
+
+        HttpResponseMessage response = ttsTask.Result;
+        if (!response.IsSuccessStatusCode)
+        {
+            string errorContent = response.Content.ReadAsStringAsync().Result;
+            Debug.LogError($"Lỗi TTS API cho câu {index}: {response.StatusCode}, {errorContent}");
+            lock (audioClips)
+            {
+                Debug.Log($"Câu {index} lỗi.");
+            }
+            yield break;
+        }
+
+        string responseJson = response.Content.ReadAsStringAsync().Result;
+        var jsonResponse = JObject.Parse(responseJson);
+        string audioContent = jsonResponse["audioContent"].Value<string>();
+        byte[] wavData = Convert.FromBase64String(audioContent);
+
+        int headerSize = 44;
+        if (wavData.Length < headerSize)
+        {
+            Debug.LogError($"Dữ liệu WAV không hợp lệ cho câu {index}");
+            lock (audioClips)
+            {
+                Debug.Log($"Câu {index} lỗi.");
+            }
+            yield break;
+        }
+
+        float[] samples = new float[(wavData.Length - headerSize) / 2];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            short sample = BitConverter.ToInt16(wavData, headerSize + i * 2);
+            samples[i] = sample / 32768f;
+        }
+
+        AudioClip clip = AudioClip.Create($"TTS_{index}", samples.Length, 1, SAMPLE_RATE, false);
+        clip.SetData(samples, 0);
+
+        lock (audioClips)
+        {
+            audioClips.Add((index, clip));
+            Debug.Log($"Đã thêm clip {index}");
+        }
+    }
+
+    private async Task<HttpResponseMessage> SynthesizeSpeechAsync(string sentence, string languageCode)
+    {
+        using (var client = new HttpClient())
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+
+            // Lấy giọng nói chuẩn từ VoiceMappings
+            string voiceName = VoiceMappings.ContainsKey(languageCode) ? VoiceMappings[languageCode] : $"{languageCode}-Standard-A";
+            var voiceConfig = new { languageCode = languageCode, name = voiceName, ssmlGender = "NEUTRAL" };
+
+            var ttsRequestData = new
+            {
+                input = new { ssml = $"<speak>{sentence}</speak>" },
+                voice = voiceConfig,
+                audioConfig = new { audioEncoding = "LINEAR16", sampleRateHertz = SAMPLE_RATE, speakingRate = 1.0 }
+            };
+
+            var jsonContent = new StringContent(
+                JsonConvert.SerializeObject(ttsRequestData),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            string url = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={googleApiKey}";
+            Debug.Log($"Gửi request TTS: {url}, Voice: {voiceName}");
+            return await client.PostAsync(url, jsonContent);
+        }
+    }
+
+    private string DetectLanguage(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return preferredLanguage;
+
+        // Kiểm tra ký tự đặc trưng cho các ngôn ngữ
+        string vietnameseChars = "àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
+        string thaiChars = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
+        string bengaliChars = "অআইঈউঊঋঌএঐওঔকখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ";
+
+        // Phát hiện ngôn ngữ dựa trên ký tự
+        if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN"; // Tiếng Việt
+        if (text.Any(c => thaiChars.Contains(c))) return "th-TH"; // Tiếng Thái
+        if (text.Any(c => bengaliChars.Contains(c))) return "bn-IN"; // Tiếng Bengali
+        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN"; // Tiếng Trung
+        if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR"; // Tiếng Hàn
+        if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP"; // Tiếng Nhật
+        if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU"; // Tiếng Nga
+        if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN"; // Tiếng Hindi
+        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA"; // Tiếng Ả Rập
+        if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL"; // Tiếng Hebrew
+        if (text.Any(c => c >= 0x0B80 && c <= 0x0BFF)) return "ta-IN"; // Tiếng Tamil
+        if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN"; // Tiếng Telugu
+        if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN"; // Tiếng Gujarati
+        if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR"; // Tiếng Hy Lạp
+
+        // Kiểm tra lịch sử chat
+        lock (chatHistory)
+        {
+            var lastQuestion = chatHistory.LastOrDefault().question;
+            if (!string.IsNullOrEmpty(lastQuestion))
+            {
+                if (lastQuestion.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
+                if (lastQuestion.Any(c => thaiChars.Contains(c))) return "th-TH";
+                if (lastQuestion.Any(c => bengaliChars.Contains(c))) return "bn-IN";
+                if (lastQuestion.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
+                if (lastQuestion.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
+                if (lastQuestion.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
+                if (lastQuestion.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
+                if (lastQuestion.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
+                if (lastQuestion.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
+                if (lastQuestion.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
+                if (lastQuestion.Any(c => c >= 0x0B80 && c <= 0x0BFF)) return "ta-IN";
+                if (lastQuestion.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
+                if (lastQuestion.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
+                if (lastQuestion.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
+            }
+        }
+
+        // Mặc định sử dụng ngôn ngữ được cấu hình
+        return preferredLanguage;
+    }
+
+    private IEnumerator RunTask(Task task)
+    {
+        while (!task.IsCompleted)
+        {
+            yield return null;
+        }
+
+        if (task.IsFaulted)
+        {
+            Debug.LogError($"Task failed: {task.Exception}");
+            throw task.Exception;
+        }
+    }
+
+    private float CalculateVolume(float[] data)
     {
         float sum = 0f;
         foreach (float sample in data)
@@ -729,62 +825,23 @@ public class RecordAudio : MonoBehaviour
         StartCoroutine(RecordQuestion());
     }
 
-    private IEnumerator StartRecordingAfterDelay()
-    {
-        yield return new WaitForSeconds(0.5f);
-        Debug.Log("Starting to record question after delay");
-        StartCoroutine(RecordQuestion());
-    }
-
-    public void OnAppOpened(string openReason)
-    {
-        Debug.Log("Ứng dụng được mở với lý do: " + openReason);
-        if (openReason == "wake_word")
-        {
-            Debug.Log("Ứng dụng tự động mở do phát hiện wake word");
-            StartCoroutine(StartRecordingAfterDelay());
-            myakuController.MyakuListen();
-        }
-        else if (openReason == "user")
-        {
-            Debug.Log("Ứng dụng được người dùng mở từ launcher");
-        }
-    }
-
-    public void OnWakeWordDetected()
-    {
-        Debug.Log("Ứng dụng tự động mở do phát hiện wake word khi ở foreground");
-        StartCoroutine(StartRecordingAfterDelay());
-        myakuController.MyakuListen();
-    }
-
-    private void OnApplicationQuit()
-    {
-    }
-
     public void StartRecording()
     {
-        if (isEnableMic == false)
+        if (!isEnableMic)
         {
-            if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-            {
-                // Nếu chưa cấp quyền, yêu cầu cấp quyền
-                UIManager.Instance.connectionTxt.text = "chưa cấp quyền sử dụng micro device";
-                Debug.Log("chưa cấp quyền sử dụng micro device");
-                Permission.RequestUserPermission(Permission.Microphone);
-                return;
-            }
-            else
-            {
-                isEnableMic = true; 
-            }
+            isEnableMic = true;
         }
 
-        isEnableRecieveAudioChunkMessage = false;
+        // Kiểm tra quyền microphone trước khi ghi âm
+        if (Application.platform == RuntimePlatform.Android && !Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+            UIManager.Instance.connectionTxt.text = "Vui lòng cấp quyền microphone để ghi âm";
+            return;
+        }
 
         UIManager.Instance.recordingIndicator.gameObject.SetActive(true);
         UIManager.Instance.connectionTxt.text = "";
-
         myakuController.MyakuListen();
         StopAllCoroutines();
 
@@ -796,30 +853,18 @@ public class RecordAudio : MonoBehaviour
         audioSource.clip = null;
         Resources.UnloadUnusedAssets();
 
-        mainThreadActions.Clear();
-
-        audioDataBuffer.Clear();
-        // Tùy chọn, giải phóng bộ nhớ nếu cần
-        while (audioBuffersQueue.Count > 0)
-        {
-            var buffer = audioBuffersQueue.Dequeue();
-            buffer.Clear(); // Xóa dữ liệu trong list (nếu cần)
-        }
-        audioBuffersQueue.Clear(); // Xóa tất cả các phần tử trong queue  
-        responseTxt.text = "";
-
-
-        string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : ""; 
+        string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         if (device != "")
         {
             int sampleRate = 44100;
-            int lengthSec = 45; // ghi âm tối đa 45s
+            int lengthSec = 45;
             recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
             startTime = Time.realtimeSinceStartup;
         }
         else
         {
             Debug.LogError("No microphone device found!");
+            UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
         }
     }
 
@@ -827,7 +872,6 @@ public class RecordAudio : MonoBehaviour
     {
         if (!isEnableMic) return;
 
-        UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
         UIManager.Instance.recordingIndicator.gameObject.SetActive(false);
         Microphone.End(null);
         recordingLength = Time.realtimeSinceStartup - startTime;
@@ -835,12 +879,10 @@ public class RecordAudio : MonoBehaviour
         if (recordedClip != null)
         {
             recordedClip = TrimClip(recordedClip, recordingLength);
-
-            //byte[] audioBytes = ConvertAudioClipToByteArray(recordedClip); 
             string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
             WavUtility.Save(audioFilePath, recordedClip);
             myakuController.MyakuThinking();
-            // Bắt đầu xử lý các giai đoạn: chuyển đổi âm thanh, tạo câu trả lời, và phát âm thanh
+            UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
             StartCoroutine(ProcessAudioResponse(audioFilePath));
         }
         else
@@ -849,10 +891,9 @@ public class RecordAudio : MonoBehaviour
             myakuController.MyakuHello();
         }
     }
-    // Coroutine xử lý các giai đoạn sau khi ghi âm
+
     private IEnumerator ProcessAudioResponse(string audioFilePath)
     {
-        // Giai đoạn 2: Chuyển đổi âm thanh thành văn bản
         string transcription = null;
         yield return StartCoroutine(TranscribeAudioPhase((trans) => transcription = trans));
 
@@ -867,7 +908,6 @@ public class RecordAudio : MonoBehaviour
         Debug.Log($"Văn bản nhận dạng được: {transcription}");
         UIManager.Instance.connectionTxt.text = transcription;
 
-        // Giai đoạn 3: Tạo câu trả lời
         string answer = null;
         yield return StartCoroutine(GenerateAnswerPhase(transcription, (ans) => answer = ans));
 
@@ -879,7 +919,6 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        // Lưu câu hỏi và câu trả lời vào lịch sử
         lock (chatHistory)
         {
             chatHistory.Add((transcription, answer));
@@ -888,22 +927,20 @@ public class RecordAudio : MonoBehaviour
         Debug.Log($"Câu trả lời: {answer}");
         UIManager.Instance.connectionTxt.text = answer;
 
-        // Giai đoạn 4 & 5: Chuyển đổi văn bản thành giọng nói và phát âm thanh
         yield return StartCoroutine(TextToSpeechAndPlayPhase(answer));
 
         Debug.Log("Hoàn tất xử lý âm thanh và trả lời");
     }
+
     private AudioClip TrimClip(AudioClip clip, float length)
     {
         int samples = (int)(clip.frequency * length);
         float[] data = new float[samples];
         clip.GetData(data, 0);
 
-        AudioClip trimmedClip = AudioClip.Create(clip.name, samples,
-            clip.channels, clip.frequency, false);
+        AudioClip trimmedClip = AudioClip.Create(clip.name, samples, clip.channels, clip.frequency, false);
         trimmedClip.SetData(data, 0);
 
         return trimmedClip;
-    } 
-
+    }
 }
