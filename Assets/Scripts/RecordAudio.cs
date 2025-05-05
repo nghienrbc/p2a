@@ -21,6 +21,7 @@ public class RecordAudio : MonoBehaviour
     public TMP_Text transcriptTxt;
     public TMP_Text responseTxt;
     public MyakuController myakuController;
+    private AndroidJavaObject audioPlugin;
 
     [SerializeField] private AudioSource audioSource;
     private string conversationId = "";
@@ -245,8 +246,31 @@ public class RecordAudio : MonoBehaviour
 
     private void Start()
     {
+#if UNITY_ANDROID
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
+        {
+            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
+        }
+
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
+        }
+
+        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
+        if (audioPlugin != null)
+        {
+            audioPlugin.Call("startRecordingFromUnity");
+        }
+#endif
         onAudioFinished.AddListener(OnAudioFinished);
         conversationId = Guid.NewGuid().ToString();
+
     }
 
     private void Update()
@@ -825,6 +849,33 @@ public class RecordAudio : MonoBehaviour
         StartCoroutine(RecordQuestion());
     }
 
+    private IEnumerator StartRecordingAfterDelay()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("Starting to record question after delay");
+        StartCoroutine(RecordQuestion());
+    }
+
+    public void OnAppOpened(string openReason)
+    {
+        Debug.Log("Ứng dụng được mở với lý do: " + openReason);
+        if (openReason == "wake_word")
+        {
+            Debug.Log("Ứng dụng tự động mở do phát hiện wake word");
+            StartCoroutine(StartRecordingAfterDelay());
+            myakuController.MyakuListen();
+        }
+        else if (openReason == "user")
+        {
+            Debug.Log("Ứng dụng được người dùng mở từ launcher");
+        }
+    }
+    public void OnWakeWordDetected()
+    {
+        Debug.Log("Ứng dụng tự động mở do phát hiện wake word khi ở foreground");
+        StartCoroutine(StartRecordingAfterDelay());
+        myakuController.MyakuListen();
+    }
     public void StartRecording()
     {
         if (!isEnableMic)
