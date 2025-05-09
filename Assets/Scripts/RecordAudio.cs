@@ -24,7 +24,7 @@ public class RecordAudio : MonoBehaviour
     private AndroidJavaObject audioPlugin;
 
     [SerializeField] private AudioSource audioSource;
-    private string conversationId = "";
+
     private AudioClip recordedClip;
     private float startTime;
     private float recordingLength;
@@ -42,12 +42,12 @@ public class RecordAudio : MonoBehaviour
 
     // Lịch sử chat
     private List<(string question, string answer)> chatHistory = new List<(string, string)>();
-    private const float SESSION_TIMEOUT = 60f; // 1 phút
+    private const float SESSION_TIMEOUT = 15f; // 1 phút
 
     // Danh sách ngôn ngữ được Google Cloud TTS hỗ trợ
     private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
     {
-        { "af-ZA", "Afrikaans (South Africa)" },
+       { "af-ZA", "Afrikaans (South Africa)" },
         { "ar-XA", "Arabic" },
         { "bn-IN", "Bengali (India)" },
         { "bg-BG", "Bulgarian (Bulgaria)" },
@@ -61,6 +61,7 @@ public class RecordAudio : MonoBehaviour
         { "en-AU", "English (Australia)" },
         { "en-IN", "English (India)" },
         { "en-GB", "English (UK)" },
+        { "en-SG", "English (Singapore)" },
         { "en-US", "English (US)" },
         { "fi-FI", "Finnish (Finland)" },
         { "fr-FR", "French (France)" },
@@ -75,13 +76,17 @@ public class RecordAudio : MonoBehaviour
         { "it-IT", "Italian (Italy)" },
         { "ja-JP", "Japanese (Japan)" },
         { "kn-IN", "Kannada (India)" },
+        { "km-KH", "Khmer (Cambodia)" },
         { "ko-KR", "Korean (South Korea)" },
+        { "lo-LA", "Lao (Laos)" },
         { "lv-LV", "Latvian (Latvia)" },
         { "lt-LT", "Lithuanian (Lithuania)" },
         { "ms-MY", "Malay (Malaysia)" },
         { "ml-IN", "Malayalam (India)" },
         { "mr-IN", "Marathi (India)" },
+        { "my-MM", "Myanmar (Burmese)" },
         { "nb-NO", "Norwegian (Norway)" },
+        { "fil-PH", "Filipino (Philippines)" },
         { "pl-PL", "Polish (Poland)" },
         { "pt-BR", "Portuguese (Brazil)" },
         { "pt-PT", "Portuguese (Portugal)" },
@@ -120,6 +125,7 @@ public class RecordAudio : MonoBehaviour
         { "en-AU", "en-AU-Standard-A" },
         { "en-IN", "en-IN-Standard-A" },
         { "en-GB", "en-GB-Standard-A" },
+        { "en-SG", "en-SG-Standard-A" },
         { "en-US", "en-US-Standard-A" },
         { "fi-FI", "fi-FI-Standard-A" },
         { "fr-FR", "fr-FR-Standard-A" },
@@ -134,13 +140,17 @@ public class RecordAudio : MonoBehaviour
         { "it-IT", "it-IT-Standard-A" },
         { "ja-JP", "ja-JP-Standard-A" },
         { "kn-IN", "kn-IN-Standard-A" },
+        { "km-KH", "km-KH-Standard-A" },
         { "ko-KR", "ko-KR-Standard-A" },
+        { "lo-LA", "lo-LA-Standard-A" },
         { "lv-LV", "lv-LV-Standard-A" },
         { "lt-LT", "lt-LT-Standard-A" },
         { "ms-MY", "ms-MY-Standard-A" },
         { "ml-IN", "ml-IN-Standard-A" },
         { "mr-IN", "mr-IN-Standard-A" },
+        { "my-MM", "my-MM-Standard-A" },
         { "nb-NO", "nb-NO-Standard-A" },
+        { "fil-PH", "fil-PH-Standard-A" },
         { "pl-PL", "pl-PL-Standard-A" },
         { "pt-BR", "pt-BR-Standard-A" },
         { "pt-PT", "pt-PT-Standard-A" },
@@ -246,6 +256,9 @@ public class RecordAudio : MonoBehaviour
 
     private void Start()
     {
+        onAudioFinished.AddListener(OnAudioFinished);
+
+
 #if UNITY_ANDROID
         if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
         {
@@ -268,8 +281,7 @@ public class RecordAudio : MonoBehaviour
             audioPlugin.Call("startRecordingFromUnity");
         }
 #endif
-        onAudioFinished.AddListener(OnAudioFinished);
-        conversationId = Guid.NewGuid().ToString();
+        
 
     }
 
@@ -306,7 +318,7 @@ public class RecordAudio : MonoBehaviour
             }
             audioClips.Clear();
         }
-        conversationId = Guid.NewGuid().ToString();
+
         endAnswerTime = 0;
     }
 
@@ -366,6 +378,7 @@ public class RecordAudio : MonoBehaviour
     {
         if (endAnswerTime > 0 && Time.time - endAnswerTime > SESSION_TIMEOUT)
         {
+            Debug.Log("Session timeout exceeded. Resetting session.");
             ResetSession();
         }
         yield return null;
@@ -395,7 +408,7 @@ public class RecordAudio : MonoBehaviour
         float limitTimeRecord = PlayerPrefs.GetFloat("LimitTimeRecord", 10f);
         Debug.Log($"Thời gian giới hạn thu âm: {limitTimeRecord} giây");
 
-        int sampleRate = 16000;
+        int sampleRate = 44100;
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         if (string.IsNullOrEmpty(device))
         {
@@ -409,7 +422,7 @@ public class RecordAudio : MonoBehaviour
         float startTime = Time.time;
         float lastSoundTime = startTime;
         bool hasSoundDetected = false;
-        float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.35f);
+        float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.05f);
         Debug.Log($"Ngưỡng âm lượng thu âm: {silenceThreshold}");
 
         yield return new WaitForSeconds(0.5f);
@@ -473,7 +486,7 @@ public class RecordAudio : MonoBehaviour
         if (!File.Exists(audioFilePath))
         {
             Debug.LogError("Không tìm thấy file audio: " + audioFilePath);
-            onComplete?.Invoke(false);
+            onComplete?.Invoke(false); 
             yield break;
         }
 
@@ -563,6 +576,7 @@ public class RecordAudio : MonoBehaviour
                 JObject json = JObject.Parse(response);
                 string answer = json["choices"][0]["message"]["content"].Value<string>();
                 Debug.Log($"Nhận câu trả lời thành công: {answer}");
+                UIManager.Instance.connectionTxt.text = $"Câu trả lời {answer}";
                 onComplete?.Invoke(answer);
             }
             else
@@ -598,7 +612,7 @@ public class RecordAudio : MonoBehaviour
             string detectedLanguage = DetectLanguage(sentences[0]);
             string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
             Debug.Log($"Ngôn ngữ được phát hiện: {languageName} ({detectedLanguage})");
-            UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
+            //UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
         }
 
         int currentPlayIndex = 0;
@@ -747,7 +761,7 @@ public class RecordAudio : MonoBehaviour
 
             // Lấy giọng nói chuẩn từ VoiceMappings
             string voiceName = VoiceMappings.ContainsKey(languageCode) ? VoiceMappings[languageCode] : $"{languageCode}-Standard-A";
-            var voiceConfig = new { languageCode = languageCode, name = voiceName, ssmlGender = "NEUTRAL" };
+            var voiceConfig = new { languageCode = languageCode, name = voiceName, ssmlGender = "MALE" };
 
             var ttsRequestData = new
             {
@@ -766,29 +780,45 @@ public class RecordAudio : MonoBehaviour
             Debug.Log($"Gửi request TTS: {url}, Voice: {voiceName}");
             return await client.PostAsync(url, jsonContent);
         }
-    }
+    } 
+        
+  
 
     private string DetectLanguage(string text)
     {
         if (string.IsNullOrEmpty(text)) return preferredLanguage;
 
-        // Kiểm tra ký tự đặc trưng cho các ngôn ngữ
+        // Ký tự đặc trưng cho các ngôn ngữ Đông Nam Á
         string vietnameseChars = "àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
         string thaiChars = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
-        string bengaliChars = "অআইঈউঊঋঌএঐওঔকখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ";
+        string khmerChars = "កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអ";
+        string laoChars = "ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອຮ";
+        string myanmarChars = "ကခဂဃငစဆဇဈဉညဋဌဍဎဏတထဒဓနပဖဗဘမယရလဝသဟဠအ";
+        string tagalogChars = "ñÑ"; // Tagalog sử dụng Latin, thêm ký tự đặc trưng như ñ
 
-        // Phát hiện ngôn ngữ dựa trên ký tự
+        // Phát hiện ngôn ngữ Đông Nam Á
         if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN"; // Tiếng Việt
         if (text.Any(c => thaiChars.Contains(c))) return "th-TH"; // Tiếng Thái
-        if (text.Any(c => bengaliChars.Contains(c))) return "bn-IN"; // Tiếng Bengali
-        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN"; // Tiếng Trung
+        if (text.Any(c => khmerChars.Contains(c))) return "km-KH"; // Tiếng Khmer
+        if (text.Any(c => laoChars.Contains(c))) return "lo-LA"; // Tiếng Lào
+        if (text.Any(c => myanmarChars.Contains(c))) return "my-MM"; // Tiếng Myanmar
+        if (text.Any(c => tagalogChars.Contains(c))) return "fil-PH"; // Tiếng Tagalog
+
+        // Phát hiện các ngôn ngữ Đông Nam Á khác dựa trên Unicode
+        if (text.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH"; // Tiếng Khmer
+        if (text.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA"; // Tiếng Lào
+        if (text.Any(c => c >= 0x1000 && c <= 0x109F)) return "my-MM"; // Tiếng Myanmar
+        if (text.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN"; // Tiếng Tamil (Singapore)
+        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN"; // Tiếng Trung (Singapore)
+        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY"; // Tiếng Malay (Latin, nhưng kiểm tra thêm)
+
+        // Phát hiện các ngôn ngữ khác
         if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR"; // Tiếng Hàn
         if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP"; // Tiếng Nhật
         if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU"; // Tiếng Nga
         if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN"; // Tiếng Hindi
         if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA"; // Tiếng Ả Rập
         if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL"; // Tiếng Hebrew
-        if (text.Any(c => c >= 0x0B80 && c <= 0x0BFF)) return "ta-IN"; // Tiếng Tamil
         if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN"; // Tiếng Telugu
         if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN"; // Tiếng Gujarati
         if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR"; // Tiếng Hy Lạp
@@ -801,20 +831,30 @@ public class RecordAudio : MonoBehaviour
             {
                 if (lastQuestion.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
                 if (lastQuestion.Any(c => thaiChars.Contains(c))) return "th-TH";
-                if (lastQuestion.Any(c => bengaliChars.Contains(c))) return "bn-IN";
+                if (lastQuestion.Any(c => khmerChars.Contains(c))) return "km-KH";
+                if (lastQuestion.Any(c => laoChars.Contains(c))) return "lo-LA";
+                if (lastQuestion.Any(c => myanmarChars.Contains(c))) return "my-MM";
+                if (lastQuestion.Any(c => tagalogChars.Contains(c))) return "fil-PH";
+                if (lastQuestion.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH";
+                if (lastQuestion.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA";
+                if (lastQuestion.Any(c => c >= 0x1000 && c <= 0x109F)) return "my-MM";
+                if (lastQuestion.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN";
                 if (lastQuestion.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
+                if (lastQuestion.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY";
                 if (lastQuestion.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
                 if (lastQuestion.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
                 if (lastQuestion.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
                 if (lastQuestion.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
                 if (lastQuestion.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
                 if (lastQuestion.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
-                if (lastQuestion.Any(c => c >= 0x0B80 && c <= 0x0BFF)) return "ta-IN";
                 if (lastQuestion.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
                 if (lastQuestion.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
                 if (lastQuestion.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
             }
         }
+
+        // Fallback cho Đông Timor (không có Tetum)
+        if (text.Contains("Timor") || text.Contains("Tetum")) return "id-ID"; // Tiếng Indonesia là ngôn ngữ giao tiếp phổ biến ở Đông Timor
 
         // Mặc định sử dụng ngôn ngữ được cấu hình
         return preferredLanguage;
@@ -882,7 +922,7 @@ public class RecordAudio : MonoBehaviour
         {
             isEnableMic = true;
         }
-
+        StartCoroutine(ResetSessionIfNeeded());
         // Kiểm tra quyền microphone trước khi ghi âm
         if (Application.platform == RuntimePlatform.Android && !Permission.HasUserAuthorizedPermission(Permission.Microphone))
         {
