@@ -14,10 +14,12 @@ using Newtonsoft.Json.Linq;
 using TMPro;
 using System.Text.RegularExpressions;
 using UnityEngine.Networking;
-using UnityEngine.Android;
+using UnityEngine.Android; 
 
 public class RecordAudio : MonoBehaviour
 {
+    // Add this at the top of the class:
+    public static RecordAudio Instance { get; private set; }
     public TMP_Text transcriptTxt;
     public TMP_Text responseTxt;
     public MyakuController myakuController;
@@ -42,7 +44,7 @@ public class RecordAudio : MonoBehaviour
 
     // Lịch sử chat
     private List<(string question, string answer)> chatHistory = new List<(string, string)>();
-    private const float SESSION_TIMEOUT = 15f; // 1 phút
+    private const float SESSION_TIMEOUT = 60f; // 1 phút
 
     // Danh sách ngôn ngữ được Google Cloud TTS hỗ trợ
     private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
@@ -220,6 +222,7 @@ public class RecordAudio : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         streamBuffer = new StreamBuffer();
 
         // Load config
@@ -425,7 +428,7 @@ public class RecordAudio : MonoBehaviour
         float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.05f);
         Debug.Log($"Ngưỡng âm lượng thu âm: {silenceThreshold}");
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.2f);
 
         while (Microphone.IsRecording(device))
         {
@@ -889,12 +892,11 @@ public class RecordAudio : MonoBehaviour
         StartCoroutine(RecordQuestion());
     }
 
-    private IEnumerator StartRecordingAfterDelay()
-    {
-        yield return new WaitForSeconds(0.5f);
-        Debug.Log("Starting to record question after delay");
-        StartCoroutine(RecordQuestion());
-    }
+    //private IEnumerator StartRecordingAfterDelay()
+    //{
+    //    yield return new WaitForSeconds(1.0f);
+    //    Debug.Log("Starting to record question after delay");
+    //}
 
     public void OnAppOpened(string openReason)
     {
@@ -902,8 +904,8 @@ public class RecordAudio : MonoBehaviour
         if (openReason == "wake_word")
         {
             Debug.Log("Ứng dụng tự động mở do phát hiện wake word");
-            StartCoroutine(StartRecordingAfterDelay());
-            myakuController.MyakuListen();
+           // StartCoroutine(StartRecordingAfterDelay());
+            myakuController.MyakuListen(true);
         }
         else if (openReason == "user")
         {
@@ -913,8 +915,8 @@ public class RecordAudio : MonoBehaviour
     public void OnWakeWordDetected()
     {
         Debug.Log("Ứng dụng tự động mở do phát hiện wake word khi ở foreground");
-        StartCoroutine(StartRecordingAfterDelay());
-        myakuController.MyakuListen();
+        //StartCoroutine(StartRecordingAfterDelay());
+        myakuController.MyakuListen(true);
     }
     public void StartRecording()
     {
@@ -933,30 +935,7 @@ public class RecordAudio : MonoBehaviour
 
         UIManager.Instance.recordingIndicator.gameObject.SetActive(true);
         UIManager.Instance.connectionTxt.text = "";
-        myakuController.MyakuListen();
-        StopAllCoroutines();
-
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-            endAnswerTime = Time.time;
-        }
-        audioSource.clip = null;
-        Resources.UnloadUnusedAssets();
-
-        string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
-        if (device != "")
-        {
-            int sampleRate = 44100;
-            int lengthSec = 45;
-            recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
-            startTime = Time.realtimeSinceStartup;
-        }
-        else
-        {
-            Debug.LogError("No microphone device found!");
-            UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
-        }
+        myakuController.MyakuListen(false); 
     }
 
     public void StopRecording()
@@ -1033,5 +1012,43 @@ public class RecordAudio : MonoBehaviour
         trimmedClip.SetData(data, 0);
 
         return trimmedClip;
+    }
+
+    // Add this new method:
+    public void StartRecordingAfterSound(bool fromHeyDT)
+    {
+        Debug.Log("Starting recording after sound played and delay");
+        if (!isEnableMic)
+        {
+            isEnableMic = true;
+        }
+        StopAllCoroutines();
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            endAnswerTime = Time.time;
+        }
+        audioSource.clip = null;
+        Resources.UnloadUnusedAssets();
+        if (fromHeyDT)
+        { 
+            StartCoroutine(RecordQuestion());
+        }
+        else
+        {
+            string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
+            if (device != "")
+            {
+                int sampleRate = 44100;
+                int lengthSec = 45;
+                recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
+                startTime = Time.realtimeSinceStartup;
+            }
+            else
+            {
+                Debug.LogError("No microphone device found!");
+                UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
+            }
+        } 
     }
 }

@@ -210,11 +210,31 @@ public class MyakuController : MonoBehaviour
         animator.SetTrigger("hello");
     }
 
-    public void MyakuListen()
+    public void MyakuListen(bool fromHeyDT)
     {
         animator.SetTrigger("listen");
         UIManager.Instance.connectionTxt.text = "I'm hearing!";
         PlayRandomSound(listeningSounds, "listening");
+        // We need to wait for the audio to finish playing before proceeding
+        StartCoroutine(WaitForAudioAndNotify(fromHeyDT));
+    }
+
+    private IEnumerator WaitForAudioAndNotify(bool fromHeyDT)
+    {
+        // Wait for audio to finish playing
+        while (audioPlayer.isPlaying)
+        {
+            yield return null;
+        }
+
+        // Add additional 1 second delay after audio finishes
+        yield return new WaitForSeconds(1.0f);
+        // Notify that we're ready to record
+        if (RecordAudio.Instance != null)
+        {
+            RecordAudio.Instance.StartRecordingAfterSound(fromHeyDT);
+        }
+
     }
 
     public void MyakuThinking()

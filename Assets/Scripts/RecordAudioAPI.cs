@@ -62,7 +62,7 @@ public class RecordAudioAPI: MonoBehaviour
 
     public void StartRecording()
     {
-        myakuController.MyakuListen();
+        myakuController.MyakuListen(false);
         string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
         if(device != "")
         { 
