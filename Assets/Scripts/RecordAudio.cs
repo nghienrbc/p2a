@@ -25,11 +25,14 @@ public class RecordAudio : MonoBehaviour
     public MyakuController myakuController;
     private AndroidJavaObject audioPlugin;
 
+    public bool enableHeyDT = true;
+
     [SerializeField] private AudioSource audioSource;
 
     private AudioClip recordedClip;
     private float startTime;
     private float recordingLength;
+    private List<Coroutine> runningCoroutines;
 
     public UnityEvent onAudioFinished;
     private float endAnswerTime;
@@ -224,6 +227,7 @@ public class RecordAudio : MonoBehaviour
     {
         Instance = this;
         streamBuffer = new StreamBuffer();
+        runningCoroutines = new List<Coroutine>();
 
         // Load config
         TextAsset configFile = Resources.Load<TextAsset>("config");
@@ -261,7 +265,6 @@ public class RecordAudio : MonoBehaviour
     {
         onAudioFinished.AddListener(OnAudioFinished);
 
-
 #if UNITY_ANDROID
         if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
         {
@@ -282,10 +285,9 @@ public class RecordAudio : MonoBehaviour
         if (audioPlugin != null)
         {
             audioPlugin.Call("startRecordingFromUnity");
+            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
         }
 #endif
-        
-
     }
 
     private void Update()
@@ -323,6 +325,16 @@ public class RecordAudio : MonoBehaviour
         }
 
         endAnswerTime = 0;
+    }
+
+    private IEnumerator ResetSessionIfNeeded()
+    {
+        if (endAnswerTime > 0 && Time.time - endAnswerTime > SESSION_TIMEOUT)
+        {
+            Debug.Log("Session timeout exceeded. Resetting session.");
+            ResetSession();
+        }
+        yield return null;
     }
 
     private IEnumerator RecordQuestion()
@@ -377,16 +389,6 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("Hoàn tất quy trình RecordQuestion");
     }
 
-    private IEnumerator ResetSessionIfNeeded()
-    {
-        if (endAnswerTime > 0 && Time.time - endAnswerTime > SESSION_TIMEOUT)
-        {
-            Debug.Log("Session timeout exceeded. Resetting session.");
-            ResetSession();
-        }
-        yield return null;
-    }
-
     private IEnumerator RecordAudioPhase(Action<bool> onComplete)
     {
         Debug.Log("Bắt đầu ghi âm câu hỏi");
@@ -405,6 +407,12 @@ public class RecordAudio : MonoBehaviour
                     onComplete?.Invoke(false);
                     yield break;
                 }
+            }
+            // Tạm dừng BackgroundAudioPlugin
+            if (audioPlugin != null)
+            {
+                audioPlugin.Call("pauseRecordingFromUnity");
+                yield return new WaitForSeconds(0.5f); // Đợi để giải phóng microphone
             }
         }
 
@@ -425,11 +433,12 @@ public class RecordAudio : MonoBehaviour
         float startTime = Time.time;
         float lastSoundTime = startTime;
         bool hasSoundDetected = false;
-        float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.05f);
+        float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.005f);
         Debug.Log($"Ngưỡng âm lượng thu âm: {silenceThreshold}");
 
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
 
+        float maxvolume = 0f;
         while (Microphone.IsRecording(device))
         {
             float[] data = new float[256];
@@ -438,7 +447,12 @@ public class RecordAudio : MonoBehaviour
             {
                 questionClip.GetData(data, position - data.Length);
                 float volume = CalculateVolume(data);
-
+                UIManager.Instance.connectionTxt.text = $"Âm lượng hiện tại: { volume} ";
+                Debug.Log($"Âm lượng hiện tại: {volume}");
+                if (volume > maxvolume)
+                {
+                    maxvolume = volume;
+                }
                 if (volume > silenceThreshold)
                 {
                     hasSoundDetected = true;
@@ -449,13 +463,19 @@ public class RecordAudio : MonoBehaviour
                 if (!hasSoundDetected && (currentTime - startTime > 5f))
                 {
                     Debug.Log("Không phát hiện tiếng nói trong 5 giây, hủy ghi âm");
+                    UIManager.Instance.volumeTxt.text = $"max volume: { maxvolume} ";
                     Microphone.End(device);
+                    // kết thúc ghi âm, cho phép heyDT
+                    enableHeyDT = true;
                     onComplete?.Invoke(false);
+                    if (audioPlugin != null) audioPlugin.Call("resumeRecordingFromUnity");
                     yield break;
                 }
 
                 if (hasSoundDetected && (currentTime - lastSoundTime > 2f))
                 {
+                    UIManager.Instance.volumeTxt.text = $"max volume: { maxvolume} ";
+                    Debug.Log($"max volume: {maxvolume}");
                     Debug.Log("Phát hiện im lặng 2 giây sau khi có tiếng nói, kết thúc ghi âm");
                     break;
                 }
@@ -475,9 +495,15 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.Log("Không phát hiện tiếng nói, hủy xử lý");
             UIManager.Instance.connectionTxt.text = "Không phát hiện tiếng nói, vui lòng thử lại";
+            // kết thúc ghi âm, cho phép heyDT
+            enableHeyDT = true;
             onComplete?.Invoke(false);
+            if (audioPlugin != null) audioPlugin.Call("resumeRecordingFromUnity");
             yield break;
         }
+
+        // kết thúc ghi âm, cho phép heyDT
+        enableHeyDT = true;
 
         Debug.Log("Kết thúc ghi âm, xử lý câu hỏi");
         UIManager.Instance.connectionTxt.text = "Đang xử lý câu hỏi của bạn...";
@@ -489,12 +515,14 @@ public class RecordAudio : MonoBehaviour
         if (!File.Exists(audioFilePath))
         {
             Debug.LogError("Không tìm thấy file audio: " + audioFilePath);
-            onComplete?.Invoke(false); 
+            onComplete?.Invoke(false);
+            if (audioPlugin != null) audioPlugin.Call("resumeRecordingFromUnity");
             yield break;
         }
 
         Debug.Log($"Đã lưu file audio: {audioFilePath}");
         onComplete?.Invoke(true);
+        if (audioPlugin != null) audioPlugin.Call("resumeRecordingFromUnity");
     }
 
     private IEnumerator TranscribeAudioPhase(Action<string> onComplete)
@@ -576,11 +604,19 @@ public class RecordAudio : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string response = request.downloadHandler.text;
-                JObject json = JObject.Parse(response);
-                string answer = json["choices"][0]["message"]["content"].Value<string>();
-                Debug.Log($"Nhận câu trả lời thành công: {answer}");
-                UIManager.Instance.connectionTxt.text = $"Câu trả lời {answer}";
-                onComplete?.Invoke(answer);
+                try
+                {
+                    JObject json = JObject.Parse(response);
+                    string answer = json["choices"][0]["message"]["content"].Value<string>();
+                    Debug.Log($"Nhận câu trả lời thành công: {answer}");
+                    UIManager.Instance.connectionTxt.text = $"Câu trả lời {answer}";
+                    onComplete?.Invoke(answer);
+                }
+                catch (JsonException e)
+                {
+                    Debug.LogError($"Lỗi phân tích JSON: {e.Message}");
+                    onComplete?.Invoke(null);
+                }
             }
             else
             {
@@ -622,7 +658,6 @@ public class RecordAudio : MonoBehaviour
         bool isFirstSentencePlayed = false;
 
         audioClips.Clear();
-        List<Coroutine> runningCoroutines = new List<Coroutine>();
 
         for (int i = 0; i < sentences.Count; i++)
         {
@@ -682,6 +717,7 @@ public class RecordAudio : MonoBehaviour
                 StopCoroutine(coroutine);
             }
         }
+        runningCoroutines.Clear();
 
         Debug.Log("Phát xong tất cả câu.");
         myakuController.MyakuStopAnswer();
@@ -784,9 +820,7 @@ public class RecordAudio : MonoBehaviour
             return await client.PostAsync(url, jsonContent);
         }
     } 
-        
-  
-
+ 
     private string DetectLanguage(string text)
     {
         if (string.IsNullOrEmpty(text)) return preferredLanguage;
@@ -887,24 +921,20 @@ public class RecordAudio : MonoBehaviour
         return Mathf.Sqrt(sum / data.Length);
     }
 
-    public void StartAudioService()
+    public void StartAudioService() // for testing
     {
-        StartCoroutine(RecordQuestion());
-    }
-
-    //private IEnumerator StartRecordingAfterDelay()
-    //{
-    //    yield return new WaitForSeconds(1.0f);
-    //    Debug.Log("Starting to record question after delay");
-    //}
+        CleanBeforeMakeQuestion();
+        myakuController.MyakuListen(true);
+        // không cho phép gọi hey DT khi chưa hoàn thành xong việc hỏi
+        enableHeyDT = false;
+    }     
 
     public void OnAppOpened(string openReason)
     {
         Debug.Log("Ứng dụng được mở với lý do: " + openReason);
         if (openReason == "wake_word")
         {
-            Debug.Log("Ứng dụng tự động mở do phát hiện wake word");
-           // StartCoroutine(StartRecordingAfterDelay());
+            Debug.Log("Ứng dụng tự động mở do phát hiện wake word"); 
             myakuController.MyakuListen(true);
         }
         else if (openReason == "user")
@@ -912,12 +942,48 @@ public class RecordAudio : MonoBehaviour
             Debug.Log("Ứng dụng được người dùng mở từ launcher");
         }
     }
-    public void OnWakeWordDetected()
+    private void CleanBeforeMakeQuestion()
     {
-        Debug.Log("Ứng dụng tự động mở do phát hiện wake word khi ở foreground");
-        //StartCoroutine(StartRecordingAfterDelay());
-        myakuController.MyakuListen(true);
+        // dừng phát câu trả lời ngay lập tức
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            endAnswerTime = Time.time;
+        }
+        audioSource.clip = null;
+        lock (audioClips)
+        {
+            foreach (var (_, clip) in audioClips)
+            {
+                Destroy(clip);
+            }
+            audioClips.Clear();
+        }
+        foreach (var coroutine in runningCoroutines)
+        {
+            if (coroutine != null)
+            {
+                StopCoroutine(coroutine);
+            }
+        }
+        runningCoroutines.Clear();
+        StopAllCoroutines();
     }
+    public void OnWakeWordDetected()
+    {        
+        Debug.Log("Ứng dụng tự động mở do phát hiện wake word khi ở foreground");
+        CleanBeforeMakeQuestion();
+        Resources.UnloadUnusedAssets();
+        myakuController.MyakuListen(true);
+        // không cho phép gọi hey DT khi chưa hoàn thành xong việc hỏi
+        enableHeyDT = false;
+    }
+
+    public bool GetEnableHeyDT()
+    {
+        return enableHeyDT;
+    }
+
     public void StartRecording()
     {
         if (!isEnableMic)
@@ -935,6 +1001,9 @@ public class RecordAudio : MonoBehaviour
 
         UIManager.Instance.recordingIndicator.gameObject.SetActive(true);
         UIManager.Instance.connectionTxt.text = "";
+
+        CleanBeforeMakeQuestion();
+        // bắt đầu lắng nghe câu hỏi mới
         myakuController.MyakuListen(false); 
     }
 
@@ -1018,24 +1087,18 @@ public class RecordAudio : MonoBehaviour
     public void StartRecordingAfterSound(bool fromHeyDT)
     {
         Debug.Log("Starting recording after sound played and delay");
-        if (!isEnableMic)
-        {
-            isEnableMic = true;
-        }
-        StopAllCoroutines();
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-            endAnswerTime = Time.time;
-        }
-        audioSource.clip = null;
-        Resources.UnloadUnusedAssets();
+        
         if (fromHeyDT)
         { 
             StartCoroutine(RecordQuestion());
         }
         else
         {
+            if (!isEnableMic)
+            {
+                isEnableMic = true;
+            }
+
             string device = Microphone.devices.Length > 0 ? Microphone.devices[0] : "";
             if (device != "")
             {
@@ -1046,9 +1109,22 @@ public class RecordAudio : MonoBehaviour
             }
             else
             {
-                Debug.LogError("No microphone device found!");
+                Debug.Log("No microphone device found!");
                 UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
             }
         } 
+    }
+
+    private void OnDestroy()
+    {
+        StopAllCoroutines();
+        Instance = null;
+        lock (audioClips)
+        {
+            foreach (var (_, clip) in audioClips) Destroy(clip);
+            audioClips.Clear();
+        }
+        lock (chatHistory) chatHistory.Clear();
+        audioPlugin?.Dispose();
     }
 }

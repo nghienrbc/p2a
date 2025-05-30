@@ -212,8 +212,7 @@ public class MyakuController : MonoBehaviour
 
     public void MyakuListen(bool fromHeyDT)
     {
-        animator.SetTrigger("listen");
-        UIManager.Instance.connectionTxt.text = "I'm hearing!";
+        animator.SetTrigger("listen"); 
         PlayRandomSound(listeningSounds, "listening");
         // We need to wait for the audio to finish playing before proceeding
         StartCoroutine(WaitForAudioAndNotify(fromHeyDT));
@@ -226,9 +225,10 @@ public class MyakuController : MonoBehaviour
         {
             yield return null;
         }
+        UIManager.Instance.connectionTxt.text = "I'm hearing! Ask me something!";
 
         // Add additional 1 second delay after audio finishes
-        yield return new WaitForSeconds(1.0f);
+        // yield return new WaitForSeconds(1.0f);
         // Notify that we're ready to record
         if (RecordAudio.Instance != null)
         {
@@ -304,5 +304,17 @@ public class MyakuController : MonoBehaviour
     public bool IsMoving()
     {
         return isMoving;
+    }
+
+    private void OnDestroy()
+    {
+        if (listeningSounds != null)
+        {
+            foreach (var clip in listeningSounds) Destroy(clip);
+        }
+        if (thinkingSounds != null)
+        {
+            foreach (var clip in thinkingSounds) Destroy(clip);
+        }
     }
 }
