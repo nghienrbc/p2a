@@ -7,6 +7,7 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 using BestHTTP;
 using TMPro;
+using Newtonsoft.Json.Linq;
 
 public class TakePhotoAndUpload : MonoBehaviour
 {
@@ -15,8 +16,7 @@ public class TakePhotoAndUpload : MonoBehaviour
     public Image qrCodeImage; // UI Image để hiển thị mã QR
     public Image cameraDisplay; // Tham chiếu tới RawImage trong Canvas
     public Image photoSave; 
-    private WebCamTexture webCamTexture;
-    private string imgurClientID = "b8f7b1442771d95"; // Thay bằng Client ID từ Imgur
+    private WebCamTexture webCamTexture; 
 
     public GameObject imagePrefab;  // Prefab cho mỗi hình ảnh trong ScrollView
     public Transform content;       // Content của ScrollView để chứa các Image
@@ -42,13 +42,13 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     private void Start()
     {
+        shootBtn = GameObject.FindWithTag("shoot").GetComponent<Button>();
+        reshootBtn = GameObject.FindWithTag("reshoot").GetComponent<Button>();
+        downloadBtn = GameObject.FindWithTag("download").GetComponent<Button>();
         DisplayImages(loadedTexture);
         currentImageIndex = 0;
         largeImage.sprite = imageSprites[0];
         largeImage.preserveAspect = true;
-        shootBtn = GameObject.FindWithTag("shoot").GetComponent<Button>();
-        reshootBtn = GameObject.FindWithTag("reshoot").GetComponent<Button>();
-        downloadBtn = GameObject.FindWithTag("download").GetComponent<Button>();
     }
     public void RotateCamera()
     {
@@ -230,24 +230,127 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     public void UploadPhoto()
     {
-
         if (photoSave.sprite != null)
         {
             UIManager.Instance.connectionTxt.text = "I'm uploading photo to server and will get the QR code for download!";
-            shootBtn.interactable = false;
-            reshootBtn.interactable = false;
-            downloadBtn.interactable = false;
-            // Lấy Texture2D từ sprite
+            UpdateButtonStates(false, false, false);
+
             Texture2D photoTexture = SpriteToTexture2D(photoSave.sprite);
             Texture2D frameTexture = SpriteToTexture2D(largeImage.sprite);
             Texture2D mergeTextures = MergeTextures(photoTexture, frameTexture);
-            // Chuyển Texture2D thành PNG
             byte[] imageBytes = mergeTextures.EncodeToPNG();
-            UploadToImgur(imageBytes);
+            Destroy(mergeTextures);
+
+            StartCoroutine(UploadToServer(imageBytes));
         }
         else
         {
-            Debug.LogError("No sprite found in cameraDisplay.");
+            Debug.LogError("No sprite found in photoSave.");
+            UIManager.Instance.connectionTxt.text = "No photo to upload.";
+            UpdateButtonStates(false, true, false);
+        }
+    }
+
+    private IEnumerator UploadToServer(byte[] imageBytes, int retries = 3)
+    {
+        for (int attempt = 0; attempt < retries; attempt++)
+        {
+            string uploadUrl = "http://10.220.19.71:5000/api/v1/file-attachment/upload-file/asian";
+            WWWForm form = new WWWForm();
+            form.AddBinaryData("files", imageBytes, "photo.png", "image/png");
+
+            string viewUrl = null;
+            bool isSuccess = false;
+
+            // Thực hiện yêu cầu mạng
+            using (UnityWebRequest request = UnityWebRequest.Post(uploadUrl, form))
+            {
+                request.timeout = 30;
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    string jsonResponse = request.downloadHandler.text;
+                    Debug.Log($"Server response: {jsonResponse}");
+
+                    // Xử lý JSON trong try-catch riêng
+                    try
+                    {
+                        JObject jsonObj = JObject.Parse(jsonResponse);
+                        int statusCode = jsonObj["statusCode"]?.Value<int>() ?? 0;
+                        JArray dataArray = jsonObj["data"] as JArray;
+                        if (statusCode == 200 && dataArray != null && dataArray.Count > 0)
+                        {
+                            int fileId = dataArray[0]["id"]?.Value<int>() ?? 0;
+                            if (fileId > 0)
+                            {
+                                viewUrl = $"http://10.220.19.71:5000/api/v1/file-attachment/view-file/asian/{fileId}";
+                                isSuccess = true;
+                            }
+                            else
+                            {
+                                Debug.LogError("Invalid file ID in response");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogError($"Upload failed: {jsonResponse}");
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"Error parsing JSON: {e.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"Upload error: {request.error}");
+                }
+            }
+
+            // Gọi GenerateQRCode ngoài try-catch
+            if (isSuccess && !string.IsNullOrEmpty(viewUrl))
+            {
+                Debug.Log($"Upload successful! View URL: {viewUrl}");
+                yield return StartCoroutine(GenerateQRCode(viewUrl));
+                yield break;
+            }
+
+            Debug.Log($"Upload attempt {attempt + 1} failed, retrying...");
+            yield return new WaitForSeconds(2f);
+        }
+
+        UIManager.Instance.connectionTxt.text = "Failed to upload after retries.";
+        UpdateButtonStates(false, true, false);
+    }
+
+    // Sửa GenerateQRCode
+    public IEnumerator GenerateQRCode(string url)
+    {
+        string qrCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={UnityWebRequest.EscapeURL(url)}";
+        using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(qrCodeUrl))
+        {
+            request.timeout = 15;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Texture2D qrCodeTexture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+                Sprite qrCodeSprite = Sprite.Create(qrCodeTexture, new Rect(0, 0, qrCodeTexture.width, qrCodeTexture.height), new Vector2(0.5f, 0.5f));
+
+                qrCodeImage.gameObject.SetActive(true);
+                if (qrCodeImage.sprite != null) Destroy(qrCodeImage.sprite);
+                qrCodeImage.sprite = qrCodeSprite;
+
+                UpdateButtonStates(false, true, false);
+                UIManager.Instance.connectionTxt.text = "Use your mobile camera to scan QR and save your photo!";
+            }
+            else
+            {
+                Debug.LogError($"QR code generation failed: {request.error}");
+                UIManager.Instance.connectionTxt.text = "Failed to generate QR code.";
+                UpdateButtonStates(false, true, false);
+            }
         }
     }
 
@@ -308,97 +411,7 @@ public class TakePhotoAndUpload : MonoBehaviour
         texture.Apply();
         return texture;
     }
-
-    private void UploadToImgur(byte[] imageBytes)
-    {
-        
-        // URL API của Imgur
-        string imgurUrl = "https://api.imgur.com/3/image";
-
-        // Tạo yêu cầu POST
-        HTTPRequest request = new HTTPRequest(new Uri(imgurUrl), HTTPMethods.Post, OnRequestFinished);
-
-        // Đặt tiêu đề với Client ID
-        request.SetHeader("Authorization", "Client-ID " + imgurClientID);
-
-        // Tạo form và thêm ảnh (Base64 encode)
-        string base64Image = Convert.ToBase64String(imageBytes);
-        request.AddField("image", base64Image);
-
-        // Gửi yêu cầu
-        request.Send();
-    }
-
-    private void OnRequestFinished(HTTPRequest req, HTTPResponse resp)
-    {
-        if (resp == null || !resp.IsSuccess)
-        {
-            Debug.LogError("Error uploading image: " + (resp != null ? resp.Message : "Unknown error"));
-            return;
-        }
-
-        // Xử lý phản hồi JSON từ Imgur để lấy URL ảnh
-        string jsonResponse = resp.DataAsText;
-        Debug.Log("Response from Imgur: " + jsonResponse);
-
-        // Tìm và trích xuất URL của ảnh từ phản hồi JSON
-        string uploadedImageUrl = ExtractImageUrlFromResponse(jsonResponse);
-        if (!string.IsNullOrEmpty(uploadedImageUrl))
-        {
-            Debug.Log("Image uploaded successfully! URL: " + uploadedImageUrl);
-            // có link rồi thì tạo mã QR tại đây
-            GenerateQRCode(uploadedImageUrl);
-        }
-    }
-    public void GenerateQRCode(string url)
-    {
-        // URL API tạo mã QR
-        string qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + url;
-        Debug.Log(qrCodeUrl);
-        // Gửi yêu cầu tải mã QR từ API bằng BestHTTP
-        HTTPRequest request = new HTTPRequest(new Uri(qrCodeUrl), HTTPMethods.Get, OnRequestFinished1);
-        request.Send();
-    }
-
-    private void OnRequestFinished1(HTTPRequest req, HTTPResponse resp)
-    {
-        if (resp == null || !resp.IsSuccess)
-        {
-            Debug.LogError("Error downloading QR code: " + (resp != null ? resp.Message : "Unknown error"));
-            return;
-        }
-
-        // Chuyển đổi từ byte array thành Texture2D
-        Texture2D qrCodeTexture = new Texture2D(1, 1);
-        qrCodeTexture.LoadImage(resp.Data); // Load image từ dữ liệu phản hồi của HTTPResponse
-
-        // Chuyển đổi Texture2D thành Sprite để hiển thị trên UI Image
-        Sprite qrCodeSprite = Sprite.Create(qrCodeTexture, new Rect(0, 0, qrCodeTexture.width, qrCodeTexture.height), new Vector2(0.5f, 0.5f));
-
-        // Gán Sprite cho UI Image
-        qrCodeImage.gameObject.SetActive(true);
-        qrCodeImage.sprite = qrCodeSprite;
-
-        shootBtn.interactable = false;
-        reshootBtn.interactable = true;
-        downloadBtn.interactable = false;
-
-        UIManager.Instance.connectionTxt.text = "Now use your mobile camera scan QR to save your photo!";
-    }
-
-    private string ExtractImageUrlFromResponse(string jsonResponse)
-    { 
-        try
-        {
-            var jsonObj = JsonUtility.FromJson<ImgurResponse>(jsonResponse);
-            return jsonObj.data.link;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Error parsing JSON: " + e.Message);
-            return null;
-        }
-    }
+      
 
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplayImages(List<Texture2D> imageTextures)
@@ -449,6 +462,14 @@ public class TakePhotoAndUpload : MonoBehaviour
                 i++; 
             } 
         }
+    }
+
+    // Thêm phương thức đồng bộ trạng thái nút
+    private void UpdateButtonStates(bool shoot, bool reshoot, bool download)
+    {
+        shootBtn.interactable = shoot;
+        reshootBtn.interactable = reshoot;
+        downloadBtn.interactable = download;
     }
 
     public void OnImageClick(int imageIndex)
