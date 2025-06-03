@@ -42,6 +42,10 @@ public class TakePhotoAndUpload : MonoBehaviour
     private string UPLOAD_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/upload-file/asian";
     private string VIEW_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/view-file/asian";
 
+    private Coroutine inactivityCoroutine; // Coroutine đếm ngược
+    //private bool isWaitingForInteraction; // Trạng thái chờ tương tác
+    private const float INACTIVITY_TIMEOUT = 15f; // 30 giây
+
     private void Start()
     {
         shootBtn = GameObject.FindWithTag("shoot").GetComponent<Button>();
@@ -64,11 +68,8 @@ public class TakePhotoAndUpload : MonoBehaviour
         UIManager.Instance.connectionTxt.text = "Tap the capture button on the screen or press the button on Myaku to take a photo.";
         photoSave.gameObject.SetActive(false);
         cameraDisplay.gameObject.SetActive(true);
-        qrCodeImage.gameObject.SetActive(false);
-        shootBtn.interactable = true;
-        reshootBtn.interactable = false;
-        downloadBtn.interactable = false;
-         
+        qrCodeImage.gameObject.SetActive(false); 
+        UpdateButtonStates(true, false, false);
 
         // Lấy danh sách các camera
         WebCamDevice[] devices = WebCamTexture.devices;
@@ -87,6 +88,9 @@ public class TakePhotoAndUpload : MonoBehaviour
                     webCamTexture.Play(); // Bắt đầu camera
                     updateImageCoroutine = StartCoroutine(UpdateImage(webCamTexture));
 
+                    // Bắt đầu đếm ngược
+                    //isWaitingForInteraction = true;
+                    StartInactivityTimer();
                     // Xoay camera phù hợp với hướng của thiết bị
                     //AdjustCameraOrientation();
                     break;
@@ -124,12 +128,17 @@ public class TakePhotoAndUpload : MonoBehaviour
         }
 
         // Xóa hình ảnh hiện tại trên UI (nếu cần)
-        if (cameraDisplay != null)
+        if (cameraDisplay != null && cameraDisplay.sprite != null)
         {
-            cameraDisplay.sprite = null; // Xóa hình ảnh hiện tại trong cameraDisplay
+            Destroy(cameraDisplay.sprite.texture);
+            Destroy(cameraDisplay.sprite);
+            cameraDisplay.sprite = null;
         }
 
-        if(updateImageCoroutine != null) StopCoroutine(updateImageCoroutine);
+        if (rawImage != null) rawImage.texture = null;
+
+        if (updateImageCoroutine != null) StopCoroutine(updateImageCoroutine);
+        StopInactivityTimer();
         Debug.Log("Camera stopped and resources released.");
     }
 
@@ -216,13 +225,14 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     public void SaveImage()
     { 
-        countdownPanel.SetActive(true);
-        shootBtn.interactable = false;
-        reshootBtn.interactable = false;
-        downloadBtn.interactable = false;
+        countdownPanel.SetActive(true); 
+        UpdateButtonStates(false, false, false);
         UIManager.Instance.connectionTxt.text = "3...2...1...Smile :))";
         StartCoroutine(CountdownCoroutine());
         myakuController.MyakuCountForShootPhoto();
+
+        //isWaitingForInteraction = true;
+        StartInactivityTimer(); 
     }
 
     public void ReshootPhotoBtn()
@@ -301,9 +311,8 @@ public class TakePhotoAndUpload : MonoBehaviour
             form.AddBinaryData("files", imageBytes, "photo.png", "image/png");
 
             string viewUrl = null;
-            bool isSuccess = false;
+            bool isSuccess = false; 
 
-            Debug.Log($"Upload vô đây 111 ");
             // Thực hiện yêu cầu mạng
             using (UnityWebRequest request = UnityWebRequest.Post(UPLOAD_IMAGE_URL, form))
             {
@@ -363,6 +372,8 @@ public class TakePhotoAndUpload : MonoBehaviour
         }
 
         UIManager.Instance.connectionTxt.text = "Failed to upload after retries.";
+
+
         UpdateButtonStates(false, true, false);
     }
 
@@ -387,6 +398,9 @@ public class TakePhotoAndUpload : MonoBehaviour
                 UpdateButtonStates(false, true, false);
                 UIManager.Instance.connectionTxt.text = "Use your mobile camera to scan QR and save your photo!";
                 StopCamera();
+                // Bắt đầu đếm ngược
+                //isWaitingForInteraction = true;
+                StartInactivityTimer();
             }
             else
             {
@@ -659,17 +673,18 @@ public class TakePhotoAndUpload : MonoBehaviour
 
             photoSave.gameObject.SetActive(true);
             cameraDisplay.gameObject.SetActive(false);
-            qrCodeImage.gameObject.SetActive(false);
+            qrCodeImage.gameObject.SetActive(false); 
             Sprite savedSprite = Sprite.Create(capturedTexture, new Rect(0, 0, capturedTexture.width, capturedTexture.height), new Vector2(0.5f, 0.5f));
             photoSave.sprite = savedSprite;
             photoSave.preserveAspect = true;
             StopCamera();
 
-            shootBtn.interactable = false;
-            reshootBtn.interactable = true;
-            downloadBtn.interactable = true;
+            UpdateButtonStates(false, true, true);
 
             UIManager.Instance.connectionTxt.text = "Now, touch on download button to get your photo!";
+            // Bắt đầu đếm ngược
+            //isWaitingForInteraction = true;
+            StartInactivityTimer();
         }
         else
         {
@@ -705,5 +720,42 @@ public class TakePhotoAndUpload : MonoBehaviour
     {
         public string link;
     }
+    private void StartInactivityTimer()
+    {
+        Debug.Log("Bắt đầu đếm ngược thời gian");
+        StopInactivityTimer();
+        inactivityCoroutine = StartCoroutine(InactivityTimer());
+    }
 
+    private void StopInactivityTimer()
+    {
+        if (inactivityCoroutine != null)
+        {
+            StopCoroutine(inactivityCoroutine);
+            inactivityCoroutine = null;
+        }
+        //isWaitingForInteraction = false;
+    }
+
+    //private void ResetInactivityTimer()
+    //{
+    //    if (isWaitingForInteraction)
+    //    {
+    //        StartInactivityTimer();
+    //    }
+    //}
+
+    private IEnumerator InactivityTimer()
+    {
+        yield return new WaitForSeconds(INACTIVITY_TIMEOUT);
+
+        //if (isWaitingForInteraction)
+        //{
+            Debug.Log("No activity detected for 30 seconds. Stopping camera and hiding panel.");
+            StopCamera();
+            // Ẩn panel camera 
+            UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.connectionTxt.text = "Camera stopped due to inactivity.";
+        //}
+    }
 }
