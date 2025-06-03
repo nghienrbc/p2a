@@ -39,6 +39,8 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     private int cameraRotate = 0;
     public RawImage rawImage; // RawImage để hiển thị video từ webcam
+    private string UPLOAD_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/upload-file/asian";
+    private string VIEW_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/view-file/asian";
 
     private void Start()
     {
@@ -157,7 +159,7 @@ public class TakePhotoAndUpload : MonoBehaviour
 
             cameraDisplay.sprite = cameraSprite;
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.2f);
         }
     }
 
@@ -230,40 +232,80 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     public void UploadPhoto()
     {
-        if (photoSave.sprite != null)
-        {
-            UIManager.Instance.connectionTxt.text = "I'm uploading photo to server and will get the QR code for download!";
-            UpdateButtonStates(false, false, false);
-
-            Texture2D photoTexture = SpriteToTexture2D(photoSave.sprite);
-            Texture2D frameTexture = SpriteToTexture2D(largeImage.sprite);
-            Texture2D mergeTextures = MergeTextures(photoTexture, frameTexture);
-            byte[] imageBytes = mergeTextures.EncodeToPNG();
-            Destroy(mergeTextures);
-
-            StartCoroutine(UploadToServer(imageBytes));
-        }
-        else
+        if (photoSave.sprite == null)
         {
             Debug.LogError("No sprite found in photoSave.");
             UIManager.Instance.connectionTxt.text = "No photo to upload.";
             UpdateButtonStates(false, true, false);
+            return;
+        }
+
+        UIManager.Instance.connectionTxt.text = "Processing photo...";
+        UpdateButtonStates(false, false, false);
+
+        Texture2D photoTexture = null;
+        Texture2D frameTexture = null;
+        Texture2D mergedTexture = null;
+
+        try
+        {
+            photoTexture = SpriteToTexture2D(photoSave.sprite);
+            if (photoTexture == null) throw new System.Exception("Failed to convert photo sprite.");
+
+            frameTexture = SpriteToTexture2D(largeImage.sprite);
+            if (frameTexture == null) throw new System.Exception("Failed to convert frame sprite.");
+
+            Debug.Log($"PhotoTexture: {photoTexture.width}x{photoTexture.height}, FrameTexture: {frameTexture.width}x{frameTexture.height}");
+
+            int maxSize = 1024;
+            Texture2D resizedPhoto = ResizeTexture(photoTexture, maxSize, maxSize);
+            Texture2D resizedFrame = ResizeTexture(frameTexture, maxSize, maxSize);
+            Destroy(photoTexture); // Hủy sớm
+            Destroy(frameTexture);
+            photoTexture = resizedPhoto;
+            frameTexture = resizedFrame;
+            if (photoTexture == null || frameTexture == null) throw new System.Exception("Failed to resize textures.");
+
+            mergedTexture = MergeTextures(photoTexture, frameTexture);
+            if (mergedTexture == null) throw new System.Exception("Failed to merge textures.");
+
+            byte[] imageBytes = mergedTexture.EncodeToJPG(90);
+            if (imageBytes == null || imageBytes.Length == 0) throw new System.Exception("Failed to encode JPEG.");
+
+            StartCoroutine(UploadToServer(imageBytes));
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"UploadPhoto error: {e.Message}\n{e.StackTrace}");
+            UIManager.Instance.connectionTxt.text = "Error processing photo.";
+            UpdateButtonStates(false, true, false);
+        }
+        finally
+        {
+            if (photoTexture != null) Destroy(photoTexture);
+            if (frameTexture != null) Destroy(frameTexture);
+            if (mergedTexture != null) Destroy(mergedTexture);
+            Resources.UnloadUnusedAssets();
+            System.GC.Collect(); // Buộc GC thu hồi
         }
     }
 
+
+
     private IEnumerator UploadToServer(byte[] imageBytes, int retries = 3)
     {
+        Debug.Log($"Upload vô đây");
         for (int attempt = 0; attempt < retries; attempt++)
         {
-            string uploadUrl = "http://10.220.19.71:5000/api/v1/file-attachment/upload-file/asian";
             WWWForm form = new WWWForm();
             form.AddBinaryData("files", imageBytes, "photo.png", "image/png");
 
             string viewUrl = null;
             bool isSuccess = false;
 
+            Debug.Log($"Upload vô đây 111 ");
             // Thực hiện yêu cầu mạng
-            using (UnityWebRequest request = UnityWebRequest.Post(uploadUrl, form))
+            using (UnityWebRequest request = UnityWebRequest.Post(UPLOAD_IMAGE_URL, form))
             {
                 request.timeout = 30;
                 yield return request.SendWebRequest();
@@ -284,7 +326,7 @@ public class TakePhotoAndUpload : MonoBehaviour
                             int fileId = dataArray[0]["id"]?.Value<int>() ?? 0;
                             if (fileId > 0)
                             {
-                                viewUrl = $"http://10.220.19.71:5000/api/v1/file-attachment/view-file/asian/{fileId}";
+                                viewUrl = $"{VIEW_IMAGE_URL}/{fileId}";
                                 isSuccess = true;
                             }
                             else
@@ -344,6 +386,7 @@ public class TakePhotoAndUpload : MonoBehaviour
 
                 UpdateButtonStates(false, true, false);
                 UIManager.Instance.connectionTxt.text = "Use your mobile camera to scan QR and save your photo!";
+                StopCamera();
             }
             else
             {
@@ -356,62 +399,162 @@ public class TakePhotoAndUpload : MonoBehaviour
 
     private Texture2D ResizeTexture(Texture2D originalTexture, int targetWidth, int targetHeight)
     {
-        Texture2D resizedTexture = new Texture2D(targetWidth, targetHeight);
-        for (int y = 0; y < targetHeight; y++)
+        if (originalTexture == null)
         {
-            for (int x = 0; x < targetWidth; x++)
+            Debug.LogError("Original texture is null.");
+            return null;
+        }
+
+        float aspectRatio = (float)originalTexture.width / originalTexture.height;
+        if (aspectRatio > 1)
+            targetHeight = Mathf.RoundToInt(targetWidth / aspectRatio);
+        else
+            targetWidth = Mathf.RoundToInt(targetHeight * aspectRatio);
+
+        RenderTexture rt = null;
+        Texture2D resizedTexture = null;
+        try
+        {
+            rt = RenderTexture.GetTemporary(targetWidth, targetHeight, 0, RenderTextureFormat.ARGB32);
+            RenderTexture.active = rt;
+            Graphics.Blit(originalTexture, rt);
+
+            resizedTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
+            resizedTexture.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
+            resizedTexture.Apply();
+
+            return resizedTexture;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"ResizeTexture error: {e.Message}");
+            if (resizedTexture != null) Destroy(resizedTexture);
+            return null;
+        }
+        finally
+        {
+            if (rt != null)
             {
-                float xRatio = (float)x / targetWidth;
-                float yRatio = (float)y / targetHeight;
-                Color pixelColor = originalTexture.GetPixelBilinear(xRatio, yRatio);
-                resizedTexture.SetPixel(x, y, pixelColor);
+                RenderTexture.active = null;
+                RenderTexture.ReleaseTemporary(rt);
             }
         }
-        resizedTexture.Apply();
-        return resizedTexture;
     }
+
     public Texture2D MergeTextures(Texture2D baseTexture, Texture2D frameTexture)
     {
-        // Lấy kích thước lớn hơn giữa hai texture
-        int targetWidth = Mathf.Max(baseTexture.width, frameTexture.width);
-        int targetHeight = Mathf.Max(baseTexture.height, frameTexture.height);
-
-        // Resize cả hai texture về cùng kích thước
-        Texture2D resizedBaseTexture = ResizeTexture(baseTexture, targetWidth, targetHeight);
-        Texture2D resizedFrameTexture = ResizeTexture(frameTexture, targetWidth, targetHeight);
-
-        // Tạo Texture2D mới để gộp
-        Texture2D mergedTexture = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
-
-        // Sao chép pixel từ resizedBaseTexture
-        mergedTexture.SetPixels(resizedBaseTexture.GetPixels());
-
-        // Chồng resizedFrameTexture lên
-        Color[] framePixels = resizedFrameTexture.GetPixels();
-        for (int i = 0; i < framePixels.Length; i++)
+        if (baseTexture == null || frameTexture == null)
         {
-            if (framePixels[i].a > 0.1) // Chỉ chồng những pixel không trong suốt
-            {
-                mergedTexture.SetPixel(i % targetWidth, i / targetWidth, framePixels[i]);
-            }
+            Debug.LogError("Base or frame texture is null.");
+            return null;
         }
 
-        mergedTexture.Apply();
-        return mergedTexture;
+        int width = baseTexture.width;
+        int height = baseTexture.height;
+        RenderTexture rt = null;
+        Material mergeMaterial = null;
+        Texture2D mergedTexture = null;
+
+        try
+        {
+            Shader mergeShader = Shader.Find("Custom/MergeTexture");
+            if (mergeShader == null)
+            {
+                Debug.LogWarning("MergeTexture shader not found, falling back to pixel-based merge.");
+                return MergeTexturesPixelBased(baseTexture, frameTexture);
+            }
+
+            mergeMaterial = new Material(mergeShader);
+            mergeMaterial.SetTexture("_MainTex", baseTexture);
+            mergeMaterial.SetTexture("_OverlayTex", frameTexture);
+
+            rt = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32);
+            RenderTexture.active = rt;
+
+            Graphics.Blit(baseTexture, rt);
+            Graphics.Blit(frameTexture, rt, mergeMaterial);
+
+            mergedTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            mergedTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            mergedTexture.Apply();
+
+            return mergedTexture;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Shader merge failed: {e.Message}. Falling back to pixel-based merge.");
+            if (mergedTexture != null) Destroy(mergedTexture);
+            return MergeTexturesPixelBased(baseTexture, frameTexture);
+        }
+        finally
+        {
+            if (rt != null)
+            {
+                RenderTexture.active = null;
+                RenderTexture.ReleaseTemporary(rt);
+            }
+            if (mergeMaterial != null) Destroy(mergeMaterial);
+        }
+    }
+
+    // Fallback pixel-based với chất lượng cải thiện
+    private Texture2D MergeTexturesPixelBased(Texture2D baseTexture, Texture2D frameTexture)
+    {
+        Texture2D mergedTexture = null;
+        try
+        {
+            int width = baseTexture.width;
+            int height = baseTexture.height;
+            mergedTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            Color[] basePixels = baseTexture.GetPixels();
+            mergedTexture.SetPixels(basePixels);
+
+            Color[] framePixels = frameTexture.GetPixels();
+            for (int i = 0; i < framePixels.Length; i++)
+            {
+                if (framePixels[i].a > 0.1f)
+                {
+                    mergedTexture.SetPixel(i % width, i / width, framePixels[i]);
+                }
+            }
+
+            mergedTexture.Apply();
+            return mergedTexture;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Pixel-based merge failed: {e.Message}");
+            if (mergedTexture != null) Destroy(mergedTexture);
+            return null;
+        }
     }
 
     private Texture2D SpriteToTexture2D(Sprite sprite)
     {
-        // Lấy kích thước của Sprite
-        Texture2D texture = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
-        Debug.Log(texture);
-        Rect rect = sprite.rect;
-        Color[] pixels = sprite.texture.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
-        texture.SetPixels(pixels);
-        texture.Apply();
-        return texture;
+        if (sprite == null || sprite.texture == null)
+        {
+            Debug.LogError("Sprite or sprite.texture is null.");
+            return null;
+        }
+
+        Texture2D texture = null;
+        try
+        {
+            Rect rect = sprite.rect;
+            texture = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGBA32, false);
+            Color[] pixels = sprite.texture.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return texture;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"SpriteToTexture2D error: {e.Message}");
+            if (texture != null) Destroy(texture);
+            return null;
+        }
     }
-      
+
 
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplayImages(List<Texture2D> imageTextures)

@@ -8,7 +8,8 @@ public class SettingBtn : BaseToogleButton
     {
         if (!isToggled)
         {
-            Debug.Log("Setting button click"); 
+            Debug.Log("Setting button click");
+            UIManager.Instance.BtnStopCameraClick();
             UIManager.Instance.functionName = "setting";
             UIManager.Instance.connectionTxt.text = "Type the device address to connect.";
             UIManager.Instance.ShowHidePanel(UIManager.Instance.locationPanel, MyGame.Enums.ShowHide.Hide, 0.5f);

@@ -282,11 +282,11 @@ public class RecordAudio : MonoBehaviour
         }
 
         Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
-        if (audioPlugin != null)
-        {
-            audioPlugin.Call("startRecordingFromUnity");
-            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
-        }
+        //if (audioPlugin != null)
+        //{
+        //    audioPlugin.Call("startRecordingFromUnity");
+        //    audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
+        //}
 #endif
     }
 

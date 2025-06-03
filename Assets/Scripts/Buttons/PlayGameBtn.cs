@@ -7,6 +7,7 @@ public class PlayGameBtn : BaseToogleButton
     protected override void OnButtonClick()
     {
         base.OnButtonClick();
+        UIManager.Instance.BtnStopCameraClick();
         // Gọi hàm ToggleImage từ lớp cơ bản  
         UIManager.Instance.connectionTxt.text = "Please try some traditional games of ASEAN countries!";
         UIManager.Instance.functionName = "playgame";
