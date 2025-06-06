@@ -9,7 +9,11 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
-buildp2a
+/buildp2a/unityLibrary/build/
+/buildp2a/unityLibrary/src/main/assets/
+/buildp2a/unityLibrary/src/main/Il2CppOutputProject/
+/buildp2a/unityLibrary/src/main/jniLibs/
+/buildp2a/launcher/build/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
