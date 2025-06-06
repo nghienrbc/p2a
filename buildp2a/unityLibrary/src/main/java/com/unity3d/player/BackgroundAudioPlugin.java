@@ -46,8 +46,8 @@ public class BackgroundAudioPlugin {
     private static final int SAMPLE_RATE = 16000;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
-    private static final int RECORD_INTERVAL_MS = 10; // 100 ms
-    private static final int FIXED_CHUNK_SIZE = 512; // Kích thước chunk 512 bytes (giống TypeScript)
+    private static final int RECORD_INTERVAL_MS = 50; // Tăng lên 50ms để giảm tải CPU
+    private static final int FIXED_CHUNK_SIZE = 512;
     private static final String CHANNEL_ID = "AudioServiceChannel";
     private static final int NOTIFICATION_ID = 1;
     private static final String ACTION_START_SERVICE = "com.unity3d.player.ACTION_START_SERVICE";
@@ -55,31 +55,32 @@ public class BackgroundAudioPlugin {
     public static final String OPEN_REASON_WAKE_WORD = "wake_word";
     public static final String OPEN_REASON_USER = "user";
     @SuppressLint("StaticFieldLeak")
-    private static Activity activity;
+    private static volatile Activity activity;
 
     public BackgroundAudioPlugin(Activity activity) {
         BackgroundAudioPlugin.activity = activity;
     }
 
-
-//    public void notifyWakeWordDetected() {
-////        Log.d(TAG, "Phát hiện wake word, gửi tín hiệu mở ứng dụng");
-////        Intent serviceIntent = new Intent(activity, AudioRecordingService.class);
-////        serviceIntent.putExtra("OPEN_APP", true); // Tín hiệu mở ứng dụng
-////        activity.startService(serviceIntent);
-//
-//        Log.d(TAG, "Phát hiện wake word, gửi broadcast đến AudioRecordingService");
-//        Intent intent = new Intent("com.unity3d.player.WAKE_WORD_DETECTED");
-//        activity.sendBroadcast(intent);
-//    }
-
     public void startRecordingFromUnity() {
         Log.d(TAG, "Bắt đầu thu âm từ Unity");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "Thiếu quyền FOREGROUND_SERVICE_MICROPHONE");
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.FOREGROUND_SERVICE_MICROPHONE}, 101);
+                return;
+            }
+        }
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "Thiếu quyền RECORD_AUDIO");
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 100);
+            return;
+        }
         Intent serviceIntent = new Intent(activity, AudioRecordingService.class);
-        activity.startService(serviceIntent);
+        activity.startForegroundService(serviceIntent);
     }
 
     public void stopRecording() {
+        Log.d(TAG, "Dừng thu âm");
         Intent serviceIntent = new Intent(activity, AudioRecordingService.class);
         activity.stopService(serviceIntent);
     }
@@ -100,7 +101,6 @@ public class BackgroundAudioPlugin {
         Log.d(TAG, "Yêu cầu tắt tối ưu hóa pin");
         @SuppressLint("BatteryLife") Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
         intent.setData(android.net.Uri.parse("package:com.unity3d.player"));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             activity.startActivity(intent);
         } catch (Exception e) {
@@ -109,38 +109,17 @@ public class BackgroundAudioPlugin {
     }
 
     public static class AudioRecordingService extends Service {
-//        private static final String WEBSOCKET_URL = "ws://157.10.52.193:8000/ws/audio-chat/186462d7-3150-4b47-93e8-a349db63b307/null/f836ce6c-5910-47b7-8931-d3a11b65c8e5"; // Thay bằng URL WebSocket thực tế
-        private static final String WEBSOCKET_URL = "ws://157.10.52.193:8008/ws/wake-word-test"; // Thay bằng URL WebSocket thực tế
+        private static final String WEBSOCKET_URL = "ws://157.10.52.193:8008/ws/wake-word-test";
         private AudioRecord audioRecord;
         private boolean isRecording = false;
-        private byte[] audioBuffer; // Buffer tạm thời để đọc dữ liệu từ AudioRecord
-        private byte[] accumulatedBuffer = new byte[0]; // Buffer tích lũy dữ liệu (tương tự audioBuffer trong TypeScript)
-        private static final String TAG = "BackgroundAudioPlugin";
-//        private BroadcastReceiver wakeWordReceiver;
-        private BroadcastReceiver serviceStarterReceiver;
+        private byte[] audioBuffer;
+        private byte[] accumulatedBuffer = new byte[0];
         private WebSocketClient webSocketClient;
-        private static Thread recordingThread;
-
-        private boolean shouldSendToWebSocket = true; // Biến kiểm soát gửi WebSocket
-        private BroadcastReceiver controlReceiver; // Receiver để xử lý pause/resume
-
-
-        private boolean isAppInBackground() {
-            ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
-            if (appProcesses == null) {
-                return true;
-            }
-            
-            String packageName = getPackageName();
-            for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
-                if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND 
-                    && appProcess.processName.equals(packageName)) {
-                    return false;
-                }
-            }
-            return true;
-        }
+        private Thread recordingThread;
+        private BroadcastReceiver serviceStarterReceiver;
+        private BroadcastReceiver controlReceiver;
+        private boolean shouldSendToWebSocket = true;
+        private boolean isForeground = false; // Theo dõi trạng thái foreground
 
         private boolean isAppInForeground() {
             ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -157,105 +136,147 @@ public class BackgroundAudioPlugin {
             }
             return false;
         }
+
         private boolean isNetworkAvailable() {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            return networkInfo != null;
+            return networkInfo != null && networkInfo.isConnected();
         }
-        @SuppressLint("UnspecifiedRegisterReceiverFlag")
+
         @Override
         public void onCreate() {
             super.onCreate();
             Log.d(TAG, "Service được tạo");
             setupWebSocket();
             setupServiceStarterReceiver();
-            setupControlReceiver(); // Thêm receiver để xử lý pause/resume
+            setupControlReceiver();
         }
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                //startForegroundService();
+            if (!startForegroundService()) {
+                Log.e(TAG, "Không thể khởi động foreground service, dừng dịch vụ");
+                stopSelf();
+                return START_NOT_STICKY;
             }
-            
-//            if (intent != null && intent.getBooleanExtra("OPEN_APP", false)) {
-//                Log.d(TAG, "Received command to open app from background");
-//                startMainActivity();
-//                return START_STICKY;
-//            }
-            
-            startRecording();
+
+            if (intent != null && intent.getBooleanExtra("OPEN_APP", false)) {
+                Log.d(TAG, "Nhận lệnh mở ứng dụng từ background");
+                startMainActivity();
+                return START_STICKY;
+            }
+
+            try {
+                startRecording();
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi bắt đầu thu âm: " + e.getMessage(), e);
+                stopSelf();
+                return START_NOT_STICKY;
+            }
             return START_STICKY;
         }
 
-       // @RequiresApi(api = Build.VERSION_CODES.R)
-//        private void startForegroundService() {
-//            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Audio Service", NotificationManager.IMPORTANCE_LOW);
-//            getSystemService(NotificationManager.class).createNotificationChannel(channel);
-//
-//            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                    .setContentTitle("Audio Listener")
-//                    .setContentText("Listening in background...")
-//                    .setSmallIcon(R.drawable.ic_notification)
-//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                    .setNumber(1) // Thêm badge để tăng khả năng hiển thị
-//                    .build();
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED) {
-//                    Log.e(TAG, "Thiếu quyền FOREGROUND_SERVICE_MICROPHONE");
-//                    return;
-//                }
-//            }
-//            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
-//        }
+        @RequiresApi(api = Build.VERSION_CODES.R)
+        private boolean startForegroundService() {
+            if (isForeground) {
+                Log.d(TAG, "Dịch vụ đã ở trạng thái foreground, không gọi lại startForeground");
+                return true;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED) {
+                    Log.e(TAG, "Thiếu quyền FOREGROUND_SERVICE_MICROPHONE");
+                    return false;
+                }
+            }
+
+            try {
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Audio Service Channel", NotificationManager.IMPORTANCE_LOW);
+                getSystemService(NotificationManager.class).createNotificationChannel(channel);
+
+                Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setContentTitle("Audio Listener")
+                        .setContentText("Listening in background...")
+                        .setSmallIcon(android.R.drawable.ic_notification_overlay)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .build();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+                }
+                isForeground = true;
+                Log.d(TAG, "Đã khởi động foreground service thành công");
+                return true;
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi khởi động foreground service: " + e.getMessage(), e);
+                return false;
+            }
+        }
 
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
         private void setupServiceStarterReceiver() {
-            serviceStarterReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    Log.d(TAG, "Nhận broadcast để khởi động service: " + intent.getAction());
-//                    Intent serviceIntent = new Intent(context, AudioRecordingService.class);
-//                    context.startForegroundService(serviceIntent);
+            try {
+                serviceStarterReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String action = intent.getAction();
+                        Log.d(TAG, "Nhận broadcast: " + action);
+                        if (ACTION_START_SERVICE.equals(action) || Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+                            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED ||
+                                    ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                                Log.e(TAG, "Thiếu quyền cần thiết, không khởi động dịch vụ");
+                                return;
+                            }
+                            Intent serviceIntent = new Intent(context, AudioRecordingService.class);
+                            context.startForegroundService(serviceIntent);
+                            Log.d(TAG, "Khởi động AudioRecordingService từ broadcast");
+                        }
+                    }
+                };
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(ACTION_START_SERVICE);
+                filter.addAction(Intent.ACTION_BOOT_COMPLETED);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    registerReceiver(serviceStarterReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                } else {
+                    registerReceiver(serviceStarterReceiver, filter);
                 }
-            };
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ACTION_START_SERVICE);
-            filter.addAction(Intent.ACTION_BOOT_COMPLETED);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(serviceStarterReceiver, filter, RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(serviceStarterReceiver, filter);
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi thiết lập ServiceStarterReceiver: " + e.getMessage(), e);
             }
         }
 
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
         private void setupControlReceiver() {
-            controlReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    String action = intent.getAction();
-                    Log.d(TAG, "Nhận broadcast: " + action);
-                    if ("com.unity3d.player.PAUSE_RECORDING".equals(action)) {
-                        shouldSendToWebSocket = false;
-                        stopAudioRecord(); // Dừng AudioRecord để nhường microphone
-                        Log.d(TAG, "Tạm dừng gửi WebSocket và dừng AudioRecord");
-                    } else if ("com.unity3d.player.RESUME_RECORDING".equals(action)) {
-                        shouldSendToWebSocket = true;
-                        if (!isRecording) {
-                            startRecording();
+            try {
+                controlReceiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String action = intent.getAction();
+                        Log.d(TAG, "Nhận broadcast: " + action);
+                        if ("com.unity3d.player.PAUSE_RECORDING".equals(action)) {
+                            shouldSendToWebSocket = false;
+                            stopAudioRecord();
+                            Log.d(TAG, "Tạm dừng gửi WebSocket và dừng AudioRecord");
+                        } else if ("com.unity3d.player.RESUME_RECORDING".equals(action)) {
+                            shouldSendToWebSocket = true;
+                            if (!isRecording) {
+                                startRecording();
+                            }
+                            Log.d(TAG, "Tiếp tục gửi WebSocket và khởi động lại AudioRecord nếu cần");
                         }
-                        Log.d(TAG, "Tiếp tục gửi WebSocket và khởi động lại AudioRecord nếu cần");
                     }
+                };
+                IntentFilter filter = new IntentFilter();
+                filter.addAction("com.unity3d.player.PAUSE_RECORDING");
+                filter.addAction("com.unity3d.player.RESUME_RECORDING");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    registerReceiver(controlReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                } else {
+                    registerReceiver(controlReceiver, filter);
                 }
-            };
-            IntentFilter filter = new IntentFilter();
-            filter.addAction("com.unity3d.player.PAUSE_RECORDING");
-            filter.addAction("com.unity3d.player.RESUME_RECORDING");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                registerReceiver(controlReceiver, filter, RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(controlReceiver, filter);
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi thiết lập ControlReceiver: " + e.getMessage(), e);
             }
         }
 
@@ -280,8 +301,8 @@ public class BackgroundAudioPlugin {
                                     Log.d(TAG, "Ứng dụng đang ở foreground, gửi thông báo wake word đến Unity");
                                     UnityPlayer.UnitySendMessage("RecordAudio", "OnWakeWordDetected", "");
                                 } else {
-                                    Log.d(TAG, "Ứng dụng ở background hoặc bị kill, mở Activity");
-                                    //startMainActivity();
+                                    Log.d(TAG, "Ứng dụng ở background, mở Activity");
+                                    startMainActivity();
                                 }
                             }
                         } catch (JSONException e) {
@@ -292,7 +313,6 @@ public class BackgroundAudioPlugin {
                     @Override
                     public void onClose(int code, String reason, boolean remote) {
                         Log.d(TAG, "WebSocket đóng: " + reason);
-                        // Thử kết nối lại sau 5 giây
                         reconnectWebSocket();
                     }
 
@@ -315,7 +335,7 @@ public class BackgroundAudioPlugin {
         }
 
         private void reconnectWebSocket() {
-            if (!isRecording) return; // Không kết nối lại nếu service đã dừng
+            if (!isRecording) return;
             new Thread(() -> {
                 try {
                     Thread.sleep(5000);
@@ -324,7 +344,6 @@ public class BackgroundAudioPlugin {
                         webSocketClient.reconnect();
                     } else if (!isNetworkAvailable()) {
                         Log.w(TAG, "Không có mạng, thử lại sau");
-                        Thread.sleep(5000);
                         reconnectWebSocket();
                     }
                 } catch (InterruptedException e) {
@@ -332,57 +351,59 @@ public class BackgroundAudioPlugin {
                 }
             }).start();
         }
+
         private void startRecording() {
             Log.d(TAG, "Bắt đầu thu âm");
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Không có quyền thu âm, yêu cầu quyền");
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 100);
+                Log.e(TAG, "Không có quyền thu âm, yêu cầu quyền");
+                if (activity != null) {
+                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 100);
+                } else {
+                    Log.e(TAG, "Activity is null, không thể yêu cầu quyền");
+                    throw new IllegalStateException("Activity is null");
+                }
                 return;
             }
-            // Tính kích thước buffer tối thiểu
+
             int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
-            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize);
-
-            // Khởi tạo buffer để đọc dữ liệu âm thanh
-            audioBuffer = new byte[bufferSize];
-            isRecording = true;
-            shouldSendToWebSocket = true; // Bật gửi WebSocket khi khởi động
-            audioRecord.startRecording();
-
-            recordingThread = new Thread(() -> {
-               // byte[] audioBuffer = new byte[bufferSize];
-                while (isRecording) {
-                    recordAndSend();
-                    Log.d(TAG, "Recording...");
-                    try {
-                        Thread.sleep(RECORD_INTERVAL_MS); // Tránh CPU overload
-                    } catch (InterruptedException e) {
-                        Log.e(TAG, "Recording interrupted: " + e.getMessage());
-                    }
-                }
-            });
-            recordingThread.start();
-        }
-
-        private void stopAudioRecord() {
-            if (audioRecord != null) {
-                try {
-                    audioRecord.stop();
-                    audioRecord.release();
-                } catch (IllegalStateException e) {
-                    Log.e(TAG, "Lỗi khi dừng AudioRecord: " + e.getMessage());
-                }
-                audioRecord = null;
+            if (bufferSize == AudioRecord.ERROR || bufferSize == AudioRecord.ERROR_BAD_VALUE) {
+                Log.e(TAG, "Kích thước buffer không hợp lệ: " + bufferSize);
+                throw new IllegalStateException("Invalid buffer size");
             }
-            isRecording = false;
-            if (recordingThread != null) {
-                recordingThread.interrupt();
-                try {
-                    recordingThread.join(1000);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Lỗi khi dừng thread: " + e.getMessage());
+
+            try {
+                audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize);
+                if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                    Log.e(TAG, "AudioRecord không được khởi tạo");
+                    audioRecord.release();
+                    audioRecord = null;
+                    throw new IllegalStateException("AudioRecord not initialized");
                 }
-                recordingThread = null;
+                audioBuffer = new byte[bufferSize];
+                isRecording = true;
+                shouldSendToWebSocket = true;
+                audioRecord.startRecording();
+
+                recordingThread = new Thread(() -> {
+                    while (isRecording && audioRecord != null) {
+                        try {
+                            recordAndSend();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Lỗi khi xử lý dữ liệu âm thanh: " + e.getMessage(), e);
+                        }
+                        try {
+                            Thread.sleep(RECORD_INTERVAL_MS);
+                        } catch (InterruptedException e) {
+                            Log.e(TAG, "Recording interrupted: " + e.getMessage());
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                });
+                recordingThread.start();
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi khởi tạo hoặc bắt đầu AudioRecord: " + e.getMessage(), e);
+                stopAudioRecord();
+                throw e;
             }
         }
 
@@ -397,130 +418,36 @@ public class BackgroundAudioPlugin {
                 Log.d(TAG, "Bỏ qua gửi WebSocket do đang tạm dừng");
                 return;
             }
-            // Tích lũy dữ liệu vào accumulatedBuffer
+
             byte[] newBuffer = new byte[accumulatedBuffer.length + bytesRead];
             System.arraycopy(accumulatedBuffer, 0, newBuffer, 0, accumulatedBuffer.length);
             System.arraycopy(audioBuffer, 0, newBuffer, accumulatedBuffer.length, bytesRead);
             accumulatedBuffer = newBuffer;
 
-            // Cắt và gửi các chunk 512 bytes (giống TypeScript)
             while (accumulatedBuffer.length >= FIXED_CHUNK_SIZE) {
                 byte[] chunk = new byte[FIXED_CHUNK_SIZE];
                 System.arraycopy(accumulatedBuffer, 0, chunk, 0, FIXED_CHUNK_SIZE);
 
                 String base64Audio = Base64.encodeToString(chunk, 0, FIXED_CHUNK_SIZE, Base64.NO_WRAP);
-                Log.d(TAG, "Base64 Chunk (512 bytes): " + base64Audio);
-                Log.d(TAG, "Base64 length: " + base64Audio.length()); // Phải là 684
                 byte[] decodedBytes = Base64.decode(base64Audio, Base64.NO_WRAP);
 
                 if (webSocketClient != null && webSocketClient.isOpen()) {
                     try {
                         webSocketClient.send(decodedBytes);
-                        Log.d(TAG, "Đã gửi base64 chunk qua WebSocket");
+                        Log.d(TAG, "Đã gửi chunk âm thanh qua WebSocket");
                     } catch (Exception e) {
                         Log.e(TAG, "Lỗi gửi dữ liệu qua WebSocket: " + e.getMessage());
                     }
                 } else {
                     Log.w(TAG, "WebSocket không mở, không thể gửi dữ liệu");
                 }
-                // Cắt bỏ phần đã gửi khỏi accumulatedBuffer
                 accumulatedBuffer = Arrays.copyOfRange(accumulatedBuffer, FIXED_CHUNK_SIZE, accumulatedBuffer.length);
             }
         }
-        private boolean isScreenOn() {
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            return pm.isInteractive();
-        }
 
-        private void startMainActivity() {
-//        Intent intent = new Intent(this, NewActivity.class);
-//        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP); // Đảm bảo mở Activity ở foreground
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//
-//        startActivity(intent);
-            // Đánh thức màn hình nếu tắt
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            if (!pm.isInteractive()) {
-                @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP, "WakeUpService:WakeScreen");
-                wakeLock.acquire(5000); // Giữ wake lock trong 5 giây
-                wakeLock.release();
-            }
-
-            Log.d(TAG, "Screen state: " + (isScreenOn() ? "On" : "Off")); // Thêm phương thức kiểm tra màn hình
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34
-                Log.d(TAG, "Checking background restrictions on Android 14");
-                ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                if (activityManager != null && !activityManager.isBackgroundRestricted()) {
-                    //Intent intent = new Intent(this, UnityPlayerActivity.class);
-                    //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-
-
-                    Log.d(TAG, "Thử mở UnityPlayerActivity do wake word");
-                    Intent intent = new Intent(this, CustomUnityPlayerActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-                    intent.putExtra(EXTRA_OPEN_REASON, OPEN_REASON_WAKE_WORD);
-                    try {
-                        startActivity(intent);
-                        Log.d(TAG, "Đã gọi startActivity thành công do wake word");
-                    } catch (Exception e) {
-                        Log.e(TAG, "Lỗi khi mở activity: " + e.getMessage());
-                        showFallbackNotification();
-                    }
-
-                } else {
-                    // Thử mở Activity với quyền đặc biệt hoặc thông báo cho người dùng
-                    Intent intent = new Intent(this, UnityPlayerActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-                    startActivity(intent);
-                    Log.w(TAG, "Background activity restricted, forcing app to foreground");
-                }
-            } else {
-                Intent intent = new Intent(this, UnityPlayerActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
-                startActivity(intent);
-                Log.d(TAG, "Bringing app (MainActivity) 2 to foreground");
-            }
-        }
-
-        private void showFallbackNotification() {
-            Log.d(TAG, "Hiển thị thông báo dự phòng");
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Phát hiện Wake Word")
-                    .setContentText("Nhấn để mở ứng dụng")
-                    .setSmallIcon(android.R.drawable.ic_notification_overlay)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, UnityPlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
-                    .setAutoCancel(true)
-                    .build();
-            getSystemService(NotificationManager.class).notify(2, notification);
-        }
-        @Override
-        public void onTaskRemoved(Intent rootIntent) {
-            Log.d(TAG, "Ứng dụng bị kill qua danh sách gần đây, khởi động lại service");
-//            Intent restartServiceIntent = new Intent(this, AudioRecordingService.class);
-//            restartServiceIntent.setPackage(getPackageName());
-//            startForegroundService(restartServiceIntent);
-
-            // Gửi broadcast để đảm bảo service được khởi động lại
-            Intent broadcastIntent = new Intent(ACTION_START_SERVICE);
-            sendBroadcast(broadcastIntent);
-
-            super.onTaskRemoved(rootIntent);
-        }
-
-        @Override
-        public void onDestroy() {
-            Log.d(TAG, "Service bị hủy");
+        private void stopAudioRecord() {
             isRecording = false;
-            if (recordingThread != null) {
-                recordingThread.interrupt();
-                try {
-                    recordingThread.join(1000); // Đợi thread kết thúc
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Lỗi khi dừng thread: " + e.getMessage());
-                }
-                recordingThread = null;
-            }
+            shouldSendToWebSocket = false;
             if (audioRecord != null) {
                 try {
                     audioRecord.stop();
@@ -530,15 +457,106 @@ public class BackgroundAudioPlugin {
                 }
                 audioRecord = null;
             }
-            if (webSocketClient != null) {
-                webSocketClient.close();
-                webSocketClient = null;
+            if (recordingThread != null) {
+                recordingThread.interrupt();
+                try {
+                    recordingThread.join(1000);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Lỗi khi dừng thread: " + e.getMessage());
+                }
+                recordingThread = null;
             }
             accumulatedBuffer = new byte[0];
+        }
+
+        private boolean isScreenOn() {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            return pm.isInteractive();
+        }
+
+        private void startMainActivity() {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (!pm.isInteractive()) {
+                @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP, "WakeUpService:WakeScreen");
+                wakeLock.acquire(5000);
+                wakeLock.release();
+            }
+
+            Log.d(TAG, "Screen state: " + (isScreenOn() ? "On" : "Off"));
+            Intent intent = new Intent(this, CustomUnityPlayerActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(EXTRA_OPEN_REASON, OPEN_REASON_WAKE_WORD);
+            try {
+                startActivity(intent);
+                Log.d(TAG, "Đã gọi startActivity thành công do wake word");
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi khi mở activity: " + e.getMessage(), e);
+                showFallbackNotification();
+            }
+        }
+
+        private void showFallbackNotification() {
+            Log.d(TAG, "Hiển thị thông báo dự phòng");
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("Phát hiện Wake Word")
+                    .setContentText("Nhấn để mở ứng dụng")
+                    .setSmallIcon(android.R.drawable.ic_notification_overlay)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true);
+
+            Intent intent = new Intent(this, CustomUnityPlayerActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(EXTRA_OPEN_REASON, OPEN_REASON_WAKE_WORD);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            builder.setContentIntent(pendingIntent);
+
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            nm.notify(2, builder.build());
+        }
+
+        @Override
+        public void onTaskRemoved(Intent rootIntent) {
+            Log.d(TAG, "Ứng dụng bị kill qua danh sách gần đây, gửi broadcast để khởi động lại");
+            Intent restartServiceIntent = new Intent(this, AudioRecordingService.class);
+            restartServiceIntent.setPackage(getPackageName());
+            startForegroundService(restartServiceIntent);
+
+            Intent broadcastIntent = new Intent(ACTION_START_SERVICE);
+            sendBroadcast(broadcastIntent);
+            super.onTaskRemoved(rootIntent);
+        }
+
+        @Override
+        public void onDestroy() {
+            Log.d(TAG, "Service bị hủy");
+            stopAudioRecord();
+            if (webSocketClient != null) {
+                try {
+                    webSocketClient.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "Lỗi khi đóng WebSocket: " + e.getMessage());
+                }
+                webSocketClient = null;
+            }
             if (serviceStarterReceiver != null) {
-                unregisterReceiver(serviceStarterReceiver);
+                try {
+                    unregisterReceiver(serviceStarterReceiver);
+                    Log.d(TAG, "Đã hủy đăng ký ServiceStarterReceiver");
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Lỗi khi hủy đăng ký receiver: " + e.getMessage());
+                }
                 serviceStarterReceiver = null;
             }
+            if (controlReceiver != null) {
+                try {
+                    unregisterReceiver(controlReceiver);
+                    Log.d(TAG, "Đã hủy đăng ký ControlReceiver");
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Lỗi khi hủy đăng ký receiver: " + e.getMessage());
+                }
+                controlReceiver = null;
+            }
+            isForeground = false; // Đặt lại trạng thái foreground
             super.onDestroy();
         }
 
@@ -547,14 +565,18 @@ public class BackgroundAudioPlugin {
             return null;
         }
     }
-    public static class ServiceStarterReceiver extends BroadcastReceiver {
-        private static final String TAG = "BackgroundAudioPlugin";
 
+    public static class ServiceStarterReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "ServiceStarterReceiver nhận broadcast: " + intent.getAction());
-//            Intent serviceIntent = new Intent(context, AudioRecordingService.class);
-//            context.startForegroundService(serviceIntent);
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED ||
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "Thiếu quyền cần thiết, không khởi động dịch vụ");
+                return;
+            }
+            Intent serviceIntent = new Intent(context, AudioRecordingService.class);
+            context.startForegroundService(serviceIntent);
         }
     }
 }
