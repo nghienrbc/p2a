@@ -43,7 +43,6 @@ public class TakePhotoAndUpload : MonoBehaviour
     private string VIEW_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/view-file/asian";
 
     private Coroutine inactivityCoroutine; // Coroutine đếm ngược
-    //private bool isWaitingForInteraction; // Trạng thái chờ tương tác
     private const float INACTIVITY_TIMEOUT = 15f; // 30 giây
 
     private void Start()
@@ -89,7 +88,6 @@ public class TakePhotoAndUpload : MonoBehaviour
                     updateImageCoroutine = StartCoroutine(UpdateImage(webCamTexture));
 
                     // Bắt đầu đếm ngược
-                    //isWaitingForInteraction = true;
                     StartInactivityTimer();
                     // Xoay camera phù hợp với hướng của thiết bị
                     //AdjustCameraOrientation();
@@ -231,7 +229,6 @@ public class TakePhotoAndUpload : MonoBehaviour
         StartCoroutine(CountdownCoroutine());
         myakuController.MyakuCountForShootPhoto();
 
-        //isWaitingForInteraction = true;
         StartInactivityTimer(); 
     }
 
@@ -399,7 +396,6 @@ public class TakePhotoAndUpload : MonoBehaviour
                 UIManager.Instance.connectionTxt.text = "Use your mobile camera to scan QR and save your photo!";
                 StopCamera();
                 // Bắt đầu đếm ngược
-                //isWaitingForInteraction = true;
                 StartInactivityTimer();
             }
             else
@@ -683,7 +679,6 @@ public class TakePhotoAndUpload : MonoBehaviour
 
             UIManager.Instance.connectionTxt.text = "Now, touch on download button to get your photo!";
             // Bắt đầu đếm ngược
-            //isWaitingForInteraction = true;
             StartInactivityTimer();
         }
         else
@@ -708,18 +703,6 @@ public class TakePhotoAndUpload : MonoBehaviour
         MessagePanel.transform.parent.gameObject.SetActive(true);
     }
 
-    // Class đại diện cho JSON response từ Imgur
-    [Serializable]
-    private class ImgurResponse
-    {
-        public ImgurData data;
-    }
-
-    [Serializable]
-    private class ImgurData
-    {
-        public string link;
-    }
     private void StartInactivityTimer()
     {
         Debug.Log("Bắt đầu đếm ngược thời gian");
@@ -734,28 +717,19 @@ public class TakePhotoAndUpload : MonoBehaviour
             StopCoroutine(inactivityCoroutine);
             inactivityCoroutine = null;
         }
-        //isWaitingForInteraction = false;
     }
-
-    //private void ResetInactivityTimer()
-    //{
-    //    if (isWaitingForInteraction)
-    //    {
-    //        StartInactivityTimer();
-    //    }
-    //}
 
     private IEnumerator InactivityTimer()
     {
         yield return new WaitForSeconds(INACTIVITY_TIMEOUT);
+        Debug.Log("No activity detected for 30 seconds. Stopping camera and hiding panel.");
+        StopCamera();
+        // Ẩn panel camera 
 
-        //if (isWaitingForInteraction)
-        //{
-            Debug.Log("No activity detected for 30 seconds. Stopping camera and hiding panel.");
-            StopCamera();
-            // Ẩn panel camera 
-            UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, true, 3000);
-            UIManager.Instance.connectionTxt.text = "Camera stopped due to inactivity.";
-        //}
+        UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, true, 3000);
+        UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, false, 3000);
+        UIManager.Instance.connectionTxt.text = "Camera stopped due to inactivity.";
+        GameObject homeBtn = FindAnyObjectByType<HomeBtn>().gameObject;
+        UIManager.Instance.SetStateForButton(homeBtn);
     }
 }

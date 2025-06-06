@@ -37,7 +37,7 @@ public class BaseToogleButton : MonoBehaviour
     }
 
     // Hàm thay đổi hình ảnh khi nhấn nút
-    protected virtual void ToggleImage()
+    public virtual void ToggleImage()
     {
         if (!isToggled)
         {

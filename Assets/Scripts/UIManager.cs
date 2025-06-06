@@ -266,4 +266,10 @@ public class UIManager : MonoBehaviour
         }
         Debug.Log("All files copied to persistentDataPath.");
     }
+    public void SetStateForButton(GameObject button)
+    {
+        BaseToogleButton baseToogle = button.GetComponent<BaseToogleButton>();
+        baseToogle.ToggleImage();
+        OnButtonClicked(baseToogle);
+    }
 }

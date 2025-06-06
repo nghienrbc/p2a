@@ -40,7 +40,15 @@ public class P2ADataService
         _connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create);
         Debug.Log("Connected to database at " + databasePath);
     }
-
+    public void Dispose()
+    {
+        if (_connection != null)
+        {
+            _connection.Close();
+            _connection.Dispose();
+            _connection = null;
+        }
+    }
     // Phương thức để lấy tất cả Location theo nation_id
     public IEnumerable<Location> GetLocationsByLocationId(int locationId)
     {
@@ -144,24 +152,23 @@ public class LocationSceneManager : MonoBehaviour
 
     IEnumerator SmoothTransitionToNextImage()
     {
-        // Tạo hiệu ứng mờ dần ảnh hiện tại
+        float elapsedTime = 0f;
         float startAlpha = largeImageCanvasGroup.alpha;
-        for (float t = 0; t < smoothDuration; t += Time.deltaTime)
+
+        while (elapsedTime < smoothDuration)
         {
-            float normalizedTime = t / smoothDuration;
-            largeImageCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, normalizedTime);
+            elapsedTime += Time.deltaTime;
+            largeImageCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, elapsedTime / smoothDuration);
             yield return null;
         }
 
-        // Chuyển sang ảnh tiếp theo
         ShowNextImage();
 
-        // Đưa ảnh mới về trạng thái ban đầu (hiển thị rõ ràng)
-        float targetAlpha = 1.0f;
-        for (float t = 0; t < smoothDuration; t += Time.deltaTime)
+        elapsedTime = 0f;
+        while (elapsedTime < smoothDuration)
         {
-            float normalizedTime = t / smoothDuration;
-            largeImageCanvasGroup.alpha = Mathf.Lerp(0f, targetAlpha, normalizedTime);
+            elapsedTime += Time.deltaTime;
+            largeImageCanvasGroup.alpha = Mathf.Lerp(0f, 1f, elapsedTime / smoothDuration);
             yield return null;
         }
     }
@@ -209,75 +216,73 @@ public class LocationSceneManager : MonoBehaviour
 
     public void ShowLocationDetail()
     {
-        // Giải phóng tài nguyên cũ trước khi tạo mới
+        // Giải phóng tài nguyên cũ
         ClearOldResources();
+
         int targetLocationId = UIManager.Instance.locationID;
         IEnumerable<ImageTable> images = _dataService.GetImageByLocationId(targetLocationId);
         UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, false, 3000);
         List<string> imagePaths = new List<string>();
-        // In kết quả ra Console
+
         foreach (var image in images)
         {
             Debug.Log($"Location ID: {image.id}, Name: {image.image_name}, Nation ID: {image.location_id}");
-            // Danh sách đường dẫn tới các hình ảnh
             string imageName = image.image_name;
             string imagePath = Path.Combine(Application.persistentDataPath, "Images", imageName) + ".jpg";
-            Debug.Log("imagePath" + imagePath);
+            Debug.Log("imagePath: " + imagePath);
             imagePaths.Add(imagePath);
         }
+
         DisplayImages(imagePaths);
 
-        if (imageSpritesOriginal.Count() > 0)
+        if (imageSpritesOriginal.Count > 0)
         {
             largeImagePanel.SetActive(true);
-            // Lấy texture từ sprite
             Texture2D texture = imageSpritesOriginal[0].texture;
-            // Gán sprite mới vào Image
             ResizeLargeImage(texture);
         }
         else
         {
-            //Nếu không có ảnh thì xóa iamgelarge
             largeImagePanel.SetActive(false);
             UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
         }
     }
+
     private void ClearOldResources()
     {
-        // Giải phóng các Sprite cũ
-        foreach (var sprite in imageSprites)
+        // Giải phóng sprite và texture
+        foreach (var sprite in imageSprites.Concat(imageSpritesOriginal))
         {
-            if (sprite != null && sprite.texture != null)
+            if (sprite != null)
             {
-                Destroy(sprite.texture);
+                if (sprite.texture != null)
+                {
+                    Destroy(sprite.texture);
+                }
+                Destroy(sprite);
             }
-            Destroy(sprite);
         }
         imageSprites.Clear();
-
-        foreach (var sprite in imageSpritesOriginal)
-        {
-            if (sprite != null && sprite.texture != null)
-            {
-                Destroy(sprite.texture);
-            }
-            Destroy(sprite);
-        }
         imageSpritesOriginal.Clear();
 
-        // Giải phóng các GameObject cũ trong content
+        // Đưa các GameObject trong content về pool thay vì hủy
         foreach (Transform child in content)
         {
-            Destroy(child.gameObject);
+            ReturnToPool(child.gameObject);
         }
 
-        // Giải phóng texture của largeImage nếu có
-        if (largeImage.sprite != null && largeImage.sprite.texture != null)
+        // Xóa ảnh lớn
+        if (largeImage.sprite != null)
         {
-            Destroy(largeImage.sprite.texture);
+            if (largeImage.sprite.texture != null)
+            {
+                DestroyImmediate(largeImage.sprite.texture, true);
+            }
+            DestroyImmediate(largeImage.sprite, true);
+            largeImage.sprite = null;
         }
-        largeImage.sprite = null;
-        // Giải phóng bộ nhớ không sử dụng
+
+        // Chỉ gọi UnloadUnusedAssets khi cần thiết
         Resources.UnloadUnusedAssets();
         System.GC.Collect();
     }
@@ -427,89 +432,105 @@ public class LocationSceneManager : MonoBehaviour
         }
     }
 
+    // Tạo một pool để quản lý các GameObject của image prefab
+    private Queue<GameObject> imagePool = new Queue<GameObject>();
+
+    private GameObject GetPooledImage()
+    {
+        while (imagePool.Count > 0)
+        {
+            GameObject obj = imagePool.Dequeue();
+            if (obj != null && !obj.Equals(null)) // Kiểm tra xem GameObject có hợp lệ
+            {
+                obj.SetActive(true);
+                return obj;
+            }
+        }
+        return Instantiate(imagePrefab, content);
+    }
+
+    private void ReturnToPool(GameObject obj)
+    {
+        if (obj != null && !obj.Equals(null))
+        {
+            obj.SetActive(false);
+            imagePool.Enqueue(obj);
+        }
+    }
+
     // Hàm hiển thị các hình ảnh trong ScrollView
     void DisplayImages(List<string> imagePaths)
     {
-        int i = 0;
-        // Xóa tất cả các con trong content
+        // Đưa tất cả GameObject trong content về pool
         foreach (Transform child in content)
         {
-            Destroy(child.gameObject);
+            ReturnToPool(child.gameObject);
         }
+
+        // Xóa danh sách sprite
         imageSprites.Clear();
         imageSpritesOriginal.Clear();
 
+        int i = 0;
         foreach (string imagePath in imagePaths)
         {
-            // Load texture từ file hình ảnh
             Texture2D texture = LoadTexture(imagePath);
-            Debug.Log("imagePath 111: " + imagePath);
-
             if (texture != null)
             {
-                // Tạo đối tượng Image từ prefab
-
-                GameObject imagePanel = Instantiate(imagePrefab, content);
-
+                GameObject imagePanel = GetPooledImage();
                 GameObject newImageObj = imagePanel.transform.Find("Image").gameObject;
+                Image imageComponent = newImageObj.GetComponent<Image>();
 
-                // Lấy component Image của đối tượng và gán sprite cho nó
-                Image imageComponent = newImageObj.GetComponent<Image>();  
-
-                // Lấy tỷ lệ của ảnh (width/height)
-                float imageRatio = (float)texture.width / texture.height;
-
-                // Cắt texture để thành hình vuông
+                // Cắt texture thành hình vuông
                 int squareSize = Mathf.Min(texture.width, texture.height);
                 Rect squareRect = new Rect(
-                    (texture.width - squareSize) / 2, // Cắt ở giữa nếu chiều rộng lớn hơn
-                    (texture.height - squareSize) / 2, // Cắt ở giữa nếu chiều cao lớn hơn
+                    (texture.width - squareSize) / 2,
+                    (texture.height - squareSize) / 2,
                     squareSize, squareSize);
 
-                // Chuyển Texture2D thành Sprite hình vuông
                 Sprite newSprite = Sprite.Create(texture, squareRect, new Vector2(0.5f, 0.5f));
                 Sprite newSpriteOriginal = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
 
-                // Gán sprite cho Image
                 imageComponent.sprite = newSprite;
 
-                // Lấy RectTransform của đối tượng Image mới
                 RectTransform imageRectTransform = newImageObj.GetComponent<RectTransform>();
-
-                // Lấy chiều cao của ScrollView
                 float scrollViewHeight = ((RectTransform)content).rect.height;
-
-                // Đặt width và height cho newImageObj (đặt width = height và bằng height của ScrollView)
                 imageRectTransform.sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
                 imagePanel.GetComponent<RectTransform>().sizeDelta = new Vector2(scrollViewHeight, scrollViewHeight);
-                imageSprites.Add(newSprite); // Thêm sprite vào danh sách 
+
+                imageSprites.Add(newSprite);
                 imageSpritesOriginal.Add(newSpriteOriginal);
+
                 int localIndex = i;
-                newImageObj.GetComponent<Button>().onClick.AddListener(() => OnImageClick(localIndex));
-                i++; 
+                Button button = newImageObj.GetComponent<Button>();
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => OnImageClick(localIndex));
+                i++;
             }
             else
             {
-                Debug.LogError("Could not load texture from path 111: " + imagePath);
+                Debug.LogError("Could not load texture from path: " + imagePath);
             }
         }
+
+        // Đặt lại vị trí của ScrollView
+        imageScrollRect.horizontalNormalizedPosition = 1f;
     }
 
     // Hàm load texture từ file hình ảnh
     Texture2D LoadTexture(string path)
     {
-        byte[] fileData;
-
         if (File.Exists(path))
         {
-            fileData = File.ReadAllBytes(path);
-            Texture2D tex = new Texture2D(2, 2);
-            tex.LoadImage(fileData); // Sẽ tự động tạo kích thước của hình ảnh
+            byte[] fileData = File.ReadAllBytes(path);
+            Texture2D tex = new Texture2D(2, 2, TextureFormat.RGB24, false);
+            tex.LoadImage(fileData);
+            //tex.Compress(true); // Nén texture để giảm sử dụng bộ nhớ
             return tex;
         }
-
         return null;
     }
+
     // Hàm gọi khi click vào image trong ScrollView
     public void OnImageClick(int imageIndex)
     {
@@ -562,72 +583,56 @@ public class LocationSceneManager : MonoBehaviour
     // Xử lý kéo bằng chuột (thay thế cho touch/drag trên Windows)
     void HandleMouseDrag()
     {
-        if (Input.GetMouseButtonDown(0)) // Khi bắt đầu click chuột
+        if (!largeImagePanel.activeSelf) return;
+
+        Vector2 mousePosition = Input.mousePosition;
+
+        if (Input.GetMouseButtonDown(0))
         {
-            if (IsPointerOverLargeImage()) // Kiểm tra xem chuột có đang trên largeImage không
+            if (IsPointerOverLargeImage())
             {
-                startTouchPosition = Input.mousePosition;
+                startTouchPosition = mousePosition;
                 isDragging = true;
-                isDragOnLargeImage = true; // Chỉ drag nếu trên largeImage
+                isDragOnLargeImage = true;
             }
         }
 
-        if (Input.GetMouseButton(0) && isDragging) // Khi đang kéo chuột
+        if (Input.GetMouseButton(0) && isDragging && isDragOnLargeImage)
         {
-            if (isDragOnLargeImage)
+            Vector2 difference = mousePosition - startTouchPosition;
+            if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y))
             {
-                Vector2 currentTouchPosition = Input.mousePosition;
-                Vector2 difference = currentTouchPosition - startTouchPosition;
-
-                // Điều kiện di chuyển ngang hoặc dọc
-                if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y)) // Di chuyển ngang (trái/phải)
-                {
-                    // Chỉ cho phép di chuyển ảnh sang trái hoặc phải
-                    largeImageRectTransform.anchoredPosition = new Vector2(difference.x, 0);
-                    // Tính toán độ mờ dần của ảnh (khi swipe càng xa thì ảnh càng mờ)
-                    float alpha = Mathf.Clamp(1 - Mathf.Abs(difference.magnitude) / dragThreshold, 0.4f, 1f);
-                    largeImageCanvasGroup.alpha = alpha;
-                }
-
+                largeImageRectTransform.anchoredPosition = new Vector2(difference.x, 0);
+                float alpha = Mathf.Clamp(1 - Mathf.Abs(difference.magnitude) / dragThreshold, 0.4f, 1f);
+                largeImageCanvasGroup.alpha = alpha;
             }
         }
 
-        if (Input.GetMouseButtonUp(0) && isDragging) // Khi thả chuột
+        if (Input.GetMouseButtonUp(0) && isDragging && isDragOnLargeImage)
         {
-            endTouchPosition = Input.mousePosition;
+            Vector2 difference = mousePosition - startTouchPosition;
             isDragging = false;
-
-            if (isDragOnLargeImage) // Chỉ xử lý khi drag bắt đầu từ largeImage
-            {
-                Vector2 difference = endTouchPosition - startTouchPosition;
-
-                if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y)) // Swipe trái/phải
-                {
-                    if (Mathf.Abs(difference.x) > dragThreshold) // Kiểm tra xem có vuốt đủ xa không
-                    {
-                        if (difference.x > 0 && currentImageIndex > 0) // Vuốt sang phải (trở về ảnh trước)
-                        {
-                            ShowPreviousImage();
-                        }
-                        else if (difference.x < 0 && currentImageIndex < imageSprites.Count - 1) // Vuốt sang trái (chuyển tới ảnh sau)
-                        {
-                            ShowNextImage();
-                        }
-                        else
-                        {
-                            StartCoroutine(SmoothReturnToPosition()); // Nếu ở ảnh đầu/cuối, quay lại vị trí ban đầu
-                        }
-                    }
-                    else
-                    {
-                        StartCoroutine(SmoothReturnToPosition()); // Nếu kéo không đủ xa, đưa ảnh về vị trí cũ
-                    }
-                }
-                
-            }
-
-            // Reset biến kiểm tra drag
             isDragOnLargeImage = false;
+
+            if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y) && Mathf.Abs(difference.x) > dragThreshold)
+            {
+                if (difference.x > 0 && currentImageIndex > 0)
+                {
+                    ShowPreviousImage();
+                }
+                else if (difference.x < 0 && currentImageIndex < imageSpritesOriginal.Count - 1)
+                {
+                    ShowNextImage();
+                }
+                else
+                {
+                    StartCoroutine(SmoothReturnToPosition());
+                }
+            }
+            else
+            {
+                StartCoroutine(SmoothReturnToPosition());
+            }
         }
     }
     public bool isAutoChangeImage()
@@ -842,5 +847,9 @@ public class LocationSceneManager : MonoBehaviour
         }
 
         return position;
+    }
+    void OnDestroy()
+    {
+        _dataService?.Dispose();
     }
 }
