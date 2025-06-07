@@ -100,15 +100,15 @@ public class LocationSceneManager : MonoBehaviour
 
     private P2ADataService _dataService;
 
-    public float changeInterval = 5.0f; // Thời gian giữa các lần đổi ảnh
+    public float changeInterval = 3.0f; // Thời gian giữa các lần đổi ảnh
     public float smoothDuration = 1.0f; // Thời gian chuyển đổi ảnh mượt mà
     private bool enableAutoChangeImage = false;
     private Coroutine autoChangeImageCoroutine;
 
     // Thêm các biến cho bộ đếm thời gian không tương tác
-    private float inactivityTimer = 0f;
-    private readonly float inactivityThreshold = 15f; // 15 giây
+    private float inactivityTimer = 0f;  
     private bool isTrackingInactivity = false;
+    float inactivityThreshold = 0f;
     // Start is called before the first frame update
     void Start()
     {
@@ -124,8 +124,10 @@ public class LocationSceneManager : MonoBehaviour
         largeImageCanvasGroup.alpha = originalAlpha; // Đặt alpha mặc định là 1 (ảnh hiển thị hoàn toàn)
          
         StartCoroutine(CopyFolderFromStreamingAssets("Images"));
+        inactivityThreshold = PlayerPrefs.GetFloat("InactivityThreshold", 15f);
         ResetInactivityTimer();
         isTrackingInactivity = largeImagePanel.activeSelf; // Khởi tạo trạng thái theo dõi
+
     }
 
     public void AutoChangePhotoBtnClick()
@@ -143,8 +145,8 @@ public class LocationSceneManager : MonoBehaviour
             {
                 enableAutoChangeImage = true;
                 autoChangeImageCoroutine = StartCoroutine(AutoChangeImage());
-                
-                ResetInactivityTimer();
+
+                inactivityThreshold = PlayerPrefs.GetFloat("InactivityThreshold", 15f) * 3;
                 Debug.Log("Started new autoChangeImageCoroutine");
             }
             else
@@ -160,10 +162,12 @@ public class LocationSceneManager : MonoBehaviour
                 autoChangeImageCoroutine = null;
                 Debug.Log("Stopped autoChangeImageCoroutine");
             }
+            inactivityThreshold = PlayerPrefs.GetFloat("InactivityThreshold", 15f);
             enableAutoChangeImage = false;
-            isTrackingInactivity = largeImagePanel.activeSelf;
             Debug.Log("Auto change disabled");
         }
+        ResetInactivityTimer();
+        isTrackingInactivity = largeImagePanel.activeSelf;
     }
 
     // Coroutine đổi ảnh tự động
@@ -178,12 +182,12 @@ public class LocationSceneManager : MonoBehaviour
             if (!isDragging)
             {
                 yield return StartCoroutine(SmoothTransitionToNextImage());
-                if (currentImageIndex == imageSpritesOriginal.Count - 1)
-                {
-                    ResetInactivityTimer();
-                    isTrackingInactivity = true;
-                    Debug.Log("Reached last image, starting inactivity timer");
-                }
+                //if (currentImageIndex == imageSpritesOriginal.Count - 1)
+                //{
+                //    ResetInactivityTimer();
+                //    isTrackingInactivity = true;
+                //    Debug.Log("Reached last image, starting inactivity timer");
+                //}
             }
             else
             {
@@ -390,7 +394,6 @@ public class LocationSceneManager : MonoBehaviour
         // Reset vị trí và alpha của ảnh
         largeImageRectTransform.anchoredPosition = Vector2.zero;
         largeImageCanvasGroup.alpha = originalAlpha;
-        ResetInactivityTimer();
     }
 
 
@@ -746,11 +749,11 @@ public class LocationSceneManager : MonoBehaviour
             currentImageIndex = 0; // Quay lại ảnh đầu tiên nếu hết ảnh
         }
         ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
-        // Chỉ reset timer nếu không ở chế độ tự động hoặc không phải ảnh cuối
-        if (!enableAutoChangeImage || currentImageIndex != imageSpritesOriginal.Count - 1)
-        {
-            ResetInactivityTimer();
-        }
+        //// Chỉ reset timer nếu không ở chế độ tự động hoặc không phải ảnh cuối
+        //if (!enableAutoChangeImage || currentImageIndex != imageSpritesOriginal.Count - 1)
+        //{
+        //    ResetInactivityTimer();
+        //}
     }
 
     // Sửa phương thức ShowPreviousImage
@@ -764,12 +767,7 @@ public class LocationSceneManager : MonoBehaviour
         {
             currentImageIndex = imageSpritesOriginal.Count - 1; // Quay lại ảnh cuối nếu ở ảnh đầu tiên
         }
-        ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture);
-        // Chỉ reset timer nếu không ở chế độ tự động hoặc không phải ảnh cuối
-        if (!enableAutoChangeImage || currentImageIndex != imageSpritesOriginal.Count - 1)
-        {
-            ResetInactivityTimer();
-        }
+        ResizeLargeImage(imageSpritesOriginal[currentImageIndex].texture); 
     }
 
 

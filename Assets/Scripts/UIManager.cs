@@ -175,7 +175,10 @@ public class UIManager : MonoBehaviour
         {
             //Debug.Log("close button click");
             //ShowHidePanel(mapPanel, ShowHide.Hide, 0.5f);
-            ShowHidePanel(locationPanel, ShowHide.Hide, 0.5f);
+            if(locationPanel != null && locationPanel.gameObject.activeSelf)
+            {
+                ShowHidePanel(locationPanel, ShowHide.Hide, 0.5f);
+            }
 
             MovePanel(mapPanel, PanelMover.Direction.Up, true, 3000);
             MovePanel(mapDetailPanel, PanelMover.Direction.Down, true, 3000);

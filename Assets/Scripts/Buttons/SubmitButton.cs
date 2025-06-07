@@ -11,6 +11,7 @@ public class SubmitButton : MonoBehaviour
     public TMP_InputField deviceNameInputField;
     public TMP_InputField limitTimeInputField;
     public TMP_InputField soundInputField;
+    public TMP_InputField showTimeInputField;
     public TextMeshProUGUI validateTxt;
 
     // Start is called before the first frame update
@@ -66,6 +67,30 @@ public class SubmitButton : MonoBehaviour
                 Debug.Log("Giá trị trong InputField không hợp lệ.");
             }
         }
+
+        if (PlayerPrefs.HasKey("InactivityThreshold"))
+        {
+            // Nếu có, lấy giá trị từ PlayerPrefs và hiển thị lên InputField
+            float savedValue = PlayerPrefs.GetFloat("InactivityThreshold");
+            showTimeInputField.text = savedValue.ToString();
+        }
+        else
+        {
+            // Nếu không có, set giá trị mặc định từ InputField vào PlayerPrefs
+            float defaultValue;
+            if (float.TryParse(showTimeInputField.text, out defaultValue))
+            {
+                // Lưu giá trị hiện tại trong InputField vào PlayerPrefs nếu đó là số hợp lệ
+                PlayerPrefs.SetFloat("InactivityThreshold", defaultValue);
+                PlayerPrefs.Save();
+                Debug.Log("Giá trị mặc định đã được lưu: " + defaultValue);
+            }
+            else
+            {
+                // Nếu giá trị trong InputField không phải số, để trống hoặc xử lý lỗi
+                Debug.Log("Giá trị trong InputField không hợp lệ.");
+            }
+        }
     }
 
     // Hàm sẽ được gọi khi Button được nhấn
@@ -107,6 +132,19 @@ public class SubmitButton : MonoBehaviour
         else
         { 
             validateTxt.text = "Please enter a valid numeric value for Audible Threshold.";
+        }
+
+        inputValue = showTimeInputField.text;
+        if (float.TryParse(inputValue, out float result3))
+        {
+            // Nếu là số, lưu vào PlayerPrefs
+            PlayerPrefs.SetFloat("InactivityThreshold", result3);
+            PlayerPrefs.Save();
+            Debug.Log("Giá trị đã được lưu: " + result3);
+        }
+        else
+        {
+            validateTxt.text = "Please enter a valid numeric value for Auto Hide Time.";
         }
     }
 
