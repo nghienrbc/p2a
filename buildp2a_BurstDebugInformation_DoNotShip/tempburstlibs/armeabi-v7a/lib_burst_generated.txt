@@ -7,13 +7,15 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_
 --dump=Function
 --float-precision=Standard
 --target-framework=NetFramework
---branch-protection=Standard
 --assembly-defines=Assembly-CSharp-firstpass;
 --assembly-defines=Assembly-CSharp;
 --assembly-defines=BestHTTP;
 --assembly-defines=Coffee.SoftMaskForUGUI;
 --assembly-defines=Coffee.SoftMaskForUGUI.R;
 --assembly-defines=DOTween;
+--assembly-defines=gpm_common;
+--assembly-defines=gpm_communicator;
+--assembly-defines=gpm_webview;
 --assembly-defines=Mono.Security;
 --assembly-defines=mscorlib;
 --assembly-defines=NAudio;

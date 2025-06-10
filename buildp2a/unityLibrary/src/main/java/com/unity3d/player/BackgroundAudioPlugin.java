@@ -154,10 +154,12 @@ public class BackgroundAudioPlugin {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            if (!startForegroundService()) {
-                Log.e(TAG, "Không thể khởi động foreground service, dừng dịch vụ");
-                stopSelf();
-                return START_NOT_STICKY;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (!startForegroundService()) {
+                    Log.e(TAG, "Không thể khởi động foreground service, dừng dịch vụ");
+                    stopSelf();
+                    return START_NOT_STICKY;
+                }
             }
 
             if (intent != null && intent.getBooleanExtra("OPEN_APP", false)) {

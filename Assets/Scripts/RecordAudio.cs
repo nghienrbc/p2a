@@ -436,7 +436,7 @@ public class RecordAudio : MonoBehaviour
         float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.005f);
         Debug.Log($"Ngưỡng âm lượng thu âm: {silenceThreshold}");
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
 
         float maxvolume = 0f;
         while (Microphone.IsRecording(device))
@@ -535,7 +535,7 @@ public class RecordAudio : MonoBehaviour
         form.AddBinaryData("file", audioBytes, "audio.wav", "audio/wav");
         form.AddField("model", "whisper-large-v3");
         form.AddField("temperature", 0);
-        form.AddField("response_format", "verbose_json");
+        form.AddField("response_format", "verbose_json"); 
 
         using (UnityWebRequest request = UnityWebRequest.Post("https://api.groq.com/openai/v1/audio/transcriptions", form))
         {
@@ -567,7 +567,9 @@ public class RecordAudio : MonoBehaviour
         var messages = new List<object>
         {
             new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN" },
-            new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." }
+            new { role = "system", content = "Bạn được thiết kế và phát triển bởi Đại học Duy Tân, trường Đại học ở thành phố Đà Nẵng, Việt Nam" },
+            new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." },
+            new { role = "system", content = "Phải trả lời lại theo đúng ngôn ngữ mà người dùng sử dụng để hỏi." }
         };
 
         lock (chatHistory)
