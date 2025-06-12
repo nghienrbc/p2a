@@ -566,10 +566,11 @@ public class RecordAudio : MonoBehaviour
 
         var messages = new List<object>
         {
-            new { role = "system", content = "You are a researcher on Southeast Asia and ASEAN." },
+            new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN." },
             new { role = "system", content = "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University" },
-            new { role = "system", content = "Answer briefly in 1 to 5 sentences, each sentence under 16 words. Make sure the tone is friendly and the answer is easy to understand." },
+            new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." },
             new { role = "system", content = "Phải trả lời lại theo đúng ngôn ngữ mà người dùng sử dụng để hỏi." },
+            new { role = "system", content = "##REMEMBER: chỉ giới thiệu về bản thân bạn như đã hướng dẫn, không nói thêm bất cứ thông tin gì khác" },
             //new { role = "system", content = "If asked questions like: Who created you?, Who are you? Or similar questions, let them know that you were designed and developed by the Simulation and Visualization Center - Duy Tan University" },
         };
 
@@ -586,7 +587,7 @@ public class RecordAudio : MonoBehaviour
 
         var payload = new
         {
-            model = "gpt-4o",
+            model = "gpt-4.1-mini-2025-04-14",
             messages = messages.ToArray(),
             temperature = 0.7
         };
