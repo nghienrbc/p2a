@@ -79,14 +79,14 @@ public class WebviewTest : MonoBehaviour
                 position = new GpmWebViewRequest.Position
                 {
                     hasValue = true,
-                    x = (int)(Screen.width * 0.1f),
-                    y = (int)(Screen.height * 0.1f)
+                    x = (int)(Screen.width * 0.08f),
+                    y = (int)(Screen.height * 0.02f)
                 },
                 size = new GpmWebViewRequest.Size
                 {
                     hasValue = true,
-                    width = (int)(Screen.width * 0.8f),
-                    height = (int)(Screen.height * 0.8f)
+                    width = (int)(Screen.width * 0.45f),
+                    height = (int)(Screen.height * 0.95f)
                 },
                 supportMultipleWindows = true,
 #if UNITY_IOS
@@ -94,7 +94,7 @@ public class WebviewTest : MonoBehaviour
             isMaskViewVisible = true,
 #endif
         }, null, null);
-        UIManager.Instance.MoveMyaku(true);
+       // UIManager.Instance.MoveMyaku(true);
     }
 
     // Popup custom margins

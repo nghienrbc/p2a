@@ -225,7 +225,7 @@ public class MyakuController : MonoBehaviour
         {
             yield return null;
         }
-        UIManager.Instance.connectionTxt.text = "I'm hearing! Ask me something!";
+        //UIManager.Instance.connectionTxt.text = "I'm hearing! Ask me something!";
 
         // Add additional 1 second delay after audio finishes
         // yield return new WaitForSeconds(1.0f);
@@ -249,7 +249,7 @@ public class MyakuController : MonoBehaviour
         Debug.Log("begin answer");
         animator.SetBool("thinking", false);
         animator.SetBool("answer", true);
-        UIManager.Instance.connectionTxt.text = UIManager.Instance.connectionTxt.text + "\n OK! Here is my answer";
+       // UIManager.Instance.connectionTxt.text = UIManager.Instance.connectionTxt.text + "\n OK! Here is my answer";
     }
 
     public void MyakuStopAnswer()

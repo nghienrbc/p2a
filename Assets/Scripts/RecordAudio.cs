@@ -346,7 +346,7 @@ public class RecordAudio : MonoBehaviour
         if (!recordingSuccess)
         {
             Debug.Log("Ghi âm thất bại, kết thúc quy trình");
-            UIManager.Instance.connectionTxt.text = "Tôi không nghe thấy câu hỏi, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "I didn't hear the question, please try again.";
             myakuController.MyakuHello();
             yield break;
         }
@@ -357,7 +357,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(transcription))
         {
             Debug.LogError("Không thể chuyển đổi giọng nói thành văn bản");
-            UIManager.Instance.connectionTxt.text = "Không thể nhận dạng câu hỏi, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "Question could not be recognized, please try again";
             myakuController.MyakuHello();
             yield break;
         }
@@ -371,7 +371,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(answer))
         {
             Debug.LogError("Không nhận được câu trả lời");
-            UIManager.Instance.connectionTxt.text = "Tôi không thể trả lời câu hỏi này, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "I cannot answer this question, please try again";
             myakuController.MyakuHello();
             yield break;
         }
@@ -403,7 +403,7 @@ public class RecordAudio : MonoBehaviour
                 if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
                 {
                     Debug.LogError("Quyền microphone bị từ chối trên Android");
-                    UIManager.Instance.connectionTxt.text = "Vui lòng cấp quyền microphone để ghi âm";
+                    UIManager.Instance.connectionTxt.text = "Please grant microphone permission to record";
                     onComplete?.Invoke(false);
                     yield break;
                 }
@@ -424,7 +424,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(device))
         {
             Debug.LogError("Không tìm thấy thiết bị microphone");
-            UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
+            UIManager.Instance.connectionTxt.text = "Cannot find any microphone device";
             onComplete?.Invoke(false);
             yield break;
         }
@@ -438,6 +438,7 @@ public class RecordAudio : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
+        UIManager.Instance.connectionTxt.text = $"I'm hearing! Ask me something!";
         float maxvolume = 0f;
         while (Microphone.IsRecording(device))
         {
@@ -447,7 +448,7 @@ public class RecordAudio : MonoBehaviour
             {
                 questionClip.GetData(data, position - data.Length);
                 float volume = CalculateVolume(data);
-                UIManager.Instance.connectionTxt.text = $"Âm lượng hiện tại: { volume} ";
+                UIManager.Instance.volumeTxt.text = $"Âm lượng hiện tại: { volume} ";
                 Debug.Log($"Âm lượng hiện tại: {volume}");
                 if (volume > maxvolume)
                 {
@@ -494,7 +495,7 @@ public class RecordAudio : MonoBehaviour
         if (!hasSoundDetected || questionClip == null)
         {
             Debug.Log("Không phát hiện tiếng nói, hủy xử lý");
-            UIManager.Instance.connectionTxt.text = "Không phát hiện tiếng nói, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "Voice not detected, please try again!";
             // kết thúc ghi âm, cho phép heyDT
             enableHeyDT = true;
             onComplete?.Invoke(false);
@@ -506,7 +507,7 @@ public class RecordAudio : MonoBehaviour
         enableHeyDT = true;
 
         Debug.Log("Kết thúc ghi âm, xử lý câu hỏi");
-        UIManager.Instance.connectionTxt.text = "Đang xử lý câu hỏi của bạn...";
+        UIManager.Instance.connectionTxt.text = "Processing your question...";
         myakuController.MyakuThinking();
 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
@@ -638,7 +639,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(googleApiKey))
         {
             Debug.LogError("Google API Key chưa được thiết lập trong config.json");
-            UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy Google API Key";
+            UIManager.Instance.connectionTxt.text = "Error: Google API Key not found";
             yield break;
         }
 
@@ -999,7 +1000,7 @@ public class RecordAudio : MonoBehaviour
         if (Application.platform == RuntimePlatform.Android && !Permission.HasUserAuthorizedPermission(Permission.Microphone))
         {
             Permission.RequestUserPermission(Permission.Microphone);
-            UIManager.Instance.connectionTxt.text = "Vui lòng cấp quyền microphone để ghi âm";
+            UIManager.Instance.connectionTxt.text = "Please grant microphone permission to record";
             return;
         }
 
@@ -1043,7 +1044,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(transcription))
         {
             Debug.LogError("Không thể chuyển đổi giọng nói thành văn bản");
-            UIManager.Instance.connectionTxt.text = "Không thể nhận dạng câu hỏi, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "Question could not be recognized, please try again";
             myakuController.MyakuHello();
             yield break;
         }
@@ -1057,7 +1058,7 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(answer))
         {
             Debug.LogError("Không nhận được câu trả lời");
-            UIManager.Instance.connectionTxt.text = "Tôi không thể trả lời câu hỏi này, vui lòng thử lại";
+            UIManager.Instance.connectionTxt.text = "I cannot answer this question, please try again";
             myakuController.MyakuHello();
             yield break;
         }
@@ -1114,7 +1115,7 @@ public class RecordAudio : MonoBehaviour
             else
             {
                 Debug.Log("No microphone device found!");
-                UIManager.Instance.connectionTxt.text = "Không tìm thấy thiết bị microphone";
+                UIManager.Instance.connectionTxt.text = "Microphone device not found";
             }
         } 
     }

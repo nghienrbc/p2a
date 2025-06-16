@@ -128,6 +128,24 @@ public class LocationSceneManager : MonoBehaviour
         ResetInactivityTimer();
         isTrackingInactivity = largeImagePanel.activeSelf; // Khởi tạo trạng thái theo dõi
 
+        // Thêm sự kiện onValueChanged cho textScrollRect
+        if (textScrollRect != null)
+        {
+            textScrollRect.onValueChanged.AddListener(OnTextScroll);
+            Debug.Log("TextScrollRect onValueChanged listener added");
+        }
+        else
+        {
+            Debug.LogWarning("textScrollRect is not assigned in the Inspector");
+        }
+
+    }
+
+    // Thêm phương thức OnTextScroll để xử lý khi scroll
+    private void OnTextScroll(Vector2 scrollPosition)
+    {
+        ResetInactivityTimer();
+        Debug.Log("TextScrollRect scrolled, inactivity timer reset");
     }
 
     public void AutoChangePhotoBtnClick()
@@ -947,5 +965,10 @@ public class LocationSceneManager : MonoBehaviour
     void OnDestroy()
     {
         _dataService?.Dispose();
+        // Gỡ sự kiện onValueChanged để tránh rò rỉ bộ nhớ
+        if (textScrollRect != null)
+        {
+            textScrollRect.onValueChanged.RemoveListener(OnTextScroll);
+        }
     }
 }
