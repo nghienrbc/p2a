@@ -65,7 +65,7 @@ public class UIManager : MonoBehaviour
         public float moveSpeed;
     }
     public List<PanelSettings> panelsToControl; // Danh sách các panel và thiết lập di chuyển
-
+   
     private void Awake()
     {
         // Đảm bảo rằng chỉ có một thể hiện UIManager duy nhất
