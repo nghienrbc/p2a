@@ -30,7 +30,8 @@ public class RecordAudio : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
 
     private AudioClip recordedClip;
-    private float startTime;
+    private float startTimeRecord = 0f;
+    private bool isStartRecording = false;
     private float recordingLength;
     private List<Coroutine> runningCoroutines;
 
@@ -48,6 +49,8 @@ public class RecordAudio : MonoBehaviour
     // Lịch sử chat
     private List<(string question, string answer)> chatHistory = new List<(string, string)>();
     private const float SESSION_TIMEOUT = 60f; // 1 phút
+
+    private string selectedSTTLanguage = ""; // Ngôn ngữ được chọn cho Google STT 
 
     // Danh sách ngôn ngữ được Google Cloud TTS hỗ trợ
     private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
@@ -352,7 +355,7 @@ public class RecordAudio : MonoBehaviour
         }
 
         string transcription = null;
-        yield return StartCoroutine(TranscribeAudioPhase((trans) => transcription = trans));
+        yield return StartCoroutine(TranscribeAudioPhase((trans) => transcription = trans));  
 
         if (string.IsNullOrEmpty(transcription))
         {
@@ -385,7 +388,6 @@ public class RecordAudio : MonoBehaviour
         UIManager.Instance.connectionTxt.text = answer;
 
         yield return StartCoroutine(TextToSpeechAndPlayPhase(answer));
-
         Debug.Log("Hoàn tất quy trình RecordQuestion");
     }
 
@@ -510,7 +512,7 @@ public class RecordAudio : MonoBehaviour
         UIManager.Instance.connectionTxt.text = "Processing your question...";
         myakuController.MyakuThinking();
 
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
         WavUtility.Save(audioFilePath, questionClip);
 
         if (!File.Exists(audioFilePath))
@@ -528,7 +530,7 @@ public class RecordAudio : MonoBehaviour
 
     private IEnumerator TranscribeAudioPhase(Action<string> onComplete)
     {
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
         byte[] audioBytes = File.ReadAllBytes(audioFilePath);
         Debug.Log($"Đã đọc file audio: {audioFilePath}, kích thước: {audioBytes.Length} bytes");
 
@@ -556,6 +558,82 @@ public class RecordAudio : MonoBehaviour
             else
             {
                 Debug.LogError($"Lỗi API Whisper: {request.error}, Response: {request.downloadHandler?.text}");
+                onComplete?.Invoke(null);
+            }
+        }
+    }
+
+    private IEnumerator TranscribeAudioGooglePhase(Action<string> onComplete)
+    {
+        if (string.IsNullOrEmpty(googleApiKey))
+        {
+            Debug.LogError("Khóa API Google chưa được thiết lập trong config.json");
+            UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy khóa API Google";
+            onComplete?.Invoke(null);
+            yield break;
+        }
+
+        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
+        byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+        Debug.Log($"Đã đọc file âm thanh cho Google STT: {audioFilePath}, kích thước: {audioBytes.Length} bytes");
+
+        string base64Audio = Convert.ToBase64String(audioBytes);
+        string languageCode = string.IsNullOrEmpty(selectedSTTLanguage) ? preferredLanguage : selectedSTTLanguage;
+
+        var sttRequestData = new
+        {
+            config = new
+            {
+                encoding = "LINEAR16",
+                sampleRateHertz = 44100,
+                languageCode = languageCode,
+                enableAutomaticPunctuation = true
+            },
+            audio = new
+            {
+                content = base64Audio
+            }
+        };
+
+        string jsonPayload = JsonConvert.SerializeObject(sttRequestData);
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
+
+        using (UnityWebRequest request = new UnityWebRequest("https://speech.googleapis.com/v1/speech:recognize?key=" + googleApiKey, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 30;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string response = request.downloadHandler.text;
+                try
+                {
+                    JObject json = JObject.Parse(response);
+                    string transcription = json["results"]?[0]?["alternatives"]?[0]?["transcript"]?.Value<string>();
+                    if (!string.IsNullOrEmpty(transcription))
+                    {
+                        Debug.Log($"Chuyển đổi Google STT thành công: {transcription}");
+                        onComplete?.Invoke(transcription);
+                    }
+                    else
+                    {
+                        Debug.LogError("Không tìm thấy văn bản trong phản hồi Google STT");
+                        onComplete?.Invoke(null);
+                    }
+                }
+                catch (JsonException e)
+                {
+                    Debug.LogError($"Lỗi phân tích JSON Google STT: {e.Message}");
+                    onComplete?.Invoke(null);
+                }
+            }
+            else
+            {
+                Debug.LogError($"Lỗi API Google STT: {request.error}, Phản hồi: {request.downloadHandler?.text}");
                 onComplete?.Invoke(null);
             }
         }
@@ -1018,12 +1096,14 @@ public class RecordAudio : MonoBehaviour
 
         UIManager.Instance.recordingIndicator.gameObject.SetActive(false);
         Microphone.End(null);
-        recordingLength = Time.realtimeSinceStartup - startTime;
+        recordingLength = Time.realtimeSinceStartup - startTimeRecord;
+        Debug.Log("Thời gian stop: " + Time.time);
+        Debug.Log("Thời gian ghi âm: " + recordingLength);
 
-        if (recordedClip != null)
+        if (recordedClip != null && recordingLength >= 3f && isStartRecording == true)
         {
             recordedClip = TrimClip(recordedClip, recordingLength);
-            string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_openAI.wav");
+            string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
             WavUtility.Save(audioFilePath, recordedClip);
             myakuController.MyakuThinking();
             UIManager.Instance.connectionTxt.text = "Let me think about the answer for a moment!";
@@ -1031,16 +1111,16 @@ public class RecordAudio : MonoBehaviour
         }
         else
         {
-            UIManager.Instance.connectionTxt.text = "Device cannot record, please check device status";
+            UIManager.Instance.connectionTxt.text = "Device cannot record or record time too short";
             myakuController.MyakuHello();
         }
+        isStartRecording = false;
     }
 
     private IEnumerator ProcessAudioResponse(string audioFilePath)
     {
         string transcription = null;
         yield return StartCoroutine(TranscribeAudioPhase((trans) => transcription = trans));
-
         if (string.IsNullOrEmpty(transcription))
         {
             Debug.LogError("Không thể chuyển đổi giọng nói thành văn bản");
@@ -1072,7 +1152,6 @@ public class RecordAudio : MonoBehaviour
         UIManager.Instance.connectionTxt.text = answer;
 
         yield return StartCoroutine(TextToSpeechAndPlayPhase(answer));
-
         Debug.Log("Hoàn tất xử lý âm thanh và trả lời");
     }
 
@@ -1095,7 +1174,7 @@ public class RecordAudio : MonoBehaviour
         
         if (fromHeyDT)
         { 
-            StartCoroutine(RecordQuestion());
+            StartCoroutine(RecordQuestion()); 
         }
         else
         {
@@ -1110,7 +1189,9 @@ public class RecordAudio : MonoBehaviour
                 int sampleRate = 44100;
                 int lengthSec = 45;
                 recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
-                startTime = Time.realtimeSinceStartup;
+                startTimeRecord = Time.realtimeSinceStartup;
+                Debug.Log("Thời gian bắt đầu ghi âm:" + startTimeRecord);
+                isStartRecording = true;
             }
             else
             {
@@ -1118,6 +1199,15 @@ public class RecordAudio : MonoBehaviour
                 UIManager.Instance.connectionTxt.text = "Microphone device not found";
             }
         } 
+    }
+
+    public void NationFlagLanguageButtonClick(string nationLanguage)
+    {
+        selectedSTTLanguage = nationLanguage;
+        CleanBeforeMakeQuestion();
+        myakuController.MyakuListen(true);
+        // không cho phép gọi hey DT khi chưa hoàn thành xong việc hỏi
+        enableHeyDT = false;
     }
 
     private void OnDestroy()
