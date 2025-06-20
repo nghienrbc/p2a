@@ -31,7 +31,8 @@ public class RecordAudio : MonoBehaviour
 
     private AudioClip recordedClip;
     private float startTimeRecord = 0f;
-    private bool isStartRecording = false;
+    private bool isRecordingByButton = false;
+    private bool isHoldingOnButton = false;
     private float recordingLength;
     private List<Coroutine> runningCoroutines;
 
@@ -1069,6 +1070,7 @@ public class RecordAudio : MonoBehaviour
 
     public void StartRecording()
     {
+        isHoldingOnButton = true;
         if (!isEnableMic)
         {
             isEnableMic = true;
@@ -1097,11 +1099,11 @@ public class RecordAudio : MonoBehaviour
         UIManager.Instance.recordingIndicator.gameObject.SetActive(false);
         Microphone.End(null);
         recordingLength = Time.realtimeSinceStartup - startTimeRecord;
-        Debug.Log("Thời gian stop: " + Time.time);
         Debug.Log("Thời gian ghi âm: " + recordingLength);
 
-        if (recordedClip != null && recordingLength >= 3f && isStartRecording == true)
-        {
+        if (recordedClip != null && isRecordingByButton == true)
+        { 
+            Debug.Log("Thời gian stop: " + Time.realtimeSinceStartup);
             recordedClip = TrimClip(recordedClip, recordingLength);
             string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
             WavUtility.Save(audioFilePath, recordedClip);
@@ -1112,9 +1114,10 @@ public class RecordAudio : MonoBehaviour
         else
         {
             UIManager.Instance.connectionTxt.text = "Device cannot record or record time too short";
-            myakuController.MyakuHello();
+            myakuController.MyakuHello(); 
         }
-        isStartRecording = false;
+        isHoldingOnButton = false;
+        isRecordingByButton = false;
     }
 
     private IEnumerator ProcessAudioResponse(string audioFilePath)
@@ -1178,6 +1181,7 @@ public class RecordAudio : MonoBehaviour
         }
         else
         {
+            if (!isHoldingOnButton) return;
             if (!isEnableMic)
             {
                 isEnableMic = true;
@@ -1191,7 +1195,7 @@ public class RecordAudio : MonoBehaviour
                 recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
                 startTimeRecord = Time.realtimeSinceStartup;
                 Debug.Log("Thời gian bắt đầu ghi âm:" + startTimeRecord);
-                isStartRecording = true;
+                isRecordingByButton = true;
             }
             else
             {
