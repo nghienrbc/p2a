@@ -121,8 +121,8 @@ public class RecordAudio : MonoBehaviour
     private static readonly Dictionary<string, string> VoiceMappings = new Dictionary<string, string>
     {
         { "af-ZA", "af-ZA-Standard-A" },
-        { "ar-XA", "ar-XA-Standard-A" },
-        { "bn-IN", "bn-IN-Standard-A" },
+        { "ar-XA", "ar-XA-Standard-B" },
+        { "bn-IN", "bn-IN-Standard-B" },
         { "bg-BG", "bg-BG-Standard-A" },
         { "ca-ES", "ca-ES-Standard-A" },
         { "zh-CN", "cmn-CN-Standard-A" },
@@ -271,29 +271,29 @@ public class RecordAudio : MonoBehaviour
     {
         onAudioFinished.AddListener(OnAudioFinished);
 
-//#if UNITY_ANDROID
-//        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-//        {
-//            Permission.RequestUserPermission(Permission.Microphone);
-//        }
-//        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
-//        {
-//            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
-//        }
+#if UNITY_ANDROID
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
+        {
+            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
+        }
 
-//        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-//        {
-//            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-//            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
-//        }
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
+        }
 
-//        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
-//        if (audioPlugin != null)
-//        {
-//            audioPlugin.Call("startRecordingFromUnity");
-//            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
-//        }
-//#endif
+        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
+        if (audioPlugin != null)
+        {
+            audioPlugin.Call("startRecordingFromUnity");
+            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
+        }
+#endif
     }
 
     private void Update()
