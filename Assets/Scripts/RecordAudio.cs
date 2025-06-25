@@ -178,8 +178,10 @@ public class RecordAudio : MonoBehaviour
         { "th-TH", "th-TH-Standard-A" },
         { "tr-TR", "tr-TR-Standard-A" },
         { "uk-UA", "uk-UA-Standard-A" },
-        { "vi-VN", "vi-VN-Standard-A" }
+        { "vi-VN", "vi-VN-Wavenet-D" }
     };
+    // Thêm HttpClient tĩnh để tái sử dụng
+    private static readonly HttpClient httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(45) };
 
     private class StreamBuffer
     {
@@ -269,29 +271,29 @@ public class RecordAudio : MonoBehaviour
     {
         onAudioFinished.AddListener(OnAudioFinished);
 
-#if UNITY_ANDROID
-        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-        {
-            Permission.RequestUserPermission(Permission.Microphone);
-        }
-        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
-        {
-            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
-        }
+//#if UNITY_ANDROID
+//        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+//        {
+//            Permission.RequestUserPermission(Permission.Microphone);
+//        }
+//        if (!Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
+//        {
+//            Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
+//        }
 
-        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        {
-            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
-        }
+//        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+//        {
+//            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+//            audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
+//        }
 
-        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
-        if (audioPlugin != null)
-        {
-            audioPlugin.Call("startRecordingFromUnity");
-            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
-        }
-#endif
+//        Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
+//        if (audioPlugin != null)
+//        {
+//            audioPlugin.Call("startRecordingFromUnity");
+//            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
+//        }
+//#endif
     }
 
     private void Update()
@@ -564,81 +566,81 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    private IEnumerator TranscribeAudioGooglePhase(Action<string> onComplete)
-    {
-        if (string.IsNullOrEmpty(googleApiKey))
-        {
-            Debug.LogError("Khóa API Google chưa được thiết lập trong config.json");
-            UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy khóa API Google";
-            onComplete?.Invoke(null);
-            yield break;
-        }
+    //private IEnumerator TranscribeAudioGooglePhase(Action<string> onComplete)
+    //{
+    //    if (string.IsNullOrEmpty(googleApiKey))
+    //    {
+    //        Debug.LogError("Khóa API Google chưa được thiết lập trong config.json");
+    //        UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy khóa API Google";
+    //        onComplete?.Invoke(null);
+    //        yield break;
+    //    }
 
-        string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
-        byte[] audioBytes = File.ReadAllBytes(audioFilePath);
-        Debug.Log($"Đã đọc file âm thanh cho Google STT: {audioFilePath}, kích thước: {audioBytes.Length} bytes");
+    //    string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
+    //    byte[] audioBytes = File.ReadAllBytes(audioFilePath);
+    //    Debug.Log($"Đã đọc file âm thanh cho Google STT: {audioFilePath}, kích thước: {audioBytes.Length} bytes");
 
-        string base64Audio = Convert.ToBase64String(audioBytes);
-        string languageCode = string.IsNullOrEmpty(selectedSTTLanguage) ? preferredLanguage : selectedSTTLanguage;
+    //    string base64Audio = Convert.ToBase64String(audioBytes);
+    //    string languageCode = string.IsNullOrEmpty(selectedSTTLanguage) ? preferredLanguage : selectedSTTLanguage;
 
-        var sttRequestData = new
-        {
-            config = new
-            {
-                encoding = "LINEAR16",
-                sampleRateHertz = 44100,
-                languageCode = languageCode,
-                enableAutomaticPunctuation = true
-            },
-            audio = new
-            {
-                content = base64Audio
-            }
-        };
+    //    var sttRequestData = new
+    //    {
+    //        config = new
+    //        {
+    //            encoding = "LINEAR16",
+    //            sampleRateHertz = 44100,
+    //            languageCode = languageCode,
+    //            enableAutomaticPunctuation = true
+    //        },
+    //        audio = new
+    //        {
+    //            content = base64Audio
+    //        }
+    //    };
 
-        string jsonPayload = JsonConvert.SerializeObject(sttRequestData);
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
+    //    string jsonPayload = JsonConvert.SerializeObject(sttRequestData);
+    //    byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
 
-        using (UnityWebRequest request = new UnityWebRequest("https://speech.googleapis.com/v1/speech:recognize?key=" + googleApiKey, "POST"))
-        {
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 30;
+    //    using (UnityWebRequest request = new UnityWebRequest("https://speech.googleapis.com/v1/speech:recognize?key=" + googleApiKey, "POST"))
+    //    {
+    //        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+    //        request.downloadHandler = new DownloadHandlerBuffer();
+    //        request.SetRequestHeader("Content-Type", "application/json");
+    //        request.timeout = 30;
 
-            yield return request.SendWebRequest();
+    //        yield return request.SendWebRequest();
 
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                string response = request.downloadHandler.text;
-                try
-                {
-                    JObject json = JObject.Parse(response);
-                    string transcription = json["results"]?[0]?["alternatives"]?[0]?["transcript"]?.Value<string>();
-                    if (!string.IsNullOrEmpty(transcription))
-                    {
-                        Debug.Log($"Chuyển đổi Google STT thành công: {transcription}");
-                        onComplete?.Invoke(transcription);
-                    }
-                    else
-                    {
-                        Debug.LogError("Không tìm thấy văn bản trong phản hồi Google STT");
-                        onComplete?.Invoke(null);
-                    }
-                }
-                catch (JsonException e)
-                {
-                    Debug.LogError($"Lỗi phân tích JSON Google STT: {e.Message}");
-                    onComplete?.Invoke(null);
-                }
-            }
-            else
-            {
-                Debug.LogError($"Lỗi API Google STT: {request.error}, Phản hồi: {request.downloadHandler?.text}");
-                onComplete?.Invoke(null);
-            }
-        }
-    }
+    //        if (request.result == UnityWebRequest.Result.Success)
+    //        {
+    //            string response = request.downloadHandler.text;
+    //            try
+    //            {
+    //                JObject json = JObject.Parse(response);
+    //                string transcription = json["results"]?[0]?["alternatives"]?[0]?["transcript"]?.Value<string>();
+    //                if (!string.IsNullOrEmpty(transcription))
+    //                {
+    //                    Debug.Log($"Chuyển đổi Google STT thành công: {transcription}");
+    //                    onComplete?.Invoke(transcription);
+    //                }
+    //                else
+    //                {
+    //                    Debug.LogError("Không tìm thấy văn bản trong phản hồi Google STT");
+    //                    onComplete?.Invoke(null);
+    //                }
+    //            }
+    //            catch (JsonException e)
+    //            {
+    //                Debug.LogError($"Lỗi phân tích JSON Google STT: {e.Message}");
+    //                onComplete?.Invoke(null);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Debug.LogError($"Lỗi API Google STT: {request.error}, Phản hồi: {request.downloadHandler?.text}");
+    //            onComplete?.Invoke(null);
+    //        }
+    //    }
+    //}
 
     private IEnumerator GenerateAnswerPhase(string transcription, Action<string> onComplete)
     {
@@ -647,6 +649,7 @@ public class RecordAudio : MonoBehaviour
         var messages = new List<object>
         {
             new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN." },
+            new { role = "system", content = "Sử dụng dữ liệu được cập nhật gần nhất để trả lời câu hỏi." },
             new { role = "system", content = "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University" },
             new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." },
             new { role = "system", content = "Phải trả lời lại theo đúng ngôn ngữ mà người dùng sử dụng để hỏi." },
@@ -719,6 +722,7 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogError("Google API Key chưa được thiết lập trong config.json");
             UIManager.Instance.connectionTxt.text = "Error: Google API Key not found";
+            myakuController.MyakuHello();
             yield break;
         }
 
@@ -729,26 +733,43 @@ public class RecordAudio : MonoBehaviour
             streamBuffer.ClearBuffer();
         }
 
-        // Hiển thị ngôn ngữ được phát hiện cho câu đầu tiên
-        if (sentences.Count > 0)
+        if (sentences.Count == 0 || sentences.All(s => string.IsNullOrWhiteSpace(s)))
         {
-            string detectedLanguage = DetectLanguage(sentences[0]);
-            string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
-            Debug.Log($"Ngôn ngữ được phát hiện: {languageName} ({detectedLanguage})");
-            //UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
+            Debug.LogError("Không có câu hợp lệ để xử lý TTS");
+            UIManager.Instance.connectionTxt.text = "No valid text to convert to speech";
+            myakuController.MyakuHello();
+            yield break;
         }
+
+        // Hiển thị ngôn ngữ được phát hiện cho câu đầu tiên
+        Task<string> detectLanguageTask = DetectLanguage(sentences[0]);
+        yield return StartCoroutine(RunTask(detectLanguageTask));
+        string detectedLanguage = detectLanguageTask.Result;
+        //string detectedLanguage = DetectLanguage(sentences[0]);
+        string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
+        Debug.Log($"Ngôn ngữ được phát hiện: {languageName} ({detectedLanguage})");
+        UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
+
 
         int currentPlayIndex = 0;
         bool isFirstSentencePlayed = false;
+        bool anySentenceProcessed = false;
+        float timeout = 40f; // Timeout 40 giây cho toàn bộ TTS
+        float startTimeout = Time.realtimeSinceStartup;
 
         audioClips.Clear();
+        runningCoroutines.Clear();
 
+        List<Task> ttsTasks = new List<Task>();
         for (int i = 0; i < sentences.Count; i++)
         {
-            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i])));
+            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i], (success) =>
+            {
+                if (success) anySentenceProcessed = true;
+            })));
         }
 
-        while (currentPlayIndex < sentences.Count)
+        while (currentPlayIndex < sentences.Count && Time.realtimeSinceStartup - startTimeout < timeout)
         {
             AudioClip clipToPlay = null;
             lock (audioClips)
@@ -803,12 +824,20 @@ public class RecordAudio : MonoBehaviour
         }
         runningCoroutines.Clear();
 
+        if (!anySentenceProcessed)
+        {
+            Debug.LogError($"Không có câu nào được xử lý thành công qua TTS. Sentences: {sentences.Count}, CurrentPlayIndex: {currentPlayIndex}");
+            //UIManager.Instance.connectionTxt.text = "Failed to convert text to speech, please try again";
+            myakuController.MyakuHello();
+            yield break;
+        }
+
         Debug.Log("Phát xong tất cả câu.");
         myakuController.MyakuStopAnswer();
         onAudioFinished.Invoke();
     }
 
-    private IEnumerator ProcessTTSSentence(int index, string sentence)
+    private IEnumerator ProcessTTSSentence(int index, string sentence, Action<bool> onComplete)
     {
         if (string.IsNullOrWhiteSpace(sentence))
         {
@@ -816,171 +845,340 @@ public class RecordAudio : MonoBehaviour
             {
                 Debug.Log($"Câu {index} trắng, bỏ qua.");
             }
+            onComplete?.Invoke(false);
             yield break;
         }
 
         Debug.Log($"Đang xử lý câu {index}: {sentence}");
 
-        string languageCode = DetectLanguage(sentence);
+        //string languageCode = DetectLanguage(sentence); 
+        Task<string> detectLanguageTask = DetectLanguage(sentence);
+        yield return StartCoroutine(RunTask(detectLanguageTask));
+        string languageCode = detectLanguageTask.Result;
         if (!SupportedLanguages.ContainsKey(languageCode))
         {
             Debug.LogWarning($"Ngôn ngữ {languageCode} không được hỗ trợ. Chuyển về {preferredLanguage}.");
             languageCode = preferredLanguage;
         }
 
-        Task<HttpResponseMessage> ttsTask = SynthesizeSpeechAsync(sentence, languageCode);
-        yield return StartCoroutine(RunTask(ttsTask));
-
-        HttpResponseMessage response = ttsTask.Result;
-        if (!response.IsSuccessStatusCode)
+        int retryCount = 0;
+        const int maxRetries = 2;
+        bool success = false;
+        while (retryCount <= maxRetries && !success)
         {
-            string errorContent = response.Content.ReadAsStringAsync().Result;
-            Debug.LogError($"Lỗi TTS API cho câu {index}: {response.StatusCode}, {errorContent}");
+            Task<HttpResponseMessage> ttsTask = SynthesizeSpeechAsync(sentence, languageCode);
+            yield return StartCoroutine(RunTask(ttsTask));
+
+            HttpResponseMessage response = ttsTask.Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorContent = response.Content.ReadAsStringAsync().Result;
+                Debug.LogError($"Lỗi TTS API cho câu {index}: {response.StatusCode}, {errorContent}");
+                retryCount++;
+                if (retryCount > maxRetries)
+                {
+                    Debug.LogError($"Hết số lần thử lại cho câu {index}. Bỏ qua.");
+                    lock (audioClips)
+                    {
+                        Debug.Log($"Câu {index} lỗi sau {maxRetries} lần thử.");
+                    }
+                    onComplete?.Invoke(false);
+                    yield break;
+                }
+                Debug.Log($"Thử lại lần {retryCount} cho câu {index}...");
+                yield return new WaitForSeconds(1f);
+                continue;
+            }
+
+            string responseJson = response.Content.ReadAsStringAsync().Result;
+            var jsonResponse = JObject.Parse(responseJson);
+            string audioContent = jsonResponse["audioContent"].Value<string>();
+            if (string.IsNullOrEmpty(audioContent))
+            {
+                Debug.LogError($"Không có dữ liệu âm thanh trong phản hồi TTS cho câu {index}");
+                onComplete?.Invoke(false);
+                yield break;
+            }
+
+            byte[] wavData = Convert.FromBase64String(audioContent);
+
+            int headerSize = 44;
+            if (wavData.Length < headerSize)
+            {
+                Debug.LogError($"Dữ liệu WAV không hợp lệ cho câu {index}");
+                lock (audioClips)
+                {
+                    Debug.Log($"Câu {index} lỗi.");
+                }
+                onComplete?.Invoke(false);
+                yield break;
+            }
+
+            float[] samples = new float[(wavData.Length - headerSize) / 2];
+            for (int i = 0; i < samples.Length; i++)
+            {
+                short sample = BitConverter.ToInt16(wavData, headerSize + i * 2);
+                samples[i] = sample / 32768f;
+            }
+
+            AudioClip clip = AudioClip.Create($"TTS_{index}", samples.Length, 1, SAMPLE_RATE, false);
+            clip.SetData(samples, 0);
+
             lock (audioClips)
             {
-                Debug.Log($"Câu {index} lỗi.");
+                audioClips.Add((index, clip));
+                Debug.Log($"Đã thêm clip {index}");
             }
-            yield break;
-        }
-
-        string responseJson = response.Content.ReadAsStringAsync().Result;
-        var jsonResponse = JObject.Parse(responseJson);
-        string audioContent = jsonResponse["audioContent"].Value<string>();
-        byte[] wavData = Convert.FromBase64String(audioContent);
-
-        int headerSize = 44;
-        if (wavData.Length < headerSize)
-        {
-            Debug.LogError($"Dữ liệu WAV không hợp lệ cho câu {index}");
-            lock (audioClips)
-            {
-                Debug.Log($"Câu {index} lỗi.");
-            }
-            yield break;
-        }
-
-        float[] samples = new float[(wavData.Length - headerSize) / 2];
-        for (int i = 0; i < samples.Length; i++)
-        {
-            short sample = BitConverter.ToInt16(wavData, headerSize + i * 2);
-            samples[i] = sample / 32768f;
-        }
-
-        AudioClip clip = AudioClip.Create($"TTS_{index}", samples.Length, 1, SAMPLE_RATE, false);
-        clip.SetData(samples, 0);
-
-        lock (audioClips)
-        {
-            audioClips.Add((index, clip));
-            Debug.Log($"Đã thêm clip {index}");
+            success = true;
+            onComplete?.Invoke(true);
         }
     }
 
     private async Task<HttpResponseMessage> SynthesizeSpeechAsync(string sentence, string languageCode)
     {
-        using (var client = new HttpClient())
+        string voiceName = VoiceMappings.ContainsKey(languageCode) ? VoiceMappings[languageCode] : $"{preferredLanguage}-Standard-A";
+        var voiceConfig = new { languageCode, name = voiceName, ssmlGender = "MALE" };
+
+        var ttsRequestData = new
         {
-            client.Timeout = TimeSpan.FromSeconds(30);
+            input = new { ssml = $"<speak>{sentence}</speak>" },
+            voice = voiceConfig,
+            audioConfig = new { audioEncoding = "LINEAR16", sampleRateHertz = SAMPLE_RATE, speakingRate = 1.0 }
+        };
 
-            // Lấy giọng nói chuẩn từ VoiceMappings
-            string voiceName = VoiceMappings.ContainsKey(languageCode) ? VoiceMappings[languageCode] : $"{languageCode}-Standard-A";
-            var voiceConfig = new { languageCode = languageCode, name = voiceName, ssmlGender = "MALE" };
+        var jsonContent = new StringContent(
+            JsonConvert.SerializeObject(ttsRequestData),
+            Encoding.UTF8,
+            "application/json"
+        );
 
-            var ttsRequestData = new
-            {
-                input = new { ssml = $"<speak>{sentence}</speak>" },
-                voice = voiceConfig,
-                audioConfig = new { audioEncoding = "LINEAR16", sampleRateHertz = SAMPLE_RATE, speakingRate = 1.0 }
-            };
+        string url = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={googleApiKey}";
+        Debug.Log($"Gửi request TTS: {url}, Voice: {voiceName}");
+        return await httpClient.PostAsync(url, jsonContent);
+    }
 
-            var jsonContent = new StringContent(
-                JsonConvert.SerializeObject(ttsRequestData),
-                Encoding.UTF8,
-                "application/json"
-            );
-
-            string url = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={googleApiKey}";
-            Debug.Log($"Gửi request TTS: {url}, Voice: {voiceName}");
-            return await client.PostAsync(url, jsonContent);
+    private async Task<string> DetectLanguageWithTranslateAPI(string text)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(googleApiKey))
+        {
+            Debug.LogWarning("Văn bản rỗng hoặc thiếu Google API Key, trả về preferredLanguage.");
+            return preferredLanguage;
         }
-    } 
- 
-    private string DetectLanguage(string text)
+
+        var requestData = new
+        {
+            q = text
+        };
+
+        var jsonContent = new StringContent(
+            JsonConvert.SerializeObject(requestData),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        string url = $"https://translation.googleapis.com/language/translate/v2/detect?key={googleApiKey}";
+        Debug.Log($"Gửi yêu cầu phát hiện ngôn ngữ: URL={url}, Text={text}");
+
+        try
+        {
+            var response = await httpClient.PostAsync(url, jsonContent);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Debug.LogError($"Lỗi Cloud Translate API: Status={response.StatusCode}, Error={errorContent}");
+                return preferredLanguage;
+            }
+
+            string responseJson = await response.Content.ReadAsStringAsync();
+            Debug.Log($"Phản hồi từ Cloud Translate API: {responseJson}");
+            var jsonResponse = JObject.Parse(responseJson);
+            string detectedLanguage = jsonResponse["data"]?["detections"]?[0]?[0]?["language"]?.Value<string>();
+
+            if (string.IsNullOrEmpty(detectedLanguage))
+            {
+                Debug.LogWarning("Không phát hiện được ngôn ngữ từ Cloud Translate API, trả về preferredLanguage.");
+                return preferredLanguage;
+            }
+
+            string normalizedLanguage = NormalizeLanguageCode(detectedLanguage);
+            Debug.Log($"Ngôn ngữ phát hiện từ Cloud Translate API: {normalizedLanguage}");
+            return SupportedLanguages.ContainsKey(normalizedLanguage) ? normalizedLanguage : preferredLanguage;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Lỗi khi gọi Cloud Translate API: {ex.Message}");
+            return preferredLanguage;
+        }
+    }
+
+    // Các phương thức khác giữ nguyên, chỉ thay đổi DetectLanguage và thêm DetectLanguageWithGoogleAPI
+    private async Task<string> DetectLanguageWithGoogleAPI(string text)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(googleApiKey))
+        {
+            Debug.LogWarning("Văn bản rỗng hoặc thiếu Google API Key, trả về preferredLanguage.");
+            return preferredLanguage;
+        }
+
+        var requestData = new
+        {
+            document = new
+            {
+                type = "PLAIN_TEXT",
+                content = text
+            }
+        };
+
+        var jsonContent = new StringContent(
+            JsonConvert.SerializeObject(requestData),
+            Encoding.UTF8,
+            "application/json"
+        );
+         
+        string url = $"https://language.googleapis.com/v1/documents:detectLanguage?key={googleApiKey}";
+        try
+        {
+            Debug.Log($"Gửi yêu cầu phát hiện ngôn ngữ tới Google API: {url}");
+            var response = await httpClient.PostAsync(url, jsonContent);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Debug.Log("response: " + response);
+                Debug.LogError($"Lỗi Google Language API: {response.StatusCode}, {errorContent}");
+                return preferredLanguage;
+            }
+
+            string responseJson = await response.Content.ReadAsStringAsync();
+            var jsonResponse = JObject.Parse(responseJson);
+            string detectedLanguage = jsonResponse["languages"]?[0]?["languageCode"]?.Value<string>();
+
+            if (string.IsNullOrEmpty(detectedLanguage))
+            {
+                Debug.LogWarning("Không phát hiện được ngôn ngữ từ Google API, trả về preferredLanguage.");
+                return preferredLanguage;
+            }
+
+            string normalizedLanguage = NormalizeLanguageCode(detectedLanguage);
+            Debug.Log($"Ngôn ngữ phát hiện từ Google API: {normalizedLanguage}");
+            return SupportedLanguages.ContainsKey(normalizedLanguage) ? normalizedLanguage : preferredLanguage;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Lỗi khi gọi Google Language API: {ex.Message}");
+            return preferredLanguage;
+        }
+    }
+
+    private string NormalizeLanguageCode(string languageCode)
+    {
+        var languageMap = new Dictionary<string, string>
+        {
+            { "af", "af-ZA" },
+            { "ar", "ar-XA" },
+            { "bn", "bn-IN" },
+            { "bg", "bg-BG" },
+            { "ca", "ca-ES" },
+            { "zh", "zh-CN" },
+            { "zh-TW", "zh-TW" },
+            { "hr", "hr-HR" },
+            { "cs", "cs-CZ" },
+            { "da", "da-DK" },
+            { "nl", "nl-NL" },
+            { "en", "en-US" },
+            { "en-AU", "en-AU" },
+            { "en-IN", "en-IN" },
+            { "en-GB", "en-GB" },
+            { "en-SG", "en-SG" },
+            { "fi", "fi-FI" },
+            { "fr", "fr-FR" },
+            { "fr-CA", "fr-CA" },
+            { "de", "de-DE" },
+            { "el", "el-GR" },
+            { "gu", "gu-IN" },
+            { "he", "he-IL" },
+            { "hi", "hi-IN" },
+            { "hu", "hu-HU" },
+            { "id", "id-ID" },
+            { "it", "it-IT" },
+            { "ja", "ja-JP" },
+            { "kn", "kn-IN" },
+            { "km", "km-KH" },
+            { "ko", "ko-KR" },
+            { "lo", "lo-LA" },
+            { "lv", "lv-LV" },
+            { "lt", "lt-LT" },
+            { "ms", "ms-MY" },
+            { "ml", "ml-IN" },
+            { "mr", "mr-IN" },
+            { "nb", "nb-NO" },
+            { "fil", "fil-PH" },
+            { "pl", "pl-PL" },
+            { "pt", "pt-PT" },
+            { "pt-BR", "pt-BR" },
+            { "pa", "pa-IN" },
+            { "ro", "ro-RO" },
+            { "ru", "ru-RU" },
+            { "sr", "sr-RS" },
+            { "sk", "sk-SK" },
+            { "sl", "sl-SI" },
+            { "es", "es-ES" },
+            { "es-US", "es-US" },
+            { "sw", "sw-TZ" },
+            { "sv", "sv-SE" },
+            { "ta", "ta-IN" },
+            { "te", "te-IN" },
+            { "th", "th-TH" },
+            { "tr", "tr-TR" },
+            { "uk", "uk-UA" },
+            { "vi", "vi-VN" }
+        };
+
+        return languageMap.ContainsKey(languageCode) ? languageMap[languageCode] : preferredLanguage;
+    }
+
+    private async Task<string> DetectLanguage(string text)
     {
         if (string.IsNullOrEmpty(text)) return preferredLanguage;
 
-        // Ký tự đặc trưng cho các ngôn ngữ Đông Nam Á
-        string vietnameseChars = "àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
+        // Gọi Google Cloud Natural Language API
+        string detectedLanguage = await DetectLanguageWithTranslateAPI(text);
+        if (!string.IsNullOrEmpty(detectedLanguage) && detectedLanguage != preferredLanguage)
+        {
+            return detectedLanguage;
+        }
+
+        // Fallback: Logic kiểm tra ký tự Unicode
+        string vietnameseChars = "àáạảãâầấệẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
         string thaiChars = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
         string khmerChars = "កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអ";
         string laoChars = "ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອຮ";
-        string myanmarChars = "ကခဂဃငစဆဇဈဉညဋဌဍဎဏတထဒဓနပဖဗဘမယရလဝသဟဠအ";
-        string tagalogChars = "ñÑ"; // Tagalog sử dụng Latin, thêm ký tự đặc trưng như ñ
+        string tagalogChars = "ñÑ";
 
-        // Phát hiện ngôn ngữ Đông Nam Á
-        if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN"; // Tiếng Việt
-        if (text.Any(c => thaiChars.Contains(c))) return "th-TH"; // Tiếng Thái
-        if (text.Any(c => khmerChars.Contains(c))) return "km-KH"; // Tiếng Khmer
-        if (text.Any(c => laoChars.Contains(c))) return "lo-LA"; // Tiếng Lào
-        if (text.Any(c => myanmarChars.Contains(c))) return "my-MM"; // Tiếng Myanmar
-        if (text.Any(c => tagalogChars.Contains(c))) return "fil-PH"; // Tiếng Tagalog
+        if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
+        if (text.Any(c => thaiChars.Contains(c))) return "th-TH";
+        if (text.Any(c => khmerChars.Contains(c))) return "km-KH";
+        if (text.Any(c => laoChars.Contains(c))) return "lo-LA";
+        if (text.Any(c => tagalogChars.Contains(c))) return "fil-PH";
 
-        // Phát hiện các ngôn ngữ Đông Nam Á khác dựa trên Unicode
-        if (text.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH"; // Tiếng Khmer
-        if (text.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA"; // Tiếng Lào
-        if (text.Any(c => c >= 0x1000 && c <= 0x109F)) return "my-MM"; // Tiếng Myanmar
-        if (text.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN"; // Tiếng Tamil (Singapore)
-        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN"; // Tiếng Trung (Singapore)
-        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY"; // Tiếng Malay (Latin, nhưng kiểm tra thêm)
+        if (text.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH";
+        if (text.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA";
+        if (text.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN";
+        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
+        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY";
+        if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
+        if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
+        if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
+        if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
+        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
+        if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
+        if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
+        if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
+        if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
 
-        // Phát hiện các ngôn ngữ khác
-        if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR"; // Tiếng Hàn
-        if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP"; // Tiếng Nhật
-        if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU"; // Tiếng Nga
-        if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN"; // Tiếng Hindi
-        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA"; // Tiếng Ả Rập
-        if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL"; // Tiếng Hebrew
-        if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN"; // Tiếng Telugu
-        if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN"; // Tiếng Gujarati
-        if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR"; // Tiếng Hy Lạp
-
-        // Kiểm tra lịch sử chat
-        lock (chatHistory)
-        {
-            var lastQuestion = chatHistory.LastOrDefault().question;
-            if (!string.IsNullOrEmpty(lastQuestion))
-            {
-                if (lastQuestion.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
-                if (lastQuestion.Any(c => thaiChars.Contains(c))) return "th-TH";
-                if (lastQuestion.Any(c => khmerChars.Contains(c))) return "km-KH";
-                if (lastQuestion.Any(c => laoChars.Contains(c))) return "lo-LA";
-                if (lastQuestion.Any(c => myanmarChars.Contains(c))) return "my-MM";
-                if (lastQuestion.Any(c => tagalogChars.Contains(c))) return "fil-PH";
-                if (lastQuestion.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH";
-                if (lastQuestion.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA";
-                if (lastQuestion.Any(c => c >= 0x1000 && c <= 0x109F)) return "my-MM";
-                if (lastQuestion.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN";
-                if (lastQuestion.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
-                if (lastQuestion.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY";
-                if (lastQuestion.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
-                if (lastQuestion.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
-                if (lastQuestion.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
-                if (lastQuestion.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
-                if (lastQuestion.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
-                if (lastQuestion.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
-                if (lastQuestion.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
-                if (lastQuestion.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
-                if (lastQuestion.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
-            }
-        }
-
-        // Fallback cho Đông Timor (không có Tetum)
-        if (text.Contains("Timor") || text.Contains("Tetum")) return "id-ID"; // Tiếng Indonesia là ngôn ngữ giao tiếp phổ biến ở Đông Timor
-
-        // Mặc định sử dụng ngôn ngữ được cấu hình
         return preferredLanguage;
     }
-
     private IEnumerator RunTask(Task task)
     {
         while (!task.IsCompleted)
@@ -1225,5 +1423,6 @@ public class RecordAudio : MonoBehaviour
         }
         lock (chatHistory) chatHistory.Clear();
         audioPlugin?.Dispose();
+        httpClient.Dispose(); // Dọn dẹp HttpClient
     }
 }

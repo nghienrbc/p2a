@@ -13,23 +13,23 @@ public class CustomUnityPlayerActivity extends UnityPlayerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handleOpenReason();
+        //handleOpenReason();
     }
 
     private void handleOpenReason() {
-        Intent intent = getIntent();
-        String openReason = (intent != null) ? intent.getStringExtra(BackgroundAudioPlugin.EXTRA_OPEN_REASON) : BackgroundAudioPlugin.OPEN_REASON_USER;
-        if (openReason == null) {
-            openReason = BackgroundAudioPlugin.OPEN_REASON_USER;
-        }
-        Log.d(TAG, "Ứng dụng được mở với lý do: " + openReason);
-
-        // Gửi thông tin đến Unity
-        try {
-            UnityPlayer.UnitySendMessage("RecordAudio", "OnAppOpened", openReason);
-        } catch (Exception e) {
-            Log.e(TAG, "Lỗi gửi thông điệp đến Unity: " + e.getMessage());
-        }
+//        Intent intent = getIntent();
+//        String openReason = (intent != null) ? intent.getStringExtra(BackgroundAudioPlugin.EXTRA_OPEN_REASON) : BackgroundAudioPlugin.OPEN_REASON_USER;
+//        if (openReason == null) {
+//            openReason = BackgroundAudioPlugin.OPEN_REASON_USER;
+//        }
+//        Log.d(TAG, "Ứng dụng được mở với lý do: " + openReason);
+//
+//        // Gửi thông tin đến Unity
+//        try {
+//            UnityPlayer.UnitySendMessage("RecordAudio", "OnAppOpened", openReason);
+//        } catch (Exception e) {
+//            Log.e(TAG, "Lỗi gửi thông điệp đến Unity: " + e.getMessage());
+//        }
     }
 
     @Override
