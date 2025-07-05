@@ -648,13 +648,11 @@ public class RecordAudio : MonoBehaviour
 
         var messages = new List<object>
         {
-            new { role = "system", content = "Bạn là chuyên gia nghiên cứu về Đông Nam Á và tổ chức ASEAN." },
-            new { role = "system", content = "Sử dụng dữ liệu được cập nhật gần nhất để trả lời câu hỏi." },
-            new { role = "system", content = "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University" },
-            new { role = "system", content = "Trả lời người dùng ngắn gọn trong 1 đến 5 câu, mỗi câu dưới 16 từ. Đảm bảo ngữ điệu thân thiện và trả lời dễ hiểu." },
-            new { role = "system", content = "Phải trả lời lại theo đúng ngôn ngữ mà người dùng sử dụng để hỏi." },
-            new { role = "system", content = "##REMEMBER: chỉ giới thiệu về bản thân bạn như đã hướng dẫn, không nói thêm bất cứ thông tin gì khác" },
-            //new { role = "system", content = "If asked questions like: Who created you?, Who are you? Or similar questions, let them know that you were designed and developed by the Simulation and Visualization Center - Duy Tan University" },
+            new { role = "system", content = "You are an expert in Southeast Asia and ASEAN. " +
+            "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University. " +
+            "You must respond in the same language the user uses to ask. Answer users briefly in 1 to 5 sentences, each under 16 words. Ensure a friendly tone and clear responses. " +
+            "##REMEMBER: Only introduce yourself as instructed, do not add any extra information, and only respond when asked. " +
+            "##IMPORTANT: Do NOT return any URLs or web addresses, only provide the facts." },
         };
 
         lock (chatHistory)
@@ -670,9 +668,8 @@ public class RecordAudio : MonoBehaviour
 
         var payload = new
         {
-            model = "gpt-4.1-mini-2025-04-14",
-            messages = messages.ToArray(),
-            temperature = 0.7
+            model = "gpt-4o-search-preview",
+            messages = messages.ToArray()
         };
 
         string jsonPayload = JsonConvert.SerializeObject(payload);
@@ -694,10 +691,15 @@ public class RecordAudio : MonoBehaviour
                 try
                 {
                     JObject json = JObject.Parse(response);
-                    string answer = json["choices"][0]["message"]["content"].Value<string>();
-                    Debug.Log($"Nhận câu trả lời thành công: {answer}");
-                    UIManager.Instance.connectionTxt.text = $"Câu trả lời {answer}";
-                    onComplete?.Invoke(answer);
+                    string rawAnswer = json["choices"][0]["message"]["content"].Value<string>();
+                    Debug.Log($"Câu trả lời gốc: {rawAnswer}");
+
+                    // Xử lý chuỗi để lọc bỏ URL, [], (), và ##
+                    string processedAnswer = CleanResponse(rawAnswer);
+                    Debug.Log($"Câu trả lời sau xử lý: {processedAnswer}");
+
+                    UIManager.Instance.connectionTxt.text = $"Câu trả lời {processedAnswer}";
+                    onComplete?.Invoke(processedAnswer);
                 }
                 catch (JsonException e)
                 {
@@ -713,6 +715,30 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
+    // Hàm xử lý chuỗi để loại bỏ URL, [], (), và ##
+    private string CleanResponse(string input)
+    {
+        // Loại bỏ ## và các từ liên quan
+        string result = Regex.Replace(input, @"##.*?(?:\n|$)", "");
+
+        // Loại bỏ URL (http, https)
+        result = Regex.Replace(result, @"https?://[^\s\]\)]+", "");
+
+        // Loại bỏ văn bản trong dấu [] (bao gồm cả lồng nhau)
+        result = Regex.Replace(result, @"\[([^\[\]]*)\]", "");
+
+        // Loại bỏ văn bản trong dấu () (bao gồm cả lồng nhau)
+        while (Regex.IsMatch(result, @"\([^()]*\)"))
+        {
+            result = Regex.Replace(result, @"\([^()]*\)", "");
+        }
+
+        // Loại bỏ khoảng trắng thừa và dòng trống
+        result = Regex.Replace(result, @"\s+", " ").Trim();
+
+        return result;
+    }
+
     private IEnumerator TextToSpeechAndPlayPhase(string answer)
     {
         float startTime = Time.realtimeSinceStartup;
@@ -726,7 +752,9 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        List<string> sentences = streamBuffer.AddText(answer + " ");
+        Debug.Log($"câu trả lời đầy đủ là: " + answer);
+        List<string> sentences = streamBuffer.AddText(answer);
+        Debug.Log($"sentence: " + sentences);
         if (streamBuffer.GetCurrentBuffer().Length > 0)
         {
             sentences.Add(streamBuffer.GetCurrentBuffer());
@@ -754,7 +782,7 @@ public class RecordAudio : MonoBehaviour
         int currentPlayIndex = 0;
         bool isFirstSentencePlayed = false;
         bool anySentenceProcessed = false;
-        float timeout = 40f; // Timeout 40 giây cho toàn bộ TTS
+        float timeout = 60F; // Timeout 40 giây cho toàn bộ TTS
         float startTimeout = Time.realtimeSinceStartup;
 
         audioClips.Clear();
