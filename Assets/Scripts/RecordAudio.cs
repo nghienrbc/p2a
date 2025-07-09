@@ -49,7 +49,7 @@ public class RecordAudio : MonoBehaviour
 
     // Lịch sử chat
     private List<(string question, string answer)> chatHistory = new List<(string, string)>();
-    private const float SESSION_TIMEOUT = 60f; // 1 phút
+    private const float SESSION_TIMEOUT = 90f; // 1 phút
 
     private string selectedSTTLanguage = ""; // Ngôn ngữ được chọn cho Google STT 
 
@@ -650,9 +650,10 @@ public class RecordAudio : MonoBehaviour
         {
             new { role = "system", content = "You are an expert in Southeast Asia and ASEAN. " +
             "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University. " +
-            "You must respond in the same language the user uses to ask. Answer users briefly in 1 to 5 sentences, each under 16 words. Ensure a friendly tone and clear responses. " +
+            "##IMPORTANT: You must respond in the same language the user uses to ask. " +
+            "##VERY IMPORTANT: Answer users briefly in 1 to 5 sentences, each under 16 words. Ensure a friendly tone and clear responses. " +
             "##REMEMBER: Only introduce yourself as instructed, do not add any extra information, and only respond when asked. " +
-            "##IMPORTANT: Do NOT return any URLs or web addresses, only provide the facts." },
+            "Do NOT return any URLs or web addresses, only provide the facts." },
         };
 
         lock (chatHistory)
@@ -733,6 +734,9 @@ public class RecordAudio : MonoBehaviour
             result = Regex.Replace(result, @"\([^()]*\)", "");
         }
 
+        // Loại bỏ các chuỗi ký tự * liên tiếp
+        result = Regex.Replace(result, @"\*+", "");
+
         // Loại bỏ khoảng trắng thừa và dòng trống
         result = Regex.Replace(result, @"\s+", " ").Trim();
 
@@ -752,16 +756,29 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"câu trả lời đầy đủ là: " + answer);
-        List<string> sentences = streamBuffer.AddText(answer);
-        Debug.Log($"sentence: " + sentences);
+        Debug.Log($"Câu trả lời đầy đủ là: {answer}");
+
+        // Phát hiện ngôn ngữ cho toàn bộ câu trả lời
+        Task<string> detectLanguageTask = DetectLanguage(answer);
+        yield return StartCoroutine(RunTask(detectLanguageTask));
+        string detectedLanguage = detectLanguageTask.Result;
+        string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
+        Debug.Log($"Ngôn ngữ được phát hiện cho toàn bộ câu trả lời: {languageName} ({detectedLanguage})");
+        UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
+
+        List<string> sentences = streamBuffer.AddText(answer).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        Debug.Log($"Danh sách câu hợp lệ: {string.Join(", ", sentences)}");
         if (streamBuffer.GetCurrentBuffer().Length > 0)
         {
-            sentences.Add(streamBuffer.GetCurrentBuffer());
+            string lastSentence = streamBuffer.GetCurrentBuffer().Trim();
+            if (!string.IsNullOrWhiteSpace(lastSentence))
+            {
+                sentences.Add(lastSentence);
+            }
             streamBuffer.ClearBuffer();
         }
 
-        if (sentences.Count == 0 || sentences.All(s => string.IsNullOrWhiteSpace(s)))
+        if (sentences.Count == 0)
         {
             Debug.LogError("Không có câu hợp lệ để xử lý TTS");
             UIManager.Instance.connectionTxt.text = "No valid text to convert to speech";
@@ -769,35 +786,25 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
-        // Hiển thị ngôn ngữ được phát hiện cho câu đầu tiên
-        Task<string> detectLanguageTask = DetectLanguage(sentences[0]);
-        yield return StartCoroutine(RunTask(detectLanguageTask));
-        string detectedLanguage = detectLanguageTask.Result;
-        //string detectedLanguage = DetectLanguage(sentences[0]);
-        string languageName = SupportedLanguages.ContainsKey(detectedLanguage) ? SupportedLanguages[detectedLanguage] : detectedLanguage;
-        Debug.Log($"Ngôn ngữ được phát hiện: {languageName} ({detectedLanguage})");
-        UIManager.Instance.connectionTxt.text = $"Đang phát âm bằng {languageName}...";
-
-
         int currentPlayIndex = 0;
         bool isFirstSentencePlayed = false;
         bool anySentenceProcessed = false;
-        float timeout = 60F; // Timeout 40 giây cho toàn bộ TTS
-        float startTimeout = Time.realtimeSinceStartup;
+        float timeout = 60f; // Timeout 60 giây làm giới hạn an toàn
 
         audioClips.Clear();
         runningCoroutines.Clear();
 
-        List<Task> ttsTasks = new List<Task>();
+        // Khởi động xử lý TTS cho tất cả các câu
         for (int i = 0; i < sentences.Count; i++)
         {
-            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i], (success) =>
+            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
             {
                 if (success) anySentenceProcessed = true;
             })));
         }
 
-        while (currentPlayIndex < sentences.Count && Time.realtimeSinceStartup - startTimeout < timeout)
+        // Phát các câu đã xử lý
+        while (currentPlayIndex < sentences.Count)
         {
             AudioClip clipToPlay = null;
             lock (audioClips)
@@ -830,10 +837,17 @@ public class RecordAudio : MonoBehaviour
             }
             else
             {
+                // Kiểm tra timeout an toàn
+                if (Time.realtimeSinceStartup - startTime > timeout)
+                {
+                    Debug.LogWarning("Đã hết thời gian timeout, dừng phát âm thanh");
+                    break;
+                }
                 yield return null;
             }
         }
 
+        // Dọn dẹp
         lock (audioClips)
         {
             foreach (var (_, clip) in audioClips)
@@ -855,7 +869,7 @@ public class RecordAudio : MonoBehaviour
         if (!anySentenceProcessed)
         {
             Debug.LogError($"Không có câu nào được xử lý thành công qua TTS. Sentences: {sentences.Count}, CurrentPlayIndex: {currentPlayIndex}");
-            //UIManager.Instance.connectionTxt.text = "Failed to convert text to speech, please try again";
+            UIManager.Instance.connectionTxt.text = "Failed to convert text to speech, please try again";
             myakuController.MyakuHello();
             yield break;
         }
@@ -865,13 +879,14 @@ public class RecordAudio : MonoBehaviour
         onAudioFinished.Invoke();
     }
 
-    private IEnumerator ProcessTTSSentence(int index, string sentence, Action<bool> onComplete)
+    private IEnumerator ProcessTTSSentence(int index, string sentence, string languageCode, Action<bool> onComplete)
     {
         if (string.IsNullOrWhiteSpace(sentence))
         {
             lock (audioClips)
             {
                 Debug.Log($"Câu {index} trắng, bỏ qua.");
+                UIManager.Instance.WarningTxt.text = "Có câu trắng";
             }
             onComplete?.Invoke(false);
             yield break;
@@ -879,10 +894,7 @@ public class RecordAudio : MonoBehaviour
 
         Debug.Log($"Đang xử lý câu {index}: {sentence}");
 
-        //string languageCode = DetectLanguage(sentence); 
-        Task<string> detectLanguageTask = DetectLanguage(sentence);
-        yield return StartCoroutine(RunTask(detectLanguageTask));
-        string languageCode = detectLanguageTask.Result;
+        // Sử dụng languageCode được truyền vào thay vì gọi DetectLanguage
         if (!SupportedLanguages.ContainsKey(languageCode))
         {
             Debug.LogWarning($"Ngôn ngữ {languageCode} không được hỗ trợ. Chuyển về {preferredLanguage}.");
@@ -913,7 +925,7 @@ public class RecordAudio : MonoBehaviour
                     onComplete?.Invoke(false);
                     yield break;
                 }
-                Debug.Log($"Thử lại lần {retryCount} cho câu {index}...");
+                Debug.Log($"Thử lại lần {retryCount} cho câu { index}...");
                 yield return new WaitForSeconds(1f);
                 continue;
             }

@@ -22,6 +22,7 @@ public class UIManager : MonoBehaviour
 
     public TMP_Text connectionTxt;
     public TMP_Text volumeTxt; 
+    public TMP_Text WarningTxt;
     public Image recordingIndicator;
     public RecordAudio recorder;
     public TakePhotoAndUpload takePhotoAndUpload;
