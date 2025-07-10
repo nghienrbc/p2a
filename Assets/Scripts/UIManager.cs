@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour
     public Image recordingIndicator;
     public RecordAudio recorder;
     public TakePhotoAndUpload takePhotoAndUpload;
+    public MySettingMaanger mySettingMaanger;
 
     public GameObject deviceListPanel; // Panel hiển thị danh sách thiết bị
     public GameObject deviceItemPrefab; // Prefab cho mỗi thiết bị
@@ -154,6 +155,10 @@ public class UIManager : MonoBehaviour
     public void BtnStopCameraClick()
     {
         takePhotoAndUpload.StopCamera();
+    }
+    public void BtnStartSettingPanel()
+    {
+        mySettingMaanger.StartOpenSettingPanel();
     }
 
     public void BtnSavePhotoClick()

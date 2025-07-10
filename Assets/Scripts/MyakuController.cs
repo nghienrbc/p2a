@@ -79,7 +79,7 @@ public class MyakuController : MonoBehaviour
             }
 
             // Danh sách file âm thanh (hard-code, thay bằng tên file thực tế)
-            string[] expectedFiles = { "Response1.mp3", "Response2.mp3", "Response3.mp3", "thinking1.mp3", "thinking2.mp3", "thinking3.mp3", "thinking4.mp3" }; // Cập nhật tên file thực tế
+            string[] expectedFiles = { "Response1.mp3", "thinking1.mp3", "thinking3.mp3", "thinking4.mp3" }; // Cập nhật tên file thực tế
 
             foreach (string fileName in expectedFiles)
             {
@@ -197,7 +197,7 @@ public class MyakuController : MonoBehaviour
 
             audioPlayer.clip = clipToPlay;
             audioPlayer.Play();
-            Debug.Log($"Đang phát âm thanh {soundType}: {clipToPlay.name}");
+            //Debug.Log($"Đang phát âm thanh {soundType}: {clipToPlay.name}");
         }
         else
         {

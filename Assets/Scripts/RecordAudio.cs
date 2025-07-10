@@ -291,7 +291,7 @@ public class RecordAudio : MonoBehaviour
         if (audioPlugin != null)
         {
             audioPlugin.Call("startRecordingFromUnity");
-            audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
+            //audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
         }
 #endif
     }
@@ -441,7 +441,7 @@ public class RecordAudio : MonoBehaviour
         float silenceThreshold = PlayerPrefs.GetFloat("AudibleThreshold", 0.005f);
         Debug.Log($"Ngưỡng âm lượng thu âm: {silenceThreshold}");
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.01f);
 
         UIManager.Instance.connectionTxt.text = $"I'm hearing! Ask me something!";
         float maxvolume = 0f;
@@ -453,8 +453,8 @@ public class RecordAudio : MonoBehaviour
             {
                 questionClip.GetData(data, position - data.Length);
                 float volume = CalculateVolume(data);
-                UIManager.Instance.volumeTxt.text = $"Âm lượng hiện tại: { volume} ";
-                Debug.Log($"Âm lượng hiện tại: {volume}");
+                UIManager.Instance.volumeTxt.text = $"Current volume: { volume} ";
+                //Debug.Log($"Âm lượng hiện tại: {volume}");
                 if (volume > maxvolume)
                 {
                     maxvolume = volume;
@@ -650,7 +650,7 @@ public class RecordAudio : MonoBehaviour
         {
             new { role = "system", content = "You are an expert in Southeast Asia and ASEAN. " +
             "Your name is DT. You were designed and developed by the Simulation and Visualization Center - Duy Tan University. " +
-            "##IMPORTANT: You must respond in the same language the user uses to ask. " +
+            "##VERY IMPORTANT: You must respond in the same language the user uses to ask. " +
             "##VERY IMPORTANT: Answer users briefly in 1 to 5 sentences, each under 16 words. Ensure a friendly tone and clear responses. " +
             "##REMEMBER: Only introduce yourself as instructed, do not add any extra information, and only respond when asked. " +
             "Do NOT return any URLs or web addresses, only provide the facts." },
@@ -894,7 +894,6 @@ public class RecordAudio : MonoBehaviour
 
         Debug.Log($"Đang xử lý câu {index}: {sentence}");
 
-        // Sử dụng languageCode được truyền vào thay vì gọi DetectLanguage
         if (!SupportedLanguages.ContainsKey(languageCode))
         {
             Debug.LogWarning($"Ngôn ngữ {languageCode} không được hỗ trợ. Chuyển về {preferredLanguage}.");
@@ -926,7 +925,7 @@ public class RecordAudio : MonoBehaviour
                     yield break;
                 }
                 Debug.Log($"Thử lại lần {retryCount} cho câu { index}...");
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.5f);
                 continue;
             }
 
@@ -1052,7 +1051,6 @@ public class RecordAudio : MonoBehaviour
         }
     }
 
-    // Các phương thức khác giữ nguyên, chỉ thay đổi DetectLanguage và thêm DetectLanguageWithGoogleAPI
     private async Task<string> DetectLanguageWithGoogleAPI(string text)
     {
         if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(googleApiKey))
@@ -1079,7 +1077,7 @@ public class RecordAudio : MonoBehaviour
         string url = $"https://language.googleapis.com/v1/documents:detectLanguage?key={googleApiKey}";
         try
         {
-            Debug.Log($"Gửi yêu cầu phát hiện ngôn ngữ tới Google API: {url}");
+           // Debug.Log($"Gửi yêu cầu phát hiện ngôn ngữ tới Google API: {url}");
             var response = await httpClient.PostAsync(url, jsonContent);
 
             if (!response.IsSuccessStatusCode)
@@ -1189,33 +1187,33 @@ public class RecordAudio : MonoBehaviour
             return detectedLanguage;
         }
 
-        // Fallback: Logic kiểm tra ký tự Unicode
-        string vietnameseChars = "àáạảãâầấệẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
-        string thaiChars = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
-        string khmerChars = "កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអ";
-        string laoChars = "ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອຮ";
-        string tagalogChars = "ñÑ";
+        //// Fallback: Logic kiểm tra ký tự Unicode
+        //string vietnameseChars = "àáạảãâầấệẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ";
+        //string thaiChars = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ";
+        //string khmerChars = "កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអ";
+        //string laoChars = "ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວສຫອຮ";
+        //string tagalogChars = "ñÑ";
 
-        if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
-        if (text.Any(c => thaiChars.Contains(c))) return "th-TH";
-        if (text.Any(c => khmerChars.Contains(c))) return "km-KH";
-        if (text.Any(c => laoChars.Contains(c))) return "lo-LA";
-        if (text.Any(c => tagalogChars.Contains(c))) return "fil-PH";
+        //if (text.Any(c => vietnameseChars.Contains(c))) return "vi-VN";
+        //if (text.Any(c => thaiChars.Contains(c))) return "th-TH";
+        //if (text.Any(c => khmerChars.Contains(c))) return "km-KH";
+        //if (text.Any(c => laoChars.Contains(c))) return "lo-LA";
+        //if (text.Any(c => tagalogChars.Contains(c))) return "fil-PH";
 
-        if (text.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH";
-        if (text.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA";
-        if (text.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN";
-        if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
-        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY";
-        if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
-        if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
-        if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
-        if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
-        if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
-        if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
-        if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
-        if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
-        if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
+        //if (text.Any(c => c >= 0x1780 && c <= 0x17FF)) return "km-KH";
+        //if (text.Any(c => c >= 0x0E80 && c <= 0x0EFF)) return "lo-LA";
+        //if (text.Any(c => c >= 0x0B00 && c <= 0x0B7F)) return "ta-IN";
+        //if (text.Any(c => c >= 0x4E00 && c <= 0x9FFF)) return "zh-CN";
+        //if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ms-MY";
+        //if (text.Any(c => c >= 0xAC00 && c <= 0xD7AF)) return "ko-KR";
+        //if (text.Any(c => c >= 0x3040 && c <= 0x30FF)) return "ja-JP";
+        //if (text.Any(c => c >= 0x0400 && c <= 0x04FF)) return "ru-RU";
+        //if (text.Any(c => c >= 0x0900 && c <= 0x097F)) return "hi-IN";
+        //if (text.Any(c => c >= 0x0600 && c <= 0x06FF)) return "ar-XA";
+        //if (text.Any(c => c >= 0x0590 && c <= 0x05FF)) return "he-IL";
+        //if (text.Any(c => c >= 0x0C00 && c <= 0x0C7F)) return "te-IN";
+        //if (text.Any(c => c >= 0x0A80 && c <= 0x0AFF)) return "gu-IN";
+        //if (text.Any(c => c >= 0x0370 && c <= 0x03FF)) return "el-GR";
 
         return preferredLanguage;
     }

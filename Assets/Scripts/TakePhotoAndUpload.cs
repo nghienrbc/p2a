@@ -43,7 +43,7 @@ public class TakePhotoAndUpload : MonoBehaviour
     private string VIEW_IMAGE_URL = "https://api.imt.org.vn/api/v1/file-attachment/view-file/asian";
 
     private Coroutine inactivityCoroutine; // Coroutine đếm ngược
-    private const float INACTIVITY_TIMEOUT = 15f; // 30 giây
+    private const float INACTIVITY_TIMEOUT = 30f; // 30 giây
 
     private void Start()
     {

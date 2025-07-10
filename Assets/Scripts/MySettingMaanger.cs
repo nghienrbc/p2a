@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using System.Text.RegularExpressions;
 
-public class SubmitButton : MonoBehaviour
+public class MySettingMaanger : MonoBehaviour
 {
-    private Button myButton;
+    private Coroutine inactivityCoroutine; // Coroutine đếm ngược
+    private const float INACTIVITY_TIMEOUT = 60f; // 30 giây
     public TMP_InputField passwordInputField;
     public TMP_InputField limitTimeInputField;
     public TMP_InputField soundInputField;
@@ -17,13 +17,8 @@ public class SubmitButton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        limitTimeInputField.interactable = false;
-        soundInputField.interactable = false;
-        showTimeInputField.interactable = false;
-
-        myButton = GetComponent<Button>();
-        myButton.onClick.AddListener(OnButtonClick);
-
+        DisableSetting();
+         
         if (PlayerPrefs.HasKey("LimitTimeRecord"))
         {
             // Nếu có, lấy giá trị từ PlayerPrefs và hiển thị lên InputField
@@ -98,19 +93,10 @@ public class SubmitButton : MonoBehaviour
     }
 
     // Hàm sẽ được gọi khi Button được nhấn
-    void OnButtonClick()
+    public void SubmitButtonClick()
     {
         Debug.Log("Button clicked!");
-        validateTxt.text = "";
-        //bool isValid = IsValidMACAddress(deviceNameInputField.text);
-        //if (!isValid)
-        //{
-        //    UIManager.Instance.connectionTxt.text = "Invalid address"; 
-        //}
-        //else
-        //{
-        //    UIManager.Instance.StartScanning(deviceNameInputField.text);
-        //}
+        validateTxt.text = ""; 
         string inputValue = limitTimeInputField.text; // Lấy giá trị nhập vào từ InputField
 
         // Kiểm tra xem giá trị nhập vào có phải là số không
@@ -122,7 +108,7 @@ public class SubmitButton : MonoBehaviour
             Debug.Log("Giá trị đã được lưu: " + result);
         }
         else
-        { 
+        {
             validateTxt.text = "Please enter a valid numeric value for Limit Time Record.";
         }
         inputValue = soundInputField.text;
@@ -134,7 +120,7 @@ public class SubmitButton : MonoBehaviour
             Debug.Log("Giá trị đã được lưu: " + result2);
         }
         else
-        { 
+        {
             validateTxt.text = "Please enter a valid numeric value for Audible Threshold.";
         }
 
@@ -168,10 +154,52 @@ public class SubmitButton : MonoBehaviour
             limitTimeInputField.interactable = true;
             soundInputField.interactable = true;
             showTimeInputField.interactable = true;
+            validateTxt.text = "";
+            passwordInputField.text = "";
         }
         else
         {
             validateTxt.text = "Password is incorrect!";
         }
+    }
+    public void DisableSetting()
+    {
+        limitTimeInputField.interactable = false;
+        soundInputField.interactable = false;
+        showTimeInputField.interactable = false;
+        validateTxt.text = "";
+    }
+
+    public void StartOpenSettingPanel()
+    { 
+        StartInactivityTimer(); 
+    }
+
+    private void StartInactivityTimer()
+    {
+        Debug.Log("Bắt đầu đếm ngược thời gian");
+        StopInactivityTimer();
+        inactivityCoroutine = StartCoroutine(InactivityTimer());
+    }
+
+    private void StopInactivityTimer()
+    {
+        if (inactivityCoroutine != null)
+        {
+            StopCoroutine(inactivityCoroutine);
+            inactivityCoroutine = null;
+        }
+    }
+
+    private IEnumerator InactivityTimer()
+    {
+        yield return new WaitForSeconds(INACTIVITY_TIMEOUT);
+        Debug.Log("No activity detected for 30 seconds. hiding panel."); 
+
+        UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000); 
+        //UIManager.Instance.connectionTxt.text = "Hide Setting Panel.";
+        GameObject homeBtn = FindAnyObjectByType<HomeBtn>().gameObject;
+        UIManager.Instance.SetStateForButton(homeBtn);
+        DisableSetting();
     }
 }
