@@ -47,11 +47,11 @@
         android:foregroundServiceType="microphone"
         android:permission="Microphone Permission"
         android:stopWithTask="false"/>
-    <receiver android:name="com.unity3d.player.BackgroundAudioPlugin$ServiceStarterReceiver" android:exported="false">
-      <intent-filter>
-        <action android:name="com.unity3d.player.ACTION_START_SERVICE" />
-        <action android:name="android.intent.action.BOOT_COMPLETED" />
-      </intent-filter>
-    </receiver>
+<!--    <receiver android:name="com.unity3d.player.BackgroundAudioPlugin$ServiceStarterReceiver" android:exported="false">-->
+<!--      <intent-filter>-->
+<!--        <action android:name="com.unity3d.player.ACTION_START_SERVICE" />-->
+<!--        <action android:name="android.intent.action.BOOT_COMPLETED" />-->
+<!--      </intent-filter>-->
+<!--    </receiver>-->
   </application>
 </manifest>

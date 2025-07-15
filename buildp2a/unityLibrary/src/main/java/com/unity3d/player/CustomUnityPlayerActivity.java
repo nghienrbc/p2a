@@ -13,10 +13,10 @@ public class CustomUnityPlayerActivity extends UnityPlayerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //handleOpenReason();
+//        handleOpenReason();
     }
 
-    private void handleOpenReason() {
+//    private void handleOpenReason() {
 //        Intent intent = getIntent();
 //        String openReason = (intent != null) ? intent.getStringExtra(BackgroundAudioPlugin.EXTRA_OPEN_REASON) : BackgroundAudioPlugin.OPEN_REASON_USER;
 //        if (openReason == null) {
@@ -30,12 +30,12 @@ public class CustomUnityPlayerActivity extends UnityPlayerActivity {
 //        } catch (Exception e) {
 //            Log.e(TAG, "Lỗi gửi thông điệp đến Unity: " + e.getMessage());
 //        }
-    }
+//    }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        handleOpenReason();
+//        handleOpenReason();
     }
 }
