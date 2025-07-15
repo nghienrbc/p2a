@@ -763,12 +763,13 @@ public class RecordAudio : MonoBehaviour
         if (string.IsNullOrEmpty(googleApiKey))
         {
             Debug.LogError("Google API Key chưa được thiết lập trong config.json");
-            UIManager.Instance.connectionTxt.text = "Error: Google API Key not found";
+            UIManager.Instance.connectionTxt.text = "Lỗi: Không tìm thấy khóa API Google";
             myakuController.MyakuHello();
             yield break;
         }
 
         Debug.Log($"Câu trả lời đầy đủ là: {answer}");
+
         // Tách câu đầu tiên để phát hiện ngôn ngữ
         string firstSentence = GetFirstSentence(answer);
         Debug.Log($"Câu đầu tiên để phát hiện ngôn ngữ: {firstSentence}");
@@ -802,60 +803,47 @@ public class RecordAudio : MonoBehaviour
         if (sentences.Count == 0)
         {
             Debug.LogError("Không có câu hợp lệ để xử lý TTS");
-            UIManager.Instance.connectionTxt.text = "No valid text to convert to speech";
+            UIManager.Instance.connectionTxt.text = "Không có văn bản hợp lệ để chuyển thành giọng nói";
             myakuController.MyakuHello();
             yield break;
         }
 
-        int currentPlayIndex = 0;
-        bool isFirstSentencePlayed = false;
         bool anySentenceProcessed = false;
-        float timeoutPerSentence = 10f; // Timeout 10 giây mỗi câu
-        float totalTimeout = Math.Min(timeoutPerSentence * sentences.Count, 60f); // Tổng timeout tối đa 60 giây
-
         audioClips.Clear();
-        runningCoroutines.Clear();
 
-        // Khởi động xử lý TTS cho tất cả các câu
-        List<bool> ttsResults = new List<bool>(new bool[sentences.Count]); // Theo dõi trạng thái TTS
+        // Xử lý và phát từng câu tuần tự
         for (int i = 0; i < sentences.Count; i++)
         {
-            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
+            if (string.IsNullOrWhiteSpace(sentences[i]))
             {
-                ttsResults[i] = success;
-                if (success) anySentenceProcessed = true;
-            })));
-        }
-
-        // Chờ tất cả coroutine TTS hoàn thành hoặc timeout
-        float ttsStartTime = Time.realtimeSinceStartup;
-        while (runningCoroutines.Any(c => c != null))
-        {
-            if (Time.realtimeSinceStartup - ttsStartTime > totalTimeout)
-            {
-                Debug.LogWarning("Timeout khi chờ TTS, dừng xử lý");
-                break;
+                Debug.LogWarning($"Câu {i} rỗng hoặc không hợp lệ, bỏ qua");
+                continue;
             }
-            yield return null;
-        }
 
-        // Dừng tất cả coroutine TTS
-        foreach (var coroutine in runningCoroutines)
-        {
-            if (coroutine != null)
+            float sentenceStartTime = Time.realtimeSinceStartup;
+            Debug.Log($"Bắt đầu xử lý TTS cho câu {i}: {sentences[i]}");
+
+            // Xử lý TTS cho câu hiện tại
+            bool ttsSuccess = false;
+            yield return StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
             {
-                StopCoroutine(coroutine);
-            }
-        }
-        runningCoroutines.Clear();
+                ttsSuccess = success;
+                if (success)
+                {
+                    anySentenceProcessed = true;
+                    Debug.Log($"Câu {i} được xử lý TTS thành công");
+                }
+                else
+                {
+                    Debug.LogWarning($"Câu {i} xử lý TTS thất bại");
+                }
+            }));
 
-        // Phát các câu đã xử lý
-        while (currentPlayIndex < sentences.Count)
-        {
+            // Kiểm tra và phát audio clip nếu TTS thành công
             AudioClip clipToPlay = null;
             lock (audioClips)
             {
-                var found = audioClips.FirstOrDefault(x => x.index == currentPlayIndex);
+                var found = audioClips.FirstOrDefault(x => x.index == i);
                 if (found.clip != null)
                 {
                     clipToPlay = found.clip;
@@ -863,37 +851,29 @@ public class RecordAudio : MonoBehaviour
                 }
             }
 
-            if (clipToPlay != null && !audioSource.isPlaying)
+            if (clipToPlay != null && ttsSuccess)
             {
-                Debug.Log($"Phát câu {currentPlayIndex}: {sentences[currentPlayIndex]}");
+                Debug.Log($"Phát câu {i}: {sentences[i]}");
                 myakuController.MyakuAnswer();
                 audioSource.clip = clipToPlay;
                 audioSource.Play();
 
-                if (!isFirstSentencePlayed)
-                {
-                    float waitTime = Time.realtimeSinceStartup - startTime;
-                    Debug.Log($"Thời gian chờ phát câu đầu tiên: {waitTime:F2} giây");
-                    isFirstSentencePlayed = true;
-                }
+                float waitTime = Time.realtimeSinceStartup - startTime;
+                Debug.Log($"Thời gian chờ phát câu {i}: {waitTime:F2} giây");
 
                 yield return new WaitUntil(() => !audioSource.isPlaying);
                 Destroy(clipToPlay);
-                currentPlayIndex++;
-            }
-            else if (ttsResults[currentPlayIndex] == false)
-            {
-                Debug.LogWarning($"Bỏ qua câu {currentPlayIndex} do TTS thất bại");
-                currentPlayIndex++;
-            }
-            else if (Time.realtimeSinceStartup - startTime > totalTimeout)
-            {
-                Debug.LogWarning("Đã hết thời gian timeout, dừng phát âm thanh");
-                break;
             }
             else
             {
-                yield return null;
+                Debug.LogWarning($"Không phát được câu {i} do TTS thất bại hoặc không có clip");
+            }
+
+            // Kiểm tra timeout cho toàn bộ quá trình
+            if (Time.realtimeSinceStartup - startTime > 60f)
+            {
+                Debug.LogWarning($"Timeout toàn bộ quá trình TTS sau {60f} giây, dừng xử lý");
+                break;
             }
         }
 
@@ -909,8 +889,8 @@ public class RecordAudio : MonoBehaviour
 
         if (!anySentenceProcessed)
         {
-            Debug.LogError($"Không có câu nào được xử lý thành công qua TTS. Sentences: {sentences.Count}, CurrentPlayIndex: {currentPlayIndex}");
-            UIManager.Instance.connectionTxt.text = "Failed to convert text to speech, please try again";
+            Debug.LogError($"Không có câu nào được xử lý thành công qua TTS. Tổng số câu: {sentences.Count}. Kiểm tra: API Key hợp lệ? Kết nối mạng ổn định? Dữ liệu âm thanh trả về từ API có hợp lệ?");
+            UIManager.Instance.connectionTxt.text = "Không thể chuyển văn bản thành giọng nói, vui lòng thử lại";
             myakuController.MyakuHello();
             yield break;
         }
