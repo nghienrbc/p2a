@@ -680,9 +680,11 @@ public class RecordAudio : MonoBehaviour
 
         var payload = new
         {
-            model = "gpt-4o-search-preview",
+            //model = "gpt-4o-search-preview",
+            model = "gpt-4.1-mini-2025-04-14",
             messages = messages.ToArray(),
-            max_tokens = 150 // Giới hạn ~100 từ (5 câu x 20 từ)
+            temperature = 0.7
+            //max_tokens = 150 // Giới hạn ~100 từ (5 câu x 20 từ)
         };
 
         string jsonPayload = JsonConvert.SerializeObject(payload);
