@@ -353,8 +353,12 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.Log("Ghi âm thất bại, kết thúc quy trình");
             UIManager.Instance.connectionTxt.text = "I didn't hear the question, please try again.";
-            myakuController.MyakuHello();
-            yield break;
+            
+            // Kiểm tra chế độ chờ câu hỏi tiếp theo
+            if (!HandleRecordingFailure())
+            {
+                yield break;
+            }
         }
 
         string transcription = null;
@@ -364,12 +368,22 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogError("Không thể chuyển đổi giọng nói thành văn bản");
             UIManager.Instance.connectionTxt.text = "Question could not be recognized, please try again";
-            myakuController.MyakuHello();
-            yield break;
+            
+            // Kiểm tra chế độ chờ câu hỏi tiếp theo
+            if (!HandleRecordingFailure())
+            {
+                yield break;
+            }
         }
 
         Debug.Log($"Văn bản nhận dạng được: {transcription}");
         UIManager.Instance.connectionTxt.text = transcription;
+
+        // Nếu nhận được câu hỏi thành công trong chế độ chờ, dừng timer
+        if (myakuController.IsWaitingForNextQuestion())
+        {
+            myakuController.EndWaitingForNextQuestion();
+        }
 
         string answer = null;
         yield return StartCoroutine(GenerateAnswerPhase(transcription, (ans) => answer = ans));
@@ -378,8 +392,12 @@ public class RecordAudio : MonoBehaviour
         {
             Debug.LogError("Không nhận được câu trả lời");
             UIManager.Instance.connectionTxt.text = "I cannot answer this question, please try again";
-            myakuController.MyakuHello();
-            yield break;
+            
+            // Kiểm tra chế độ chờ câu hỏi tiếp theo
+            if (!HandleRecordingFailure())
+            {
+                yield break;
+            }
         }
 
         lock (chatHistory)
@@ -392,6 +410,33 @@ public class RecordAudio : MonoBehaviour
 
         yield return StartCoroutine(TextToSpeechAndPlayPhase(answer));
         Debug.Log("Hoàn tất quy trình RecordQuestion");
+    }
+
+    // Phương thức helper để xử lý lỗi ghi âm
+    private bool HandleRecordingFailure()
+    {
+        if (myakuController.IsWaitingForNextQuestion())
+        {
+            Debug.Log("Đang trong chế độ chờ câu hỏi tiếp theo, sẽ thử lại sau 2 giây...");
+            // Thử lại sau một khoảng thời gian ngắn
+            StartCoroutine(RetryListeningAfterDelay(2.0f));
+            return false; // return false để break khỏi RecordQuestion hiện tại
+        }
+        else
+        {
+            myakuController.MyakuHello();
+            return false; // return false để break khỏi RecordQuestion
+        }
+    }
+
+    private IEnumerator RetryListeningAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (myakuController.IsWaitingForNextQuestion())
+        {
+            Debug.Log("Thử lại lắng nghe câu hỏi tiếp theo...");
+            StartListeningForNextQuestion();
+        }
     }
 
     private IEnumerator RecordAudioPhase(Action<bool> onComplete)
@@ -658,7 +703,7 @@ public class RecordAudio : MonoBehaviour
             //"Do NOT return any URLs or web addresses, only provide the facts." },
             content = "You are Tenaya, created by Simulation and Visualization Center - Duy Tan University. " +
               "Answer in the same language as the user's question. " +
-              "Provide a concise response with 1-3 sentences, each under 20 words. " +
+              "Provide a concise response with 1-5 sentences, each under 20 words. " +
               "Use continuous prose, avoiding bullet points, lists, or enumerated formats. " +
               "Focus on Southeast Asia and ASEAN expertise. " +
               "Do not include URLs, extra introductions, or unnecessary details. " +
@@ -810,42 +855,97 @@ public class RecordAudio : MonoBehaviour
             yield break;
         }
 
+
+        int currentPlayIndex = 0;
+        bool isFirstSentencePlayed = false;
         bool anySentenceProcessed = false;
+        float timeout = 60f; // Timeout 60 giây làm giới hạn an toàn
+ 
         audioClips.Clear();
+        runningCoroutines.Clear();
 
         // Xử lý và phát từng câu tuần tự
+        // for (int i = 0; i < sentences.Count; i++)
+        // {
+        //     if (string.IsNullOrWhiteSpace(sentences[i]))
+        //     {
+        //         Debug.LogWarning($"Câu {i} rỗng hoặc không hợp lệ, bỏ qua");
+        //         continue;
+        //     }
+
+        //     float sentenceStartTime = Time.realtimeSinceStartup;
+        //     Debug.Log($"Bắt đầu xử lý TTS cho câu {i}: {sentences[i]}");
+
+        //     // Xử lý TTS cho câu hiện tại
+        //     bool ttsSuccess = false;
+        //     yield return StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
+        //     {
+        //         ttsSuccess = success;
+        //         if (success)
+        //         {
+        //             anySentenceProcessed = true;
+        //             Debug.Log($"Câu {i} được xử lý TTS thành công");
+        //         }
+        //         else
+        //         {
+        //             Debug.LogWarning($"Câu {i} xử lý TTS thất bại");
+        //         }
+        //     }));
+
+        //     // Kiểm tra và phát audio clip nếu TTS thành công
+        //     AudioClip clipToPlay = null;
+        //     lock (audioClips)
+        //     {
+        //         var found = audioClips.FirstOrDefault(x => x.index == i);
+        //         if (found.clip != null)
+        //         {
+        //             clipToPlay = found.clip;
+        //             audioClips.Remove(found);
+        //         }
+        //     }
+
+        //     if (clipToPlay != null && ttsSuccess)
+        //     {
+        //         Debug.Log($"Phát câu {i}: {sentences[i]}");
+        //         myakuController.MyakuAnswer();
+        //         audioSource.clip = clipToPlay;
+        //         audioSource.Play();
+
+        //         float waitTime = Time.realtimeSinceStartup - startTime;
+        //         Debug.Log($"Thời gian chờ phát câu {i}: {waitTime:F2} giây");
+
+        //         yield return new WaitUntil(() => !audioSource.isPlaying);
+        //         Destroy(clipToPlay);
+        //     }
+        //     else
+        //     {
+        //         Debug.LogWarning($"Không phát được câu {i} do TTS thất bại hoặc không có clip");
+        //     }
+
+        //     // Kiểm tra timeout cho toàn bộ quá trình
+        //     if (Time.realtimeSinceStartup - startTime > 60f)
+        //     {
+        //         Debug.LogWarning($"Timeout toàn bộ quá trình TTS sau {60f} giây, dừng xử lý");
+        //         break;
+        //     }
+        // }
+
+ // Khởi động xử lý TTS cho tất cả các câu
         for (int i = 0; i < sentences.Count; i++)
         {
-            if (string.IsNullOrWhiteSpace(sentences[i]))
+            runningCoroutines.Add(StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
             {
-                Debug.LogWarning($"Câu {i} rỗng hoặc không hợp lệ, bỏ qua");
-                continue;
-            }
+                if (success) anySentenceProcessed = true;
+            })));
+        }
 
-            float sentenceStartTime = Time.realtimeSinceStartup;
-            Debug.Log($"Bắt đầu xử lý TTS cho câu {i}: {sentences[i]}");
-
-            // Xử lý TTS cho câu hiện tại
-            bool ttsSuccess = false;
-            yield return StartCoroutine(ProcessTTSSentence(i, sentences[i], detectedLanguage, (success) =>
-            {
-                ttsSuccess = success;
-                if (success)
-                {
-                    anySentenceProcessed = true;
-                    Debug.Log($"Câu {i} được xử lý TTS thành công");
-                }
-                else
-                {
-                    Debug.LogWarning($"Câu {i} xử lý TTS thất bại");
-                }
-            }));
-
-            // Kiểm tra và phát audio clip nếu TTS thành công
+        // Phát các câu đã xử lý
+        while (currentPlayIndex < sentences.Count)
+        {
             AudioClip clipToPlay = null;
             lock (audioClips)
             {
-                var found = audioClips.FirstOrDefault(x => x.index == i);
+                var found = audioClips.FirstOrDefault(x => x.index == currentPlayIndex);
                 if (found.clip != null)
                 {
                     clipToPlay = found.clip;
@@ -853,29 +953,33 @@ public class RecordAudio : MonoBehaviour
                 }
             }
 
-            if (clipToPlay != null && ttsSuccess)
+            if (clipToPlay != null && !audioSource.isPlaying)
             {
-                Debug.Log($"Phát câu {i}: {sentences[i]}");
+                Debug.Log($"Phát câu {currentPlayIndex}: {sentences[currentPlayIndex]}");
                 myakuController.MyakuAnswer();
                 audioSource.clip = clipToPlay;
                 audioSource.Play();
 
-                float waitTime = Time.realtimeSinceStartup - startTime;
-                Debug.Log($"Thời gian chờ phát câu {i}: {waitTime:F2} giây");
+                if (!isFirstSentencePlayed)
+                {
+                    float waitTime = Time.realtimeSinceStartup - startTime;
+                    Debug.Log($"Thời gian chờ phát câu đầu tiên: {waitTime:F2} giây");
+                    isFirstSentencePlayed = true;
+                }
 
                 yield return new WaitUntil(() => !audioSource.isPlaying);
                 Destroy(clipToPlay);
+                currentPlayIndex++;
             }
             else
             {
-                Debug.LogWarning($"Không phát được câu {i} do TTS thất bại hoặc không có clip");
-            }
-
-            // Kiểm tra timeout cho toàn bộ quá trình
-            if (Time.realtimeSinceStartup - startTime > 60f)
-            {
-                Debug.LogWarning($"Timeout toàn bộ quá trình TTS sau {60f} giây, dừng xử lý");
-                break;
+                // Kiểm tra timeout an toàn
+                if (Time.realtimeSinceStartup - startTime > timeout)
+                {
+                    Debug.LogWarning("Đã hết thời gian timeout, dừng phát âm thanh");
+                    break;
+                }
+                yield return null;
             }
         }
 
@@ -889,6 +993,15 @@ public class RecordAudio : MonoBehaviour
             audioClips.Clear();
         }
 
+        foreach (var coroutine in runningCoroutines)
+        {
+            if (coroutine != null)
+            {
+                StopCoroutine(coroutine);
+            }
+        }
+        runningCoroutines.Clear();
+
         if (!anySentenceProcessed)
         {
             Debug.LogError($"Không có câu nào được xử lý thành công qua TTS. Tổng số câu: {sentences.Count}. Kiểm tra: API Key hợp lệ? Kết nối mạng ổn định? Dữ liệu âm thanh trả về từ API có hợp lệ?");
@@ -898,7 +1011,7 @@ public class RecordAudio : MonoBehaviour
         }
 
         Debug.Log("Phát xong tất cả câu.");
-        myakuController.MyakuStopAnswer();
+        // Không gọi MyakuStopAnswer ở đây nữa, để OnAudioFinished xử lý
         onAudioFinished.Invoke();
     }
 
@@ -1597,6 +1710,14 @@ public class RecordAudio : MonoBehaviour
         
         if (fromHeyDT)
         { 
+            // Tạm dừng audio plugin khi bắt đầu ghi âm câu hỏi
+            #if UNITY_ANDROID
+            if (audioPlugin != null)
+            {
+                audioPlugin.Call("pauseRecordingFromUnity");
+            }
+            #endif
+            
             StartCoroutine(RecordQuestion()); 
         }
         else
@@ -1659,5 +1780,36 @@ public class RecordAudio : MonoBehaviour
         lock (chatHistory) chatHistory.Clear();
         audioPlugin?.Dispose();
        // httpClient.Dispose(); // Dọn dẹp HttpClient
+    }
+
+    // Phương thức để bắt đầu lắng nghe câu hỏi tiếp theo
+    public void StartListeningForNextQuestion()
+    {
+        if (myakuController.IsWaitingForNextQuestion())
+        {
+            Debug.Log("Bắt đầu lắng nghe câu hỏi tiếp theo...");
+            
+            // Tạm dừng audio plugin để tránh xung đột
+            #if UNITY_ANDROID
+            if (audioPlugin != null)
+            {
+                audioPlugin.Call("pauseRecordingFromUnity");
+            }
+            #endif
+            
+            StartCoroutine(RecordQuestion());
+        }
+    }
+
+    // Phương thức để khởi động lại BackgroundAudioPlugin cho wake word
+    public void ResumeWakeWordListening()
+    {
+        #if UNITY_ANDROID
+        if (audioPlugin != null)
+        {
+            audioPlugin.Call("resumeRecordingFromUnity");
+            Debug.Log("Đã khởi động lại lắng nghe wake word");
+        }
+        #endif
     }
 }

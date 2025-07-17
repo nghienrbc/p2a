@@ -29,6 +29,12 @@ public class MyakuController : MonoBehaviour
     private readonly string listeningSoundsFolder = "ListeningSounds";
     private readonly string thinkingSoundsFolder = "ThinkingSounds";
 
+    // Thêm các biến để quản lý chế độ lắng nghe
+    private bool isWaitingForNextQuestion = false;
+    private float questionTimeoutTimer = 0f;
+    private const float QUESTION_TIMEOUT = 10f; // 10 giây timeout
+    private Coroutine questionTimeoutCoroutine;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -208,6 +214,18 @@ public class MyakuController : MonoBehaviour
     public void MyakuHello()
     {
         animator.SetTrigger("hello");
+        
+        // Nếu đang trong chế độ chờ câu hỏi tiếp theo, kết thúc chế độ này
+        if (isWaitingForNextQuestion)
+        {
+            EndWaitingForNextQuestion();
+        }
+        
+        // Khởi động lại lắng nghe wake word
+        if (RecordAudio.Instance != null)
+        {
+            RecordAudio.Instance.ResumeWakeWordListening();
+        }
     }
 
     public void MyakuListen(bool fromHeyDT)
@@ -235,7 +253,11 @@ public class MyakuController : MonoBehaviour
             RecordAudio.Instance.StartRecordingAfterSound(fromHeyDT);
         }
 
+        // Nếu đang trong chế độ chờ câu hỏi tiếp theo, không cần logic đặc biệt ở đây
+        // vì việc lắng nghe sẽ được quản lý bởi StartWaitingForNextQuestion()
     }
+
+
 
     public void MyakuThinking()
     {
@@ -256,6 +278,63 @@ public class MyakuController : MonoBehaviour
     {
         animator.SetBool("answer", false);
         UIManager.Instance.connectionTxt.text = "Ask more questions please!";
+        
+        // Bắt đầu chế độ lắng nghe câu hỏi tiếp theo
+        StartWaitingForNextQuestion();
+    }
+
+    // Phương thức mới để bắt đầu chế độ lắng nghe câu hỏi tiếp theo
+    public void StartWaitingForNextQuestion()
+    {
+        isWaitingForNextQuestion = true;
+        
+        // Bắt đầu lắng nghe câu hỏi ngay lập tức (không cần MyakuListen animation vì đã ở trong chế độ lắng nghe)
+        if (RecordAudio.Instance != null)
+        {
+            RecordAudio.Instance.StartListeningForNextQuestion();
+        }
+        
+        // Bắt đầu timer 10 giây
+        if (questionTimeoutCoroutine != null)
+        {
+            StopCoroutine(questionTimeoutCoroutine);
+        }
+        questionTimeoutCoroutine = StartCoroutine(QuestionTimeoutCoroutine());
+    }
+
+    private IEnumerator QuestionTimeoutCoroutine()
+    {
+        yield return new WaitForSeconds(QUESTION_TIMEOUT);
+        
+        // Nếu sau 10 giây không có câu hỏi mới, quay về chế độ lắng nghe wake word
+        if (isWaitingForNextQuestion)
+        {
+            Debug.Log("Timeout waiting for next question. Returning to wake word mode.");
+            EndWaitingForNextQuestion();
+            MyakuHello(); // Kết thúc phiên và quay về wake word mode
+            
+            // Khởi động lại BackgroundAudioPlugin để lắng nghe wake word
+            if (RecordAudio.Instance != null)
+            {
+                RecordAudio.Instance.ResumeWakeWordListening();
+            }
+        }
+    }
+
+    public void EndWaitingForNextQuestion()
+    {
+        isWaitingForNextQuestion = false;
+        if (questionTimeoutCoroutine != null)
+        {
+            StopCoroutine(questionTimeoutCoroutine);
+            questionTimeoutCoroutine = null;
+        }
+    }
+
+    // Phương thức để check xem có đang trong chế độ chờ câu hỏi tiếp theo không
+    public bool IsWaitingForNextQuestion()
+    {
+        return isWaitingForNextQuestion;
     }
 
     public void MyakuCountForShootPhoto()
