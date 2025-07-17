@@ -514,9 +514,9 @@ public class RecordAudio : MonoBehaviour
                 }
 
                 float currentTime = Time.time;
-                if (!hasSoundDetected && (currentTime - startTime > 5f))
+                if (!hasSoundDetected && (currentTime - startTime > 10f))
                 {
-                    Debug.Log("Không phát hiện tiếng nói trong 5 giây, hủy ghi âm");
+                    Debug.Log("Không phát hiện tiếng nói trong 10 giây, hủy ghi âm");
                     UIManager.Instance.volumeTxt.text = $"max volume: { maxvolume} ";
                     Microphone.End(device);
                     // kết thúc ghi âm, cho phép heyDT
