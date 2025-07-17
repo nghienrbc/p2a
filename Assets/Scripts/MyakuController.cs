@@ -29,9 +29,8 @@ public class MyakuController : MonoBehaviour
     private readonly string listeningSoundsFolder = "ListeningSounds";
     private readonly string thinkingSoundsFolder = "ThinkingSounds";
 
-    // Thêm các biến để quản lý chế độ lắng nghe
+    // Thêm các biến để quản lý chế độ lắng nghe câu hỏi tiếp theo
     private bool isWaitingForNextQuestion = false;
-    private float questionTimeoutTimer = 0f;
     private const float QUESTION_TIMEOUT = 10f; // 10 giây timeout
     private Coroutine questionTimeoutCoroutine;
 
@@ -228,33 +227,42 @@ public class MyakuController : MonoBehaviour
         }
     }
 
-    public void MyakuListen(bool fromHeyDT)
+    public void MyakuListen(bool fromHeyDT, bool playSound = true)
     {
         animator.SetTrigger("listen"); 
-        PlayRandomSound(listeningSounds, "listening");
+        if (playSound)
+        {
+            PlayRandomSound(listeningSounds, "listening");
+        }
         // We need to wait for the audio to finish playing before proceeding
-        StartCoroutine(WaitForAudioAndNotify(fromHeyDT));
+        StartCoroutine(WaitForAudioAndNotify(fromHeyDT, playSound));
     }
 
-    private IEnumerator WaitForAudioAndNotify(bool fromHeyDT)
+    private IEnumerator WaitForAudioAndNotify(bool fromHeyDT, bool playSound = true)
     {
-        // Wait for audio to finish playing
-        while (audioPlayer.isPlaying)
+        // Wait for audio to finish playing only if sound was played
+        if (playSound)
         {
-            yield return null;
+            while (audioPlayer.isPlaying)
+            {
+                yield return null;
+            }
         }
         //UIManager.Instance.connectionTxt.text = "I'm hearing! Ask me something!";
 
         // Add additional 1 second delay after audio finishes
         // yield return new WaitForSeconds(1.0f);
-        // Notify that we're ready to record
-        if (RecordAudio.Instance != null)
+        
+        // Nếu đang trong chế độ chờ câu hỏi tiếp theo, bắt đầu lắng nghe ngay lập tức
+        if (isWaitingForNextQuestion && RecordAudio.Instance != null)
+        {
+            RecordAudio.Instance.StartListeningForNextQuestion();
+        }
+        // Nếu không phải chế độ chờ, xử lý bình thường
+        else if (RecordAudio.Instance != null)
         {
             RecordAudio.Instance.StartRecordingAfterSound(fromHeyDT);
         }
-
-        // Nếu đang trong chế độ chờ câu hỏi tiếp theo, không cần logic đặc biệt ở đây
-        // vì việc lắng nghe sẽ được quản lý bởi StartWaitingForNextQuestion()
     }
 
 
@@ -288,11 +296,8 @@ public class MyakuController : MonoBehaviour
     {
         isWaitingForNextQuestion = true;
         
-        // Bắt đầu lắng nghe câu hỏi ngay lập tức (không cần MyakuListen animation vì đã ở trong chế độ lắng nghe)
-        if (RecordAudio.Instance != null)
-        {
-            RecordAudio.Instance.StartListeningForNextQuestion();
-        }
+        // Hiển thị animation listen nhưng không phát âm thanh cho câu hỏi tiếp theo
+        MyakuListen(true, false); // fromHeyDT = true, playSound = false
         
         // Bắt đầu timer 10 giây
         if (questionTimeoutCoroutine != null)
@@ -324,6 +329,10 @@ public class MyakuController : MonoBehaviour
     public void EndWaitingForNextQuestion()
     {
         isWaitingForNextQuestion = false;
+        
+        // Không cần reset animation ở đây vì sẽ chuyển sang thinking hoặc answer
+        // animator.SetTrigger("hello"); // Bỏ dòng này để tránh xung đột animation
+        
         if (questionTimeoutCoroutine != null)
         {
             StopCoroutine(questionTimeoutCoroutine);

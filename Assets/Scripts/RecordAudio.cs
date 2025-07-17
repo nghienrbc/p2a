@@ -352,7 +352,7 @@ public class RecordAudio : MonoBehaviour
         if (!recordingSuccess)
         {
             Debug.Log("Ghi âm thất bại, kết thúc quy trình");
-            UIManager.Instance.connectionTxt.text = "I didn't hear the question, please try again.";
+            UIManager.Instance.connectionTxt.text = "I didn't hear the question, please try again. Say 'Hey DT' to ask!";
             
             // Kiểm tra chế độ chờ câu hỏi tiếp theo
             if (!HandleRecordingFailure())
@@ -379,11 +379,14 @@ public class RecordAudio : MonoBehaviour
         Debug.Log($"Văn bản nhận dạng được: {transcription}");
         UIManager.Instance.connectionTxt.text = transcription;
 
-        // Nếu nhận được câu hỏi thành công trong chế độ chờ, dừng timer
+        // Nếu nhận được câu hỏi thành công trong chế độ chờ, dừng timer và bắt đầu thinking
         if (myakuController.IsWaitingForNextQuestion())
         {
             myakuController.EndWaitingForNextQuestion();
         }
+        
+        // Bắt đầu animation thinking khi xử lý câu hỏi
+        myakuController.MyakuThinking();
 
         string answer = null;
         yield return StartCoroutine(GenerateAnswerPhase(transcription, (ans) => answer = ans));
@@ -558,7 +561,7 @@ public class RecordAudio : MonoBehaviour
 
         Debug.Log("Kết thúc ghi âm, xử lý câu hỏi");
         UIManager.Instance.connectionTxt.text = "Processing your question...";
-        myakuController.MyakuThinking();
+        // Đã xóa myakuController.MyakuThinking(); vì nó sẽ được gọi trong RecordQuestion
 
         string audioFilePath = Path.Combine(Application.persistentDataPath, "audio_record_for_stt.wav");
         WavUtility.Save(audioFilePath, questionClip);
@@ -956,7 +959,13 @@ public class RecordAudio : MonoBehaviour
             if (clipToPlay != null && !audioSource.isPlaying)
             {
                 Debug.Log($"Phát câu {currentPlayIndex}: {sentences[currentPlayIndex]}");
-                myakuController.MyakuAnswer();
+                
+                // Chỉ gọi MyakuAnswer một lần khi bắt đầu phát câu đầu tiên
+                if (!isFirstSentencePlayed)
+                {
+                    myakuController.MyakuAnswer();
+                }
+                
                 audioSource.clip = clipToPlay;
                 audioSource.Play();
 
