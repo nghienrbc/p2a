@@ -391,33 +391,17 @@ public class RecordAudio : MonoBehaviour
         if (!apiReachable)
         {
             Debug.LogError("Cannot reach Gemini API. Falling back to old method.");
-            UIManager.Instance.connectionTxt.text = "Gemini Live unavailable, using fallback...";
+            UIManager.Instance.connectionTxt.text = "Gemini API unavailable, using fallback...";
             yield return StartCoroutine(FallbackToOldMethod());
             yield break;
         }
 
-        UIManager.Instance.connectionTxt.text = "Connecting to Gemini Live...";
-
-        // Khởi tạo WebSocket connection
-        yield return StartCoroutine(InitializeGeminiLiveSession());
-
-        if (!isGeminiSessionActive)
-        {
-            Debug.LogError("Không thể kết nối đến Gemini Live API, thử phương pháp HTTP alternative");
-            UIManager.Instance.connectionTxt.text = "Trying alternative method...";
-
-            // Thử sử dụng HTTP API thay vì WebSocket
-            yield return StartCoroutine(GeminiHttpAlternative());
-            yield break;
-        }
-
-        UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
-        myakuController.MyakuListen(false);
-
-        // Bắt đầu ghi âm và streaming
-        yield return StartCoroutine(StartGeminiAudioStreaming());
-
-        Debug.Log("Hoàn tất Gemini Live conversation");
+        // SKIP WebSocket due to connectivity issues - go directly to HTTP
+        Debug.LogWarning("Skipping WebSocket due to network restrictions. Using HTTP alternative.");
+        UIManager.Instance.connectionTxt.text = "Using Gemini HTTP alternative...";
+        yield return StartCoroutine(GeminiHttpAlternative());
+        
+        Debug.Log("Hoàn tất Gemini conversation với HTTP alternative");
     }
 
     // Test Gemini API connectivity trước khi thử WebSocket
@@ -425,7 +409,7 @@ public class RecordAudio : MonoBehaviour
     {
         Debug.Log("Testing Gemini API connectivity...");
 
-        // Test với HTTP request đơn giản đến Gemini API
+        // Test 1: Basic models endpoint
         string testUrl = $"https://generativelanguage.googleapis.com/v1/models?key={geminiApiKey}";
 
         using (UnityWebRequest request = UnityWebRequest.Get(testUrl))
@@ -436,6 +420,44 @@ public class RecordAudio : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log("✅ Gemini API is reachable");
+                
+                // Parse response to check for Live API models
+                try
+                {
+                    var response = Newtonsoft.Json.Linq.JObject.Parse(request.downloadHandler.text);
+                    var models = response["models"];
+                    
+                    bool hasLiveModel = false;
+                    if (models != null)
+                    {
+                        foreach (var model in models)
+                        {
+                            string modelName = model["name"]?.ToString() ?? "";
+                            Debug.Log($"Available model: {modelName}");
+                            
+                            if (modelName.Contains("live") || 
+                                modelName.Contains("2.0-flash") ||
+                                modelName.Contains("2.5-flash"))
+                            {
+                                hasLiveModel = true;
+                                Debug.Log($"✅ Found Live-compatible model: {modelName}");
+                            }
+                        }
+                    }
+                    
+                    if (!hasLiveModel)
+                    {
+                        Debug.LogWarning("⚠️ No Live API models found - region may not support Live API");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"Error parsing models response: {e.Message}");
+                }
+                
+                // Test 2: Try basic generateContent endpoint
+                yield return StartCoroutine(TestBasicGenerateContent());
+                
                 onComplete?.Invoke(true);
             }
             else
@@ -444,6 +466,50 @@ public class RecordAudio : MonoBehaviour
                 Debug.LogWarning($"Response Code: {request.responseCode}");
                 Debug.LogWarning($"Response: {request.downloadHandler.text}");
                 onComplete?.Invoke(false);
+            }
+        }
+    }
+    
+    // Test basic generateContent to verify API key works
+    private IEnumerator TestBasicGenerateContent()
+    {
+        Debug.Log("Testing basic generateContent endpoint...");
+        
+        var requestData = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = "Hello, respond with 'API test successful'" }
+                    }
+                }
+            }
+        };
+
+        string jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(requestData);
+        string url = $"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 15;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("✅ Basic generateContent test successful");
+            }
+            else
+            {
+                Debug.LogWarning($"⚠️ Basic generateContent test failed: {request.error}");
+                Debug.LogWarning($"Response: {request.downloadHandler.text}");
             }
         }
     }
@@ -515,8 +581,11 @@ public class RecordAudio : MonoBehaviour
     // Alternative method sử dụng HTTP API thay vì WebSocket
     private IEnumerator GeminiHttpAlternative()
     {
-        Debug.Log("Trying Gemini HTTP alternative method");
-        UIManager.Instance.connectionTxt.text = "Using Gemini HTTP API...";
+        Debug.Log("Using Gemini HTTP alternative method");
+        UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
+        
+        // Show listening animation
+        myakuController.MyakuListen(false);
 
         // Ghi âm audio như bình thường
         bool recordingSuccess = false;
@@ -529,6 +598,9 @@ public class RecordAudio : MonoBehaviour
             HandleRecordingFailure();
             yield break;
         }
+
+        UIManager.Instance.connectionTxt.text = "Processing your question...";
+        myakuController.MyakuThinking();
 
         // Sử dụng Gemini API để transcribe và generate response
         string transcription = null;
@@ -719,9 +791,17 @@ public class RecordAudio : MonoBehaviour
 
         // Thử các URL endpoints khác nhau
         string[] possibleUris = {
+            // Latest Gemini Live endpoint format
             $"wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService/BidiGenerateContent?key={geminiApiKey}",
+            
+            // Alternative endpoint without API key in URL (uses Authorization header)
             "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService/BidiGenerateContent",
-            $"wss://generativelanguage.googleapis.com/v1alpha/models/gemini-2.5-flash-preview-native-audio-dialog:streamGenerateContent?key={geminiApiKey}"
+            
+            // Standard model endpoint
+            $"wss://generativelanguage.googleapis.com/v1alpha/models/gemini-2.0-flash-live-001:streamGenerateContent?key={geminiApiKey}",
+            
+            // Fallback to regular 2.5 Flash model
+            $"wss://generativelanguage.googleapis.com/v1alpha/models/gemini-2.5-flash:streamGenerateContent?key={geminiApiKey}"
         };
 
         bool connected = false;
@@ -787,6 +867,10 @@ public class RecordAudio : MonoBehaviour
                 if (connectTask.Exception != null)
                 {
                     Debug.LogWarning($"Connection attempt {i + 1} failed: {connectTask.Exception.GetBaseException().Message}");
+                    if (connectTask.Exception.InnerException != null)
+                    {
+                        Debug.LogWarning($"Inner exception: {connectTask.Exception.InnerException.Message}");
+                    }
                 }
                 else if (geminiWebSocket.State == WebSocketState.Open)
                 {
@@ -846,7 +930,7 @@ public class RecordAudio : MonoBehaviour
         {
             setup = new
             {
-                model = "models/gemini-2.5-flash-preview-native-audio-dialog",
+                model = "models/gemini-2.0-flash-live-001", // Updated to latest Live model
                 generation_config = new
                 {
                     response_modalities = new[] { "AUDIO" },
