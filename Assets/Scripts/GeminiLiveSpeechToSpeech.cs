@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using NativeWebSocket;
 using Newtonsoft.Json;
+using System.Linq;
 
 /// <summary>
 /// JSON Response Classes for Gemini Live API
@@ -15,6 +16,13 @@ using Newtonsoft.Json;
 public class GeminiLiveResponse
 {
     public ServerContent serverContent;
+    public SetupComplete setupComplete;
+}
+
+[System.Serializable]
+public class SetupComplete
+{
+    public bool setupComplete;
 }
 
 [System.Serializable]
@@ -22,6 +30,7 @@ public class ServerContent
 {
     public ModelTurn modelTurn;
     public bool turnComplete;
+    public bool interrupted;
 }
 
 [System.Serializable]
@@ -42,6 +51,25 @@ public class InlineData
 {
     public string mimeType;
     public string data;
+}
+
+/// <summary>
+/// Audio Buffer class for better audio management
+/// </summary>
+public class AudioBuffer
+{
+    public byte[] data;
+    public int sampleRate;
+    public int channels;
+    public float duration;
+
+    public AudioBuffer(byte[] audioData, int rate, int channelCount)
+    {
+        data = audioData;
+        sampleRate = rate;
+        channels = channelCount;
+        duration = (float)(audioData.Length / 2) / sampleRate; // 16-bit samples
+    }
 }
 
 /// <summary>
@@ -75,22 +103,30 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
     private bool isConnected = false;
     private AudioClip continuousClip;
     private string logMessages = "";
-    
+
     // Audio processing
     private string microphoneDevice = "";
-    private int sampleRate = 16000; // Required by Gemini Live API
+    private int inputSampleRate = 16000; // Required by Gemini Live API for input
+    private int outputSampleRate = 24000; // Gemini Live API outputs at 24kHz
     private int bufferPosition = 0;
-    private const int BUFFER_SIZE = 1024;
-    
+    private const int BUFFER_SIZE = 256; // Smaller buffer for better responsiveness
+
     // Voice detection
     private float lastVoiceTime = 0f;
     private bool voiceDetected = false;
     private float sessionStartTime = 0f;
-    
+    private float voiceDetectionThreshold = 0.01f;
+
     // WebSocket connection
     private WebSocket websocket;
-    private Queue<byte[]> audioResponseQueue = new Queue<byte[]>();
+    private Queue<AudioBuffer> audioResponseQueue = new Queue<AudioBuffer>();
     private bool isPlayingResponse = false;
+    private List<AudioSource> activeSources = new List<AudioSource>();
+    private float nextStartTime = 0f;
+
+    // Audio streaming improvements
+    private bool isStreamingAudio = false;
+    private Queue<float[]> audioChunkQueue = new Queue<float[]>();
     #endregion
     
     #region Unity Lifecycle
@@ -108,13 +144,25 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
         {
             ProcessContinuousAudio();
         }
-        
+
+        // Process audio chunk queue for streaming
+        if (audioChunkQueue.Count > 0 && isStreamingAudio)
+        {
+            ProcessAudioChunkQueue();
+        }
+
         // Process audio response queue
         if (audioResponseQueue.Count > 0 && !isPlayingResponse)
         {
             StartCoroutine(PlayAudioResponse());
         }
-        
+
+        // Performance optimization (run every few frames)
+        if (Time.frameCount % 60 == 0) // Every ~1 second at 60fps
+        {
+            OptimizePerformance();
+        }
+
         // Update WebSocket
         #if !UNITY_WEBGL || UNITY_EDITOR
         websocket?.DispatchMessageQueue();
@@ -123,9 +171,19 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
     
     private void OnDestroy()
     {
+        // Stop all active audio sources
+        StopAllAudioSources();
+
+        // Close WebSocket connection
         if (websocket != null)
         {
             websocket.Close();
+        }
+
+        // Stop microphone if recording
+        if (Microphone.IsRecording(microphoneDevice))
+        {
+            Microphone.End(microphoneDevice);
         }
     }
     #endregion
@@ -270,7 +328,17 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
                 model = $"models/{modelName}",
                 generationConfig = new
                 {
-                    responseModalities = new[] { "AUDIO" }
+                    responseModalities = new[] { "AUDIO" },
+                    speechConfig = new
+                    {
+                        voiceConfig = new
+                        {
+                            prebuiltVoiceConfig = new
+                            {
+                                voiceName = "Orus" // Use same voice as TypeScript version
+                            }
+                        }
+                    }
                 },
                 systemInstruction = new
                 {
@@ -310,9 +378,18 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
             var response = JsonConvert.DeserializeObject<GeminiLiveResponse>(message);
 
             // Check for setup acknowledgment
-            if (message.Contains("\"setupComplete\""))
+            if (message.Contains("\"setupComplete\"") || response?.setupComplete?.setupComplete == true)
             {
                 LogMessage("✅ Setup complete - Ready to send audio");
+                return;
+            }
+
+            // Handle interruption (similar to TypeScript version)
+            if (response?.serverContent?.interrupted == true)
+            {
+                LogMessage("🛑 AI response interrupted - stopping current audio");
+                StopAllAudioSources();
+                nextStartTime = 0f;
                 return;
             }
 
@@ -329,8 +406,11 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
                     {
                         string audioBase64 = part.inlineData.data;
                         byte[] audioData = Convert.FromBase64String(audioBase64);
-                        audioResponseQueue.Enqueue(audioData);
-                        LogMessage($"🔊 Received audio response from Gemini ({audioData.Length} bytes)");
+
+                        // Create AudioBuffer with proper sample rate (24kHz from Gemini)
+                        AudioBuffer audioBuffer = new AudioBuffer(audioData, outputSampleRate, 1);
+                        audioResponseQueue.Enqueue(audioBuffer);
+                        LogMessage($"🔊 Received audio response from Gemini ({audioData.Length} bytes, {audioBuffer.duration:F2}s)");
                     }
                     else if (!string.IsNullOrEmpty(part?.text))
                     {
@@ -375,19 +455,21 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
             LogMessage("❌ No microphone available");
             yield break;
         }
-        
+
         LogMessage("🎤 Starting continuous audio monitoring...");
-        
-        // Start continuous recording (30 minutes max)
-        continuousClip = Microphone.Start(microphoneDevice, true, 1800, sampleRate);
+
+        // Start continuous recording (30 minutes max) with input sample rate
+        continuousClip = Microphone.Start(microphoneDevice, true, 1800, inputSampleRate);
         bufferPosition = 0;
-        
+
         yield return new WaitForSeconds(0.1f); // Wait for mic to initialize
-        
+
         isRecording = true;
+        isStreamingAudio = true;
         voiceDetected = false;
         lastVoiceTime = Time.time;
-        
+        nextStartTime = 0f;
+
         LogMessage("✅ Continuous recording started - Listening for voice...");
     }
     
@@ -412,7 +494,7 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
 
         // Analyze voice activity
         float audioLevel = GetAudioLevel(samples);
-        bool currentVoiceDetected = audioLevel > silenceThreshold;
+        bool currentVoiceDetected = audioLevel > voiceDetectionThreshold;
 
         if (currentVoiceDetected)
         {
@@ -425,8 +507,8 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
             }
             lastVoiceTime = Time.time;
 
-            // Send audio chunk to Gemini Live
-            SendAudioChunk(samples);
+            // Queue audio chunk for streaming (similar to TypeScript approach)
+            audioChunkQueue.Enqueue(samples);
         }
         else if (voiceDetected && (Time.time - lastVoiceTime > voiceDetectionTimeout))
         {
@@ -440,13 +522,26 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
         }
     }
 
+    private void ProcessAudioChunkQueue()
+    {
+        if (audioChunkQueue.Count == 0 || !isConnected) return;
+
+        // Process multiple chunks at once for better performance
+        int chunksToProcess = Mathf.Min(audioChunkQueue.Count, 5);
+        for (int i = 0; i < chunksToProcess; i++)
+        {
+            float[] samples = audioChunkQueue.Dequeue();
+            SendAudioChunk(samples);
+        }
+    }
+
     private void SendAudioChunk(float[] samples)
     {
         if (!isConnected || websocket == null) return;
 
         try
         {
-            // Convert float samples to 16-bit PCM
+            // Convert float samples to 16-bit PCM (similar to TypeScript createBlob function)
             byte[] pcmData = ConvertToPCM16(samples);
             string audioBase64 = Convert.ToBase64String(pcmData);
 
@@ -458,7 +553,7 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
                     {
                         new
                         {
-                            mimeType = "audio/pcm;rate=16000",
+                            mimeType = $"audio/pcm;rate={inputSampleRate}",
                             data = audioBase64
                         }
                     }
@@ -467,7 +562,11 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
 
             string jsonMessage = JsonConvert.SerializeObject(audioMessage);
             websocket.SendText(jsonMessage);
-            LogMessage($"📤 Sent audio chunk ({pcmData.Length} bytes)");
+            // Reduce logging frequency for better performance
+            if (UnityEngine.Random.Range(0, 10) == 0) // Log only 10% of chunks
+            {
+                LogMessage($"📤 Sent audio chunk ({pcmData.Length} bytes)");
+            }
         }
         catch (Exception e)
         {
@@ -501,10 +600,13 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
 
     private byte[] ConvertToPCM16(float[] samples)
     {
+        // Convert float32 -1 to 1 to int16 -32768 to 32767 (same as TypeScript createBlob)
         byte[] pcmData = new byte[samples.Length * 2];
         for (int i = 0; i < samples.Length; i++)
         {
-            short sample = (short)(samples[i] * 32767f);
+            // Clamp the sample to prevent overflow
+            float clampedSample = Mathf.Clamp(samples[i], -1f, 1f);
+            short sample = (short)(clampedSample * 32768f);
             pcmData[i * 2] = (byte)(sample & 0xFF);
             pcmData[i * 2 + 1] = (byte)((sample >> 8) & 0xFF);
         }
@@ -518,41 +620,39 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
         isPlayingResponse = true;
         UpdateStatus("🔊 AI is speaking...");
 
-        List<byte[]> audioChunks = new List<byte[]>();
-
-        // Collect all available audio chunks
+        // Process audio buffers sequentially (similar to TypeScript approach)
         while (audioResponseQueue.Count > 0)
         {
-            audioChunks.Add(audioResponseQueue.Dequeue());
-        }
+            AudioBuffer audioBuffer = audioResponseQueue.Dequeue();
 
-        if (audioChunks.Count > 0)
-        {
-            // Combine all audio chunks
-            int totalLength = 0;
-            foreach (var chunk in audioChunks)
-                totalLength += chunk.Length;
-
-            byte[] combinedAudio = new byte[totalLength];
-            int offset = 0;
-            foreach (var chunk in audioChunks)
-            {
-                Array.Copy(chunk, 0, combinedAudio, offset, chunk.Length);
-                offset += chunk.Length;
-            }
+            // Calculate next start time for seamless playback
+            nextStartTime = Mathf.Max(nextStartTime, Time.time);
 
             // Convert PCM to AudioClip and play
-            AudioClip responseClip = CreateAudioClipFromPCM(combinedAudio, 24000); // Gemini outputs 24kHz
+            AudioClip responseClip = CreateAudioClipFromPCM(audioBuffer.data, audioBuffer.sampleRate);
 
             if (responseClip != null)
             {
-                audioSource.clip = responseClip;
-                audioSource.Play();
+                // Create a new AudioSource for this clip (allows overlapping audio)
+                GameObject audioObject = new GameObject("GeminiAudioResponse");
+                AudioSource source = audioObject.AddComponent<AudioSource>();
+                source.clip = responseClip;
+                source.volume = audioSource.volume;
 
-                LogMessage($"🔊 Playing AI response ({responseClip.length:F1}s)");
+                // Schedule playback
+                float delay = Mathf.Max(0, nextStartTime - Time.time);
+                source.PlayDelayed(delay);
 
-                // Wait for audio to finish
-                yield return new WaitForSeconds(responseClip.length);
+                // Track active sources
+                activeSources.Add(source);
+
+                LogMessage($"🔊 Playing AI response ({responseClip.length:F1}s) at {nextStartTime:F2}");
+
+                // Update next start time
+                nextStartTime += responseClip.length;
+
+                // Clean up after audio finishes
+                StartCoroutine(CleanupAudioSource(source, responseClip.length + delay));
             }
         }
 
@@ -564,20 +664,52 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
         }
     }
 
+    private IEnumerator CleanupAudioSource(AudioSource source, float delay)
+    {
+        yield return new WaitForSeconds(delay + 0.1f); // Small buffer
+
+        if (source != null)
+        {
+            activeSources.Remove(source);
+            if (source.gameObject != null)
+            {
+                DestroyImmediate(source.gameObject);
+            }
+        }
+    }
+
+    private void StopAllAudioSources()
+    {
+        foreach (var source in activeSources.ToList())
+        {
+            if (source != null)
+            {
+                source.Stop();
+                if (source.gameObject != null)
+                {
+                    DestroyImmediate(source.gameObject);
+                }
+            }
+        }
+        activeSources.Clear();
+        nextStartTime = 0f;
+    }
+
     private AudioClip CreateAudioClipFromPCM(byte[] pcmData, int sampleRate)
     {
         try
         {
-            // Convert PCM bytes to float samples
+            // Convert PCM bytes to float samples (similar to TypeScript decodeAudioData)
             float[] samples = new float[pcmData.Length / 2];
             for (int i = 0; i < samples.Length; i++)
             {
                 short sample = (short)(pcmData[i * 2] | (pcmData[i * 2 + 1] << 8));
-                samples[i] = sample / 32768f;
+                samples[i] = sample / 32768.0f; // Same normalization as TypeScript
             }
 
-            // Create AudioClip
-            AudioClip clip = AudioClip.Create("GeminiResponse", samples.Length, 1, sampleRate, false);
+            // Create AudioClip with proper naming
+            string clipName = $"GeminiResponse_{Time.time:F2}";
+            AudioClip clip = AudioClip.Create(clipName, samples.Length, 1, sampleRate, false);
             clip.SetData(samples, 0);
 
             return clip;
@@ -605,6 +737,7 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
 
         isSessionActive = false;
         isRecording = false;
+        isStreamingAudio = false;
 
         // Stop microphone
         if (Microphone.IsRecording(microphoneDevice))
@@ -613,6 +746,9 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
             LogMessage("🎤 Microphone stopped");
         }
 
+        // Stop all active audio sources
+        StopAllAudioSources();
+
         // Close WebSocket connection
         if (websocket != null && isConnected)
         {
@@ -620,14 +756,15 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
             LogMessage("🔌 WebSocket connection closed");
         }
 
-        // Stop any playing audio
+        // Stop main audio source
         if (audioSource.isPlaying)
         {
             audioSource.Stop();
         }
 
-        // Clear audio queue
+        // Clear all queues
         audioResponseQueue.Clear();
+        audioChunkQueue.Clear();
 
         float sessionDuration = Time.time - sessionStartTime;
         LogMessage($"📊 Session duration: {sessionDuration:F1} seconds");
@@ -725,15 +862,48 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
 
         LogMessage("🧪 Testing audio send with sample data...");
 
-        // Create a simple test audio (1 second of silence)
-        float[] testSamples = new float[16000]; // 1 second at 16kHz
+        // Create a simple test audio (1 second of 440Hz tone)
+        float[] testSamples = new float[inputSampleRate]; // 1 second at input sample rate
         for (int i = 0; i < testSamples.Length; i++)
         {
-            testSamples[i] = 0.1f * Mathf.Sin(2 * Mathf.PI * 440 * i / 16000f); // 440Hz tone
+            testSamples[i] = 0.1f * Mathf.Sin(2 * Mathf.PI * 440 * i / (float)inputSampleRate); // 440Hz tone
         }
 
         SendAudioChunk(testSamples);
         SendEndOfAudioSignal();
+    }
+
+    [ContextMenu("Reset Session")]
+    public void ResetSession()
+    {
+        if (isSessionActive)
+        {
+            StopSession();
+        }
+
+        // Clear all queues and reset state
+        audioResponseQueue.Clear();
+        audioChunkQueue.Clear();
+        StopAllAudioSources();
+
+        LogMessage("🔄 Session reset - Ready for new connection");
+        UpdateStatus("Session reset - Click START to begin");
+    }
+
+    [ContextMenu("Test Voice Detection")]
+    public void TestVoiceDetection()
+    {
+        if (!isRecording)
+        {
+            LogMessage("❌ Not currently recording");
+            return;
+        }
+
+        LogMessage($"🧪 Voice Detection Status:");
+        LogMessage($"   - Voice Detected: {voiceDetected}");
+        LogMessage($"   - Last Voice Time: {Time.time - lastVoiceTime:F2}s ago");
+        LogMessage($"   - Threshold: {voiceDetectionThreshold}");
+        LogMessage($"   - Timeout: {voiceDetectionTimeout}s");
     }
 
     private IEnumerator TestGeminiLiveConnection()
@@ -749,6 +919,59 @@ public class GeminiLiveSpeechToSpeech : MonoBehaviour
         else
         {
             LogMessage("❌ Connection test failed!");
+        }
+    }
+
+    /// <summary>
+    /// Performance monitoring and optimization methods
+    /// </summary>
+    private void OptimizePerformance()
+    {
+        // Reduce garbage collection by reusing objects
+        if (audioChunkQueue.Count > 100) // Prevent memory buildup
+        {
+            LogMessage("⚠️ Audio chunk queue getting large, clearing old chunks");
+            while (audioChunkQueue.Count > 50)
+            {
+                audioChunkQueue.Dequeue();
+            }
+        }
+
+        // Clean up finished audio sources
+        activeSources.RemoveAll(source => source == null || !source.isPlaying);
+    }
+
+    /// <summary>
+    /// Enhanced error handling and recovery
+    /// </summary>
+    private void HandleConnectionError()
+    {
+        LogMessage("🔄 Attempting to reconnect to Gemini Live...");
+        isConnected = false;
+
+        if (isSessionActive)
+        {
+            StartCoroutine(ReconnectToGemini());
+        }
+    }
+
+    private IEnumerator ReconnectToGemini()
+    {
+        yield return new WaitForSeconds(2f); // Wait before retry
+
+        if (isSessionActive && !isConnected)
+        {
+            yield return StartCoroutine(ConnectToGeminiLive());
+
+            if (isConnected)
+            {
+                LogMessage("✅ Reconnected successfully!");
+            }
+            else
+            {
+                LogMessage("❌ Reconnection failed, stopping session");
+                yield return StartCoroutine(EndSession());
+            }
         }
     }
     #endregion

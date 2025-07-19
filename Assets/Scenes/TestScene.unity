@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: 278136769}
   - component: {fileID: 278136771}
   m_Layer: 5
-  m_Name: Button
+  m_Name: startBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -993,7 +993,7 @@ GameObject:
   - component: {fileID: 1053298543}
   - component: {fileID: 1053298545}
   m_Layer: 5
-  m_Name: stopbtn
+  m_Name: stopBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1307,24 +1307,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 1999571206}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 456324496eb6fe04a8506a675ec4ea72, type: 3}
+  m_Script: {fileID: 11500000, guid: f7aa7066f4e25ec4f8e4839301a6f030, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   startButton: {fileID: 278136771}
   stopButton: {fileID: 1053298545}
   statusText: {fileID: 528239509}
   logText: {fileID: 605781872}
-  audioSource: {fileID: 1999571207}
+  audioSource: {fileID: 0}
   geminiApiKey: AIzaSyDR5fVgJABDSkaVfmy-iimLzsLLOBkrBgA
   silenceThreshold: 0.01
-  voiceDetectionTimeout: 1.2
-  modelName: gemini-2.5-flash-preview-native-audio-dialog
-  systemInstruction: You are Tenaya, created by Simulation and Visualization Center
-    - Duy Tan University. Answer in the same language as the user's question. Provide
-    a concise response with 1-5 sentences, each under 20 words. Use continuous prose,
-    avoiding bullet points, lists, or enumerated formats. Focus on Southeast Asia
-    and ASEAN expertise. Do not include URLs, extra introductions, or unnecessary
-    details.
+  voiceDetectionTimeout: 2
+  silenceDetectionTime: 1.2
+  enableFastMode: 1
+  useAdaptiveTimeout: 1
+  enableWebSearch: 0
+  preferKnowledgeBase: 1
+  forceLanguageCode: 
 --- !u!1 &2025756213
 GameObject:
   m_ObjectHideFlags: 0

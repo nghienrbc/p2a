@@ -13,6 +13,7 @@ Library: D:\ASEAN\Code\p2a\Temp\BurstOutput\tempburstlibs\armeabi-v7a\lib_burst_
 --assembly-defines=Coffee.SoftMaskForUGUI;
 --assembly-defines=Coffee.SoftMaskForUGUI.R;
 --assembly-defines=DOTween;
+--assembly-defines=endel.nativewebsocket;
 --assembly-defines=gpm_common;
 --assembly-defines=gpm_communicator;
 --assembly-defines=gpm_webview;
