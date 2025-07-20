@@ -147,6 +147,10 @@ public class EnhancedSpeechController : MonoBehaviour
     private void Start()
     {
         InitializeComponent();
+
+        // Load voice detection settings from PlayerPrefs
+        LoadVoiceDetectionSettings();
+
         LogMessage("🎙️ Enhanced Speech Controller Ready");
         LogMessage("🤖 Myaku Animation Integration Enabled");
         UpdateStatus("Click START to begin enhanced speech-to-speech session");
@@ -160,7 +164,72 @@ public class EnhancedSpeechController : MonoBehaviour
         }
     }
     #endregion
-    
+
+    #region Settings Management
+    /// <summary>
+    /// Load voice detection settings from PlayerPrefs
+    /// </summary>
+    private void LoadVoiceDetectionSettings()
+    {
+        // Load voice threshold
+        if (PlayerPrefs.HasKey("VoiceThreshold"))
+        {
+            voiceVolumeThreshold = PlayerPrefs.GetFloat("VoiceThreshold");
+            LogMessage($"🔧 Loaded Voice Threshold: {voiceVolumeThreshold:F3}");
+        }
+
+        // Load silence threshold
+        if (PlayerPrefs.HasKey("SilenceThreshold"))
+        {
+            silenceThreshold = PlayerPrefs.GetFloat("SilenceThreshold");
+            LogMessage($"🔧 Loaded Silence Threshold: {silenceThreshold:F3}");
+        }
+
+        // Load minimum speech duration
+        if (PlayerPrefs.HasKey("MinimumSpeechDuration"))
+        {
+            minimumSpeechDuration = PlayerPrefs.GetFloat("MinimumSpeechDuration");
+            LogMessage($"🔧 Loaded Minimum Speech Duration: {minimumSpeechDuration:F1}s");
+        }
+
+        // Load session timeout
+        if (PlayerPrefs.HasKey("SessionTimeout"))
+        {
+            sessionTimeoutAfterResponse = PlayerPrefs.GetFloat("SessionTimeout");
+            LogMessage($"🔧 Loaded Session Timeout: {sessionTimeoutAfterResponse:F0}s");
+        }
+
+        // Load consecutive voice frames
+        if (PlayerPrefs.HasKey("ConsecutiveVoiceFrames"))
+        {
+            consecutiveVoiceFrames = PlayerPrefs.GetInt("ConsecutiveVoiceFrames");
+            LogMessage($"🔧 Loaded Consecutive Voice Frames: {consecutiveVoiceFrames}");
+        }
+
+        LogMessage("🔧 Voice detection settings loaded from PlayerPrefs");
+    }
+
+    /// <summary>
+    /// Public method to reload voice detection settings during runtime
+    /// Called by MySettingManager after saving new settings
+    /// </summary>
+    public void ReloadVoiceDetectionSettings()
+    {
+        LogMessage("🔄 Reloading voice detection settings...");
+        LoadVoiceDetectionSettings();
+
+        // If session timeout is currently running, restart it with new timeout value
+        if (timeoutCoroutine != null && isWaitingForNextQuestion)
+        {
+            LogMessage("🔄 Restarting timeout coroutine with new timeout value...");
+            StopCoroutine(timeoutCoroutine);
+            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
+        }
+
+        LogMessage("✅ Voice detection settings reloaded and applied successfully!");
+    }
+    #endregion
+
     #region Public Methods
     public void StartContinuousSession()
     {
@@ -568,6 +637,7 @@ public class EnhancedSpeechController : MonoBehaviour
                 string textResponse = ProcessTextResponse(request.downloadHandler.text);
                 if (!string.IsNullOrEmpty(textResponse))
                 {
+                    UIManager.Instance.WarningTxt.text = textResponse;
                     lastAIResponse = textResponse;
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
 
