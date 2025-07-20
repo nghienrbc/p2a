@@ -1242,8 +1242,10 @@ public class EnhancedSpeechController : MonoBehaviour
         isFirstSessionAfterWakeWord = true;
         LogMessage($"🔍 DEBUG: Set isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
 
-        // Start new session automatically
-        StartContinuousSession();
+        // // Start new session automatically
+        // StartContinuousSession();
+ 
+        StartCoroutine(BeginContinuousConversation());
     }
 
     /// <summary>
