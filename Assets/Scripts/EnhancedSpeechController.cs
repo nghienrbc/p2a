@@ -16,7 +16,6 @@ public class EnhancedSpeechController : MonoBehaviour
     #region UI References
     [Header("UI References")]
     public Button startButton;
-    public Button stopButton;
     public TMP_Text statusText;
     public TMP_Text logText;
     public AudioSource audioSource;
@@ -35,7 +34,11 @@ public class EnhancedSpeechController : MonoBehaviour
     [Header("API Configuration")]
     public string geminiApiKey = "AIzaSyDR5fVgJABDSkaVfmy-iimLzsLLOBkrBgA";
     public string ttsApiKey = "AIzaSyCF2J81GFiPZ_itPBXrrPJ2d3oGW_R397c";
-    
+
+    [Header("Wake Word Detection")]
+    [Tooltip("Enable wake word 'Hey DT' detection via audioPlugin")]
+    public bool enableWakeWordDetection = true;
+
     [Header("Audio Detection")]
     public float silenceThreshold = 0.01f;
     public float voiceDetectionTimeout = 2.0f;
@@ -55,7 +58,13 @@ public class EnhancedSpeechController : MonoBehaviour
     [Header("Speed Optimization")]
     public bool enableFastMode = true;
     public bool useAdaptiveTimeout = true;
-    
+
+    [Header("Session Auto-Timeout")]
+    [Tooltip("Thời gian chờ sau khi kết thúc phát audio trước khi tự động kết thúc session (giây)")]
+    public float sessionTimeoutAfterResponse = 20f;
+    [Tooltip("Enable auto-timeout feature")]
+    public bool enableAutoTimeout = true;
+
     [Header("Language Detection")]
     [Tooltip("Force a specific language for TTS (leave empty for auto-detection)")]
     public string forceLanguageCode = "";
@@ -92,6 +101,16 @@ public class EnhancedSpeechController : MonoBehaviour
     private System.Collections.Generic.List<ConversationEntry> conversationHistory = new System.Collections.Generic.List<ConversationEntry>();
     private const int MAX_HISTORY_ENTRIES = 10;
     private string lastAIResponse = "";
+
+    // Wake Word Detection (AudioPlugin)
+    private AndroidJavaObject audioPlugin;
+    private bool enableHeyDT = true;
+    private bool isFirstSessionAfterWakeWord = true;
+
+    // Auto-timeout management
+    private float lastResponseEndTime = 0f;
+    private bool isWaitingForNextQuestion = false;
+    private Coroutine timeoutCoroutine;
     #endregion
     
     #region Data Structures
@@ -145,23 +164,29 @@ public class EnhancedSpeechController : MonoBehaviour
     #region Public Methods
     public void StartContinuousSession()
     {
+        LogMessage($"🔍 DEBUG: StartContinuousSession called, isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
+
         if (isSessionActive)
         {
             LogMessage("⚠️ Session already active...");
             return;
         }
-        
+
+        isFirstSessionAfterWakeWord = true;
         StartCoroutine(BeginContinuousConversation());
     }
-    
-    public void StopSession()
+
+    /// <summary>
+    /// Internal method to stop session (called by timeout or other internal logic)
+    /// </summary>
+    private void StopSession()
     {
         if (!isSessionActive)
         {
             LogMessage("⚠️ No active session to stop...");
             return;
         }
-        
+
         StartCoroutine(EndSession());
     }
     #endregion
@@ -171,10 +196,7 @@ public class EnhancedSpeechController : MonoBehaviour
     {
         if (startButton != null)
             startButton.onClick.AddListener(StartContinuousSession);
-            
-        if (stopButton != null)
-            stopButton.onClick.AddListener(StopSession);
-            
+
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
             
@@ -191,6 +213,9 @@ public class EnhancedSpeechController : MonoBehaviour
         {
             LogMessage("❌ No microphone found!");
         }
+
+        // Initialize AudioPlugin for wake word detection
+        InitializeAudioPlugin();
     }
 
     private IEnumerator BeginContinuousConversation()
@@ -202,10 +227,35 @@ public class EnhancedSpeechController : MonoBehaviour
         isSessionActive = true;
         sessionStartTime = Time.time;
 
-        // Myaku Animation: Start listening mode
+        // Pause AudioPlugin during session to avoid conflicts
+        PauseAudioPlugin();
+
+        // Myaku Animation: Start listening mode with special audio feedback for wake word
+        LogMessage($"🔍 DEBUG: isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
+        LogMessage($"🔍 DEBUG: myakuController = {(myakuController != null ? "NOT NULL" : "NULL")}");
+
         if (myakuController != null)
         {
-            myakuController.StartListening();
+            if (isFirstSessionAfterWakeWord)
+            {
+                // First session after wake word - play listening sound
+                LogMessage("🎯 WAKE WORD SESSION - Calling myakuController.StartListening(true)");
+                myakuController.StartListening(true);
+                LogMessage("🎵 Playing welcome sound for wake word session");
+                isFirstSessionAfterWakeWord = false; // Reset flag
+                LogMessage("🔍 DEBUG: Reset isFirstSessionAfterWakeWord to false");
+            }
+            else
+            {
+                // Subsequent sessions - no audio feedback
+                LogMessage("🔄 FOLLOW-UP SESSION - Calling myakuController.StartListening(false)");
+                myakuController.StartListening(false);
+                LogMessage("🔇 Silent listening mode for follow-up questions");
+            }
+        }
+        else
+        {
+            LogMessage("❌ myakuController is null!");
         }
 
         string statusText = enableFastMode ? "⚡ FAST LIVE" : "🔴 LIVE";
@@ -214,6 +264,18 @@ public class EnhancedSpeechController : MonoBehaviour
 
         // Start continuous recording
         yield return StartCoroutine(InitializeContinuousRecording());
+
+        // Start initial timeout for first question
+        if (enableAutoTimeout)
+        {
+            LogMessage($"⏰ Starting initial session timeout: {sessionTimeoutAfterResponse}s");
+            isWaitingForNextQuestion = true;
+            if (timeoutCoroutine != null)
+            {
+                StopCoroutine(timeoutCoroutine);
+            }
+            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
+        }
 
         // Main conversation loop
         while (isSessionActive)
@@ -290,6 +352,15 @@ public class EnhancedSpeechController : MonoBehaviour
                 LogMessage("🗣️ Voice CONFIRMED - Recording speech...");
                 UpdateStatus("🎤 Recording your voice...");
 
+                // Cancel timeout when user starts speaking
+                if (timeoutCoroutine != null)
+                {
+                    StopCoroutine(timeoutCoroutine);
+                    timeoutCoroutine = null;
+                    isWaitingForNextQuestion = false;
+                    LogMessage("⏰ Auto-timeout cancelled - User speaking");
+                }
+
                 // Myaku Animation: User speaking
                 if (myakuController != null)
                 {
@@ -335,7 +406,8 @@ public class EnhancedSpeechController : MonoBehaviour
                     if (myakuController != null)
                     {
                         myakuController.StopRecording();
-                        myakuController.StartThinking();
+                        LogMessage("🤔 Calling myakuController.MyakuThinking() - AI is thinking");
+                        myakuController.MyakuThinking();
                     }
 
                     StartCoroutine(ProcessVoiceSegment());
@@ -353,6 +425,13 @@ public class EnhancedSpeechController : MonoBehaviour
         if (aiResponseText != null)
         {
             aiResponseText.text = "🤖 AI: (Processing your question...)";
+        }
+
+        // Myaku Animation: Ensure thinking animation is active
+        if (myakuController != null)
+        {
+            LogMessage("🤔 Ensuring MyakuThinking animation is active during processing");
+            myakuController.MyakuThinking();
         }
 
         // Extract audio segment
@@ -380,15 +459,31 @@ public class EnhancedSpeechController : MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
             }
 
-            // Myaku Animation: Finished speaking, back to listening
+            // Mark response end time for timeout tracking
+            lastResponseEndTime = Time.time;
+            isWaitingForNextQuestion = true;
+
+            // Myaku Animation: Finished speaking, back to listening (no audio for follow-up)
             if (myakuController != null)
             {
                 myakuController.FinishSpeaking();
-                myakuController.StartListening();
+                myakuController.StartListening(false);
+                LogMessage("🔇 Silent listening mode for follow-up questions");
             }
 
             LogMessage("🔊 AI response finished - Resuming voice monitoring");
             UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
+
+            // Start timeout coroutine for auto-ending session
+            if (enableAutoTimeout)
+            {
+                if (timeoutCoroutine != null)
+                {
+                    StopCoroutine(timeoutCoroutine);
+                }
+                timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
+                LogMessage($"⏰ Auto-timeout started: {sessionTimeoutAfterResponse}s");
+            }
         }
         else
         {
@@ -398,8 +493,9 @@ public class EnhancedSpeechController : MonoBehaviour
             // Myaku Animation: Back to listening on failure
             if (myakuController != null)
             {
-                myakuController.StopThinking();
-                myakuController.StartListening();
+                LogMessage("❌ Processing failed - Stopping thinking animation");
+                myakuController.MyakuStopThinking();
+                myakuController.StartListening(false);
             }
         }
 
@@ -505,9 +601,12 @@ public class EnhancedSpeechController : MonoBehaviour
     {
         isPlayingResponse = true;
 
-        // Myaku Animation: Start speaking
+        // Myaku Animation: Stop thinking, start speaking
         if (myakuController != null)
         {
+            LogMessage("🛑 Stopping thinking animation");
+            myakuController.MyakuStopThinking();
+            LogMessage("🗣️ Starting speaking preparation");
             myakuController.StartSpeaking();
         }
 
@@ -593,6 +692,18 @@ public class EnhancedSpeechController : MonoBehaviour
             responseClip.SetData(samples, 0);
 
             audioSource.clip = responseClip;
+
+            // Myaku Animation: Start answer animation when audio actually starts playing
+            if (myakuController != null)
+            {
+                LogMessage("🎵 Calling myakuController.MyakuAnswer() - Starting answer animation");
+                myakuController.MyakuAnswer();
+            }
+            else
+            {
+                LogMessage("❌ myakuController is null - Cannot call MyakuAnswer()!");
+            }
+
             audioSource.Play();
 
             LogMessage($"🔊 AI: {lastAIResponse} (Playing...)");
@@ -607,6 +718,147 @@ public class EnhancedSpeechController : MonoBehaviour
             yield return new WaitUntil(() => !audioSource.isPlaying);
             Destroy(responseClip);
         }
+    }
+    #endregion
+
+    #region Wake Word Detection
+    private void InitializeAudioPlugin()
+    {
+        if (!enableWakeWordDetection)
+        {
+            LogMessage("🔇 Wake word detection disabled");
+            return;
+        }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        try
+        {
+            // Request microphone permission
+            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
+            {
+                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.Microphone);
+            }
+
+            // Request notification permission
+            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission("android.permission.POST_NOTIFICATIONS"))
+            {
+                UnityEngine.Android.Permission.RequestUserPermission("android.permission.POST_NOTIFICATIONS");
+            }
+
+            // Initialize AudioPlugin
+            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+            {
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
+            }
+
+            LogMessage("🎤 AudioPlugin: " + (audioPlugin != null ? "Initialized" : "Failed"));
+
+            if (audioPlugin != null)
+            {
+                audioPlugin.Call("startRecordingFromUnity");
+                enableHeyDT = true;
+                LogMessage("✅ Wake word detection 'Hey DT' is active");
+            }
+        }
+        catch (System.Exception e)
+        {
+            LogMessage($"❌ Failed to initialize AudioPlugin: {e.Message}");
+        }
+#else
+        LogMessage("🔇 Wake word detection only available on Android");
+#endif
+    }
+
+    /// <summary>
+    /// Called by AudioPlugin when wake word "Hey DT" is detected
+    /// </summary>
+    public void OnWakeWordDetected()
+    {
+        if (!enableHeyDT || isSessionActive)
+        {
+            LogMessage("⚠️ Wake word ignored - session active or disabled");
+            return;
+        }
+
+        LogMessage("🎯 Wake word 'Hey DT' detected!");
+
+        // Clean up any previous session
+        CleanBeforeNewSession();
+
+        // Mark as first session after wake word (for special audio feedback)
+        isFirstSessionAfterWakeWord = true;
+        LogMessage($"🔍 DEBUG: Set isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
+
+        // Start new session automatically
+        StartContinuousSession();
+    }
+
+    /// <summary>
+    /// Called when app is opened by wake word detection
+    /// </summary>
+    public void OnAppOpened(string openReason)
+    {
+        LogMessage($"📱 App opened with reason: {openReason}");
+
+        if (openReason == "wake_word")
+        {
+            LogMessage("🎯 App auto-opened due to wake word detection");
+            isFirstSessionAfterWakeWord = true;
+
+            // Clean and start new session
+            CleanBeforeNewSession();
+            StartContinuousSession();
+        }
+        else if (openReason == "user")
+        {
+            LogMessage("👤 App opened by user from launcher");
+        }
+    }
+
+    private void CleanBeforeNewSession()
+    {
+        // Stop any playing audio immediately
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            audioSource.clip = null;
+        }
+
+        // Stop all coroutines
+        StopAllCoroutines();
+
+        // Reset states
+        isRecording = false;
+        isPlayingResponse = false;
+
+        // Disable Hey DT during session
+        enableHeyDT = false;
+
+        LogMessage("🧹 Cleaned up before new session");
+    }
+
+    private void PauseAudioPlugin()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (audioPlugin != null)
+        {
+            audioPlugin.Call("pauseRecordingFromUnity");
+            LogMessage("⏸️ AudioPlugin paused");
+        }
+#endif
+    }
+
+    private void ResumeAudioPlugin()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (audioPlugin != null)
+        {
+            audioPlugin.Call("resumeRecordingFromUnity");
+            enableHeyDT = true;
+            LogMessage("▶️ AudioPlugin resumed - Wake word detection active");
+        }
+#endif
     }
     #endregion
 
@@ -655,9 +907,44 @@ public class EnhancedSpeechController : MonoBehaviour
     {
         if (startButton != null)
             startButton.interactable = !isSessionActive;
+    }
 
-        if (stopButton != null)
-            stopButton.interactable = isSessionActive;
+    /// <summary>
+    /// Coroutine để tự động kết thúc session sau timeout
+    /// </summary>
+    private IEnumerator SessionTimeoutCoroutine()
+    {
+        float timeElapsed = 0f;
+        bool isFirstQuestion = (conversationHistory.Count == 0); // Kiểm tra có phải câu hỏi đầu tiên không
+
+        while (timeElapsed < sessionTimeoutAfterResponse && isWaitingForNextQuestion && isSessionActive)
+        {
+            yield return new WaitForSeconds(1f);
+            timeElapsed += 1f;
+
+            // Update status with countdown
+            int remainingTime = Mathf.CeilToInt(sessionTimeoutAfterResponse - timeElapsed);
+            if (remainingTime <= 5)
+            {
+                string message = isFirstQuestion ?
+                    $"🔴 LIVE - Auto-ending in {remainingTime}s (ask your first question)" :
+                    $"🔴 LIVE - Auto-ending in {remainingTime}s (say something to continue)";
+                UpdateStatus(message);
+            }
+        }
+
+        // Check if we should end the session
+        if (isWaitingForNextQuestion && isSessionActive && timeElapsed >= sessionTimeoutAfterResponse)
+        {
+            string reason = isFirstQuestion ? "no initial question" : "inactivity";
+            LogMessage($"⏰ Session auto-ended after {sessionTimeoutAfterResponse}s timeout ({reason})");
+            UpdateStatus($"Session ended due to {reason}");
+
+            // End session
+            StopSession();
+        }
+
+        timeoutCoroutine = null;
     }
 
     private void LogMessage(string message)
@@ -724,7 +1011,7 @@ public class EnhancedSpeechController : MonoBehaviour
 
         if (aiResponseText != null)
         {
-            aiResponseText.text = "🤖 AI: (Ready to respond...)";
+            aiResponseText.text = "Say 'Hey DT' to ask me something";
         }
     }
 
@@ -735,6 +1022,14 @@ public class EnhancedSpeechController : MonoBehaviour
         isSessionActive = false;
         isRecording = false;
         isPlayingResponse = false;
+        isWaitingForNextQuestion = false;
+
+        // Stop timeout coroutine if running
+        if (timeoutCoroutine != null)
+        {
+            StopCoroutine(timeoutCoroutine);
+            timeoutCoroutine = null;
+        }
 
         // Myaku Animation: Stop all activities
         if (myakuController != null)
@@ -758,11 +1053,41 @@ public class EnhancedSpeechController : MonoBehaviour
         float sessionDuration = Time.time - sessionStartTime;
         LogMessage($"✅ Session ended. Duration: {sessionDuration:F1}s");
 
+        // Resume AudioPlugin for wake word detection
+        ResumeAudioPlugin();
+
         UpdateStatus("Click START to begin new enhanced speech session");
         ClearConversationDisplay();
         UpdateButtonStates();
 
         yield return null;
+    }
+
+    private void OnDestroy()
+    {
+        // Cleanup
+        StopAllCoroutines();
+
+        // Dispose AudioPlugin
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (audioPlugin != null)
+        {
+            try
+            {
+                audioPlugin.Dispose();
+                LogMessage("🧹 AudioPlugin disposed");
+            }
+            catch (System.Exception e)
+            {
+                LogMessage($"⚠️ Error disposing AudioPlugin: {e.Message}");
+            }
+        }
+#endif
+
+        // Clear conversation history
+        conversationHistory.Clear();
+
+        LogMessage("🧹 EnhancedSpeechController cleanup completed");
     }
     #endregion
 
