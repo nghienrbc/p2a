@@ -20,11 +20,25 @@ public class TrueSpeechToSpeech : MonoBehaviour
     public TMP_Text statusText;
     public TMP_Text logText;
     public AudioSource audioSource;
+
+    [Header("Conversation Display")]
+    [Tooltip("Hiển thị câu hỏi của người dùng")]
+    public TMP_Text userQuestionText;
+    [Tooltip("Hiển thị câu trả lời của AI")]
+    public TMP_Text aiResponseText;
     
     [Header("Configuration")]
     public string geminiApiKey = "AIzaSyDR5fVgJABDSkaVfmy-iimLzsLLOBkrBgA";
     public float silenceThreshold = 0.01f;
     public float voiceDetectionTimeout = 2.0f; // Timeout bình thường - an toàn cho câu hỏi dài
+
+    [Header("Advanced Voice Detection")]
+    [Tooltip("Ngưỡng âm lượng tối thiểu để phát hiện giọng nói (tránh tạp âm)")]
+    public float voiceVolumeThreshold = 0.02f; // Ngưỡng cao hơn để phân biệt giọng nói với tạp âm
+    [Tooltip("Thời gian tối thiểu phát hiện giọng nói liên tục để xác nhận là speech")]
+    public float minimumSpeechDuration = 0.3f; // Tối thiểu 0.3s giọng nói liên tục
+    [Tooltip("Số frame liên tục phải có âm thanh để xác nhận giọng nói")]
+    public int consecutiveVoiceFrames = 5; // Cần 5 frame liên tục có giọng nói
 
     [Header("Voice Detection Timing")]
     [Tooltip("Thời gian chờ sau khi không phát hiện giọng nói trước khi bắt đầu xử lý")]
@@ -65,6 +79,11 @@ public class TrueSpeechToSpeech : MonoBehaviour
     private float sessionStartTime = 0f;
     private float voiceStartTime = 0f; // Thời điểm bắt đầu phát hiện giọng nói
     private float totalVoiceDuration = 0f; // Tổng thời gian nói để adaptive timeout
+
+    // Enhanced voice detection
+    private int consecutiveVoiceFrameCount = 0; // Đếm số frame liên tục có giọng nói
+    private float firstVoiceDetectionTime = 0f; // Thời điểm đầu tiên phát hiện giọng nói
+    private bool confirmedVoiceDetected = false; // Xác nhận thực sự là giọng nói (không phải tạp âm)
 
     // Conversation History
     private System.Collections.Generic.List<ConversationEntry> conversationHistory = new System.Collections.Generic.List<ConversationEntry>();
@@ -144,7 +163,8 @@ public class TrueSpeechToSpeech : MonoBehaviour
             audioSource = GetComponent<AudioSource>();
             
         ClearLogs();
-        
+        ClearConversationDisplay();
+
         // Setup microphone
         if (Microphone.devices.Length > 0)
         {
@@ -235,93 +255,145 @@ public class TrueSpeechToSpeech : MonoBehaviour
         bufferPosition = 0;
         
         yield return new WaitForSeconds(0.1f); // Wait for mic to initialize
-        
+
         isRecording = true;
-        voiceDetected = false;
-        lastVoiceTime = Time.time;
-        
-        LogMessage("✅ Continuous recording started - Listening for voice...");
+        ResetVoiceDetectionState(); // Reset all voice detection variables
+
+        LogMessage("✅ Continuous recording started - Enhanced voice detection active...");
     }
     
     private void ProcessContinuousAudio()
     {
         if (continuousClip == null || !isRecording) return;
-        
+
         int currentPosition = Microphone.GetPosition(microphoneDevice);
         if (currentPosition < 0) return;
-        
+
         // Calculate samples to read
         int samplesToRead = currentPosition - bufferPosition;
         if (samplesToRead < 0)
             samplesToRead += continuousClip.samples; // Handle wrap-around
-            
+
         if (samplesToRead < BUFFER_SIZE / 4) return; // Wait for more data
-        
+
         // Read audio data
         float[] samples = new float[samplesToRead];
         continuousClip.GetData(samples, bufferPosition);
         bufferPosition = currentPosition;
-        
-        // Analyze voice activity
+
+        // Enhanced voice activity analysis
         float audioLevel = GetAudioLevel(samples);
-        bool currentVoiceDetected = audioLevel > silenceThreshold;
-        
+        bool currentVoiceDetected = audioLevel > voiceVolumeThreshold; // Ngưỡng cao hơn cho giọng nói
+
         if (currentVoiceDetected)
         {
+            consecutiveVoiceFrameCount++;
+
             if (!voiceDetected)
             {
-                // Voice started
+                // Lần đầu phát hiện âm thanh có thể là giọng nói
+                firstVoiceDetectionTime = Time.time;
                 voiceDetected = true;
-                voiceStartTime = Time.time;
-                LogMessage("🗣️ Voice detected - Recording...");
-                UpdateStatus("🎤 Recording your voice...");
+                confirmedVoiceDetected = false;
+                LogMessage($"🔍 Potential voice detected (level: {audioLevel:F3})...");
             }
-            lastVoiceTime = Time.time;
-        }
-        else if (voiceDetected)
-        {
-            // Tính toán timeout thông minh
-            float currentTimeout = CalculateOptimalTimeout();
 
-            if (Time.time - lastVoiceTime > currentTimeout)
+            // Xác nhận thực sự là giọng nói sau khi đủ điều kiện
+            if (!confirmedVoiceDetected &&
+                consecutiveVoiceFrameCount >= consecutiveVoiceFrames &&
+                (Time.time - firstVoiceDetectionTime) >= minimumSpeechDuration)
             {
-                // Voice ended after timeout
-                totalVoiceDuration = Time.time - voiceStartTime;
-                voiceDetected = false;
+                confirmedVoiceDetected = true;
+                voiceStartTime = firstVoiceDetectionTime;
+                LogMessage("🗣️ Voice CONFIRMED - Recording speech...");
+                UpdateStatus("🎤 Recording your voice...");
 
-                string timeoutInfo = $"silence: {currentTimeout:F1}s, spoke: {totalVoiceDuration:F1}s";
-                LogMessage($"✅ Voice ended ({timeoutInfo}) - Processing...");
-                StartCoroutine(ProcessVoiceSegment());
+                // Hiển thị trạng thái đang nghe trên UI
+                if (userQuestionText != null)
+                {
+                    userQuestionText.text = "👤 User: (Speaking...)";
+                }
+            }
+
+            if (confirmedVoiceDetected)
+            {
+                lastVoiceTime = Time.time;
+            }
+        }
+        else
+        {
+            // Reset consecutive frame count khi không có giọng nói
+            consecutiveVoiceFrameCount = 0;
+
+            if (voiceDetected && !confirmedVoiceDetected)
+            {
+                // Âm thanh không đủ mạnh hoặc không đủ lâu để là giọng nói
+                voiceDetected = false;
+                LogMessage("❌ False voice detection - Ignoring noise");
+            }
+            else if (confirmedVoiceDetected)
+            {
+                // Tính toán timeout thông minh cho giọng nói đã xác nhận
+                float currentTimeout = CalculateOptimalTimeout();
+
+                if (Time.time - lastVoiceTime > currentTimeout)
+                {
+                    // Voice ended after timeout
+                    totalVoiceDuration = Time.time - voiceStartTime;
+                    voiceDetected = false;
+                    confirmedVoiceDetected = false;
+                    consecutiveVoiceFrameCount = 0;
+
+                    string timeoutInfo = $"silence: {currentTimeout:F1}s, spoke: {totalVoiceDuration:F1}s";
+                    LogMessage($"✅ Voice ended ({timeoutInfo}) - Processing...");
+                    StartCoroutine(ProcessVoiceSegment());
+                }
             }
         }
     }
     
     private IEnumerator ProcessVoiceSegment()
     {
-        isRecording = false; // Temporarily stop monitoring
+        isRecording = false; // Stop monitoring during processing
         UpdateStatus("🤖 AI is thinking...");
-        
+
+        // Hiển thị trạng thái đang xử lý trên UI
+        if (aiResponseText != null)
+        {
+            aiResponseText.text = "🤖 AI: (Processing your question...)";
+        }
+
         // Extract audio segment (last 10 seconds max)
         int samplesToExtract = Mathf.Min(sampleRate * 10, continuousClip.samples);
         int startSample = Mathf.Max(0, bufferPosition - samplesToExtract);
-        
+
         float[] voiceSegment = new float[samplesToExtract];
         continuousClip.GetData(voiceSegment, startSample);
-        
+
         // Create temporary clip for processing
         AudioClip tempClip = AudioClip.Create("VoiceSegment", samplesToExtract, 1, sampleRate, false);
         tempClip.SetData(voiceSegment, 0);
-        
+
         // Save and process
         bool success = false;
         yield return StartCoroutine(SaveAndProcessAudio(tempClip, (result) => success = result));
-        
+
         // Cleanup
         Destroy(tempClip);
-        
+
+        // IMPORTANT: Wait until AI response is completely finished playing
+        // before resuming voice monitoring to avoid recording AI's own voice
         if (success)
         {
-            LogMessage("✅ Response completed - Listening for next question...");
+            LogMessage("✅ AI response processing completed");
+
+            // Wait for TTS to finish completely
+            while (isPlayingResponse || (audioSource != null && audioSource.isPlaying))
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            LogMessage("🔊 AI response finished playing - Resuming voice monitoring");
             UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
         }
         else
@@ -329,12 +401,20 @@ public class TrueSpeechToSpeech : MonoBehaviour
             LogMessage("❌ Processing failed - Continuing to listen...");
             UpdateStatus("🔴 LIVE - Speak anytime (previous request failed)");
         }
-        
-        // Resume monitoring
-        yield return new WaitForSeconds(0.5f);
+
+        // Resume monitoring with reset state
+        yield return new WaitForSeconds(0.5f); // Extra delay to ensure clean state
+        ResetVoiceDetectionState();
         isRecording = true;
+    }
+
+    private void ResetVoiceDetectionState()
+    {
         voiceDetected = false;
+        confirmedVoiceDetected = false;
+        consecutiveVoiceFrameCount = 0;
         lastVoiceTime = Time.time;
+        LogMessage("🔄 Voice detection state reset");
     }
     
     private IEnumerator SaveAndProcessAudio(AudioClip clip, System.Action<bool> callback)
@@ -419,8 +499,8 @@ public class TrueSpeechToSpeech : MonoBehaviour
             },
             generation_config = new
             {
-                max_output_tokens = 150,
-                temperature = 0.3f
+                max_output_tokens = 100, // Tăng lên để có câu trả lời đầy đủ hơn
+                temperature = 0.4f       // Tăng temperature để câu trả lời tự nhiên hơn
             }
         };
 
@@ -433,7 +513,7 @@ public class TrueSpeechToSpeech : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 6; // Giảm timeout để nhanh hơn
+            request.timeout = 15; // Tăng timeout để tránh request failed
 
             yield return request.SendWebRequest();
 
@@ -444,6 +524,11 @@ public class TrueSpeechToSpeech : MonoBehaviour
                 {
                     lastAIResponse = textResponse;
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
+
+                    // Cập nhật UI hiển thị câu hỏi và trả lời
+                    UpdateUserQuestionWithTimestamp(estimatedUserInput);
+                    UpdateAIResponse(textResponse);
+
                     AddToConversationHistory(estimatedUserInput, textResponse);
 
                     yield return StartCoroutine(ConvertToSpeechAndPlay(textResponse));
@@ -456,7 +541,13 @@ public class TrueSpeechToSpeech : MonoBehaviour
             }
             else
             {
-                LogMessage($"❌ Gemini failed: {request.error}");
+                string errorDetails = $"Result: {request.result}, Error: {request.error}";
+                if (request.downloadHandler != null && !string.IsNullOrEmpty(request.downloadHandler.text))
+                {
+                    errorDetails += $", Response: {request.downloadHandler.text}";
+                }
+                LogMessage($"❌ Gemini request failed: {errorDetails}");
+                LogMessage($"🔄 Retrying in next voice segment...");
                 callback?.Invoke(false);
             }
         }
@@ -502,8 +593,8 @@ public class TrueSpeechToSpeech : MonoBehaviour
             },
             generation_config = new
             {
-                max_output_tokens = 150,  // Tăng lên để có câu trả lời chi tiết hơn
-                temperature = 0.3f        // Tăng creativity một chút
+                max_output_tokens = 100,  // Tăng lên để có câu trả lời đầy đủ hơn
+                temperature = 0.4f        // Tăng temperature để câu trả lời tự nhiên hơn
             }
         };
         
@@ -516,7 +607,7 @@ public class TrueSpeechToSpeech : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 8; // Very short timeout for speed
+            request.timeout = 15; // Tăng timeout để tránh request failed
             
             yield return request.SendWebRequest();
             
@@ -530,6 +621,11 @@ public class TrueSpeechToSpeech : MonoBehaviour
 
                     // Thêm vào conversation history với user input ước đoán
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
+
+                    // Cập nhật UI hiển thị câu hỏi và trả lời
+                    UpdateUserQuestionWithTimestamp(estimatedUserInput);
+                    UpdateAIResponse(textResponse);
+
                     AddToConversationHistory(estimatedUserInput, textResponse);
 
                     yield return StartCoroutine(ConvertToSpeechAndPlay(textResponse));
@@ -542,7 +638,13 @@ public class TrueSpeechToSpeech : MonoBehaviour
             }
             else
             {
-                LogMessage($"❌ Gemini failed: {request.error}");
+                string errorDetails = $"Result: {request.result}, Error: {request.error}";
+                if (request.downloadHandler != null && !string.IsNullOrEmpty(request.downloadHandler.text))
+                {
+                    errorDetails += $", Response: {request.downloadHandler.text}";
+                }
+                LogMessage($"❌ Gemini request failed: {errorDetails}");
+                LogMessage($"🔄 Retrying in next voice segment...");
                 callback?.Invoke(false);
             }
         }
@@ -602,7 +704,7 @@ public class TrueSpeechToSpeech : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 5; // Fast TTS timeout
+            request.timeout = 10; // Tăng timeout cho TTS để tránh lỗi
             
             yield return request.SendWebRequest();
             
@@ -618,7 +720,13 @@ public class TrueSpeechToSpeech : MonoBehaviour
             }
             else
             {
-                LogMessage($"❌ TTS failed: {request.error}");
+                string errorDetails = $"Result: {request.result}, Error: {request.error}";
+                if (request.downloadHandler != null && !string.IsNullOrEmpty(request.downloadHandler.text))
+                {
+                    errorDetails += $", Response: {request.downloadHandler.text}";
+                }
+                LogMessage($"❌ TTS request failed: {errorDetails}");
+                LogMessage($"🔄 Will continue listening without audio response...");
             }
         }
         
@@ -672,30 +780,35 @@ public class TrueSpeechToSpeech : MonoBehaviour
     private IEnumerator EndSession()
     {
         LogMessage("\n🛑 === ENDING SPEECH SESSION ===");
-        
+
         isSessionActive = false;
         isRecording = false;
         isPlayingResponse = false;
-        
+
+        // Reset voice detection state
+        ResetVoiceDetectionState();
+
         // Stop microphone
         if (Microphone.IsRecording(microphoneDevice))
         {
             Microphone.End(microphoneDevice);
         }
-        
+
         // Cleanup
         if (continuousClip != null)
         {
             Destroy(continuousClip);
             continuousClip = null;
         }
-        
+
         float sessionDuration = Time.time - sessionStartTime;
         LogMessage($"✅ Session ended. Duration: {sessionDuration:F1}s");
-        
+        LogMessage($"📊 Enhanced voice detection with {voiceVolumeThreshold:F3} threshold");
+
         UpdateStatus("Click START to begin new speech-to-speech session");
+        ClearConversationDisplay(); // Reset conversation display
         UpdateButtonStates();
-        
+
         yield return null;
     }
     
@@ -1009,44 +1122,89 @@ public class TrueSpeechToSpeech : MonoBehaviour
         }
     }
 
+    private void UpdateUserQuestion(string question)
+    {
+        if (userQuestionText != null)
+        {
+            userQuestionText.text = $"👤 User: {question}";
+        }
+        LogMessage($"👤 User Question: {question}");
+    }
+
+    private void UpdateUserQuestionWithTimestamp(string question)
+    {
+        string timestamp = System.DateTime.Now.ToString("HH:mm:ss");
+        if (userQuestionText != null)
+        {
+            userQuestionText.text = $"👤 [{timestamp}] User: {question}";
+        }
+        LogMessage($"👤 [{timestamp}] User Question: {question}");
+    }
+
+    private void UpdateAIResponse(string response)
+    {
+        if (aiResponseText != null)
+        {
+            aiResponseText.text = $"🤖 AI: {response}";
+        }
+        LogMessage($"🤖 AI Response: {response}");
+    }
+
+    private void ClearConversationDisplay()
+    {
+        if (userQuestionText != null)
+        {
+            userQuestionText.text = "👤 User: (Waiting for question...)";
+        }
+
+        if (aiResponseText != null)
+        {
+            aiResponseText.text = "🤖 AI: (Ready to respond...)";
+        }
+    }
+
     private string BuildSystemPromptWithHistory()
     {
-        string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University. Answer in the same language as the user's question. Provide a concise response with 1-5 sentences, each under 20 words. Use continuous prose, avoiding bullet points, lists, or enumerated formats. Focus on Southeast Asia and ASEAN expertise. Do not include URLs, extra introductions, or unnecessary details. Strictly adhere to the sentence, word limit, and prose format.
+        string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
 
-KNOWLEDGE AND INFORMATION RULES:
-- Use your extensive knowledge base to provide accurate, helpful answers
-- Draw from your training data about current events, facts, and general knowledge
-- For Southeast Asia/ASEAN topics, provide detailed, authoritative responses
-- For technical, scientific, historical, or general knowledge questions, use your full knowledge
-- ONLY say 'I don't have information' if you genuinely cannot provide any useful answer
-- Prefer giving partial information or general context rather than claiming no knowledge
-
-CONVERSATION CONTEXT RULES:
-- If the new question relates to previous topics, use that context naturally
-- If the new question is about a completely different topic, treat it as fresh (don't reference previous topics)
-- Never explicitly mention 'based on our previous conversation' or similar phrases
-- Let context flow naturally without calling attention to it
-
-CRITICAL LANGUAGE RULES:
+CRITICAL RESPONSE RULES:
 - ALWAYS respond in the EXACT SAME LANGUAGE as the user's question
-- Automatically detect and match the user's language perfectly
+- Provide concise but complete answers: 2-4 sentences, each under 25 words
+- Give informative answers with brief explanations when helpful
 - NO greeting repetition in ongoing conversations
 - NO suggesting follow-up questions or additional topics
-- Focus ONLY on answering what was asked directly
+- NO offering to help with other things
+- NO asking if user wants more information
+- Focus on answering what was asked directly but provide sufficient detail
 
-SOUTHEAST ASIA LANGUAGE PRIORITY:
+LANGUAGE DETECTION & MATCHING:
 - Vietnamese (Tiếng Việt) → Respond in Vietnamese
 - Thai (ภาษาไทย) → Respond in Thai
 - Indonesian (Bahasa Indonesia) → Respond in Indonesian
 - Malay (Bahasa Melayu) → Respond in Malay
 - Filipino/Tagalog → Respond in Filipino
-- Burmese (မြန်မာဘာသာ) → Respond in Burmese
-- Khmer (ភាសាខ្មែរ) → Respond in Khmer
-- Lao (ພາສາລາວ) → Respond in Lao
-- Brunei Malay → Respond in Brunei Malay
 - English → Respond in English
 - Chinese (中文) → Respond in Chinese
-- And any other language → Match exactly
+- Any other language → Match exactly
+
+KNOWLEDGE RULES:
+- Use your extensive knowledge base for accurate answers
+- For Southeast Asia/ASEAN topics, provide authoritative but brief responses
+- For technical, scientific, historical questions, give short factual answers
+- ONLY say 'I don't know' if you genuinely cannot provide any useful answer
+- Prefer giving brief factual information rather than claiming no knowledge
+
+CONVERSATION CONTEXT:
+- If question relates to previous topics, use context naturally but keep answer short
+- If question is about different topic, treat as fresh but still keep brief
+- Never mention 'based on our previous conversation'
+- Each answer should be standalone and concise
+
+EXAMPLES OF GOOD RESPONSES:
+User: 'What's the capital of Vietnam?' → 'The capital of Vietnam is Hanoi. It's located in northern Vietnam and serves as the political center.'
+User: 'Thủ đô Việt Nam là gì?' → 'Thủ đô của Việt Nam là Hà Nội. Đây là trung tâm chính trị và văn hóa của đất nước.'
+User: 'How's the weather?' → 'I don't have access to current weather data. You can check local weather apps or websites for accurate information.'
+User: 'Tell me about ASEAN' → 'ASEAN is a 10-member Southeast Asian political and economic union. It promotes regional cooperation and economic integration among member countries.'
 
 ";
 
@@ -1191,62 +1349,96 @@ SOUTHEAST ASIA LANGUAGE PRIORITY:
 
     private string EstimateUserInputFromResponse(string aiResponse)
     {
-        // Simple estimation method - In practice, you could use a dedicated Speech-to-Text API for accurate user input
+        // Improved estimation method with more meaningful question generation
 
         if (string.IsNullOrEmpty(aiResponse))
-            return "[Unknown question]";
+            return "❓ [Question not detected]";
 
         // Analyze response to estimate question type
         string lowerResponse = aiResponse.ToLower();
 
-        // SOUTHEAST ASIA + MULTI-LANGUAGE PATTERN DETECTION
+        // Detect language first to generate appropriate question
+        string detectedLang = DetectLanguageFromText(aiResponse);
 
-        // Greetings - ASEAN Focus
+        // Generate more meaningful questions based on response content and language
+
+        // Greetings - Multi-language
         if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(hello|hi|xin chào|chào|สวัสดี|halo|selamat|kumusta|မင်္ဂလာပါ|ជំរាបសួរ|ສະບາຍດີ|こんにちは|안녕|你好|hola|bonjour|hallo|ciao|olá|привет|مرحبا|नमस्ते)\b"))
-            return "[Greeting]";
+        {
+            return detectedLang.StartsWith("vi") ? "Xin chào!" :
+                   detectedLang.StartsWith("th") ? "สวัสดีครับ" :
+                   detectedLang.StartsWith("id") ? "Halo!" :
+                   detectedLang.StartsWith("ms") ? "Hello!" :
+                   detectedLang.StartsWith("fil") ? "Kumusta!" :
+                   "Hello!";
+        }
 
-        // Weather - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(weather|thời tiết|อากาศ|cuaca|panahon|ရာသီဥတု|អាកាសធាតុ|ສະພາບອາກາດ|天気|날씨|天气|tiempo|météo|wetter|tempo|погода|طقس|मौसम)\b"))
-            return "[Weather question]";
+        // Weather questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(weather|thời tiết|อากาศ|cuaca|panahon|ရာသီဥတု|អាកាសធាតុ|ສະພາບອາກາດ|天気|날씨|天气|temperature|rain|sunny|cloudy)\b"))
+        {
+            return detectedLang.StartsWith("vi") ? "Thời tiết hôm nay thế nào?" :
+                   detectedLang.StartsWith("th") ? "อากาศวันนี้เป็นอย่างไร?" :
+                   detectedLang.StartsWith("id") ? "Bagaimana cuaca hari ini?" :
+                   "What's the weather like today?";
+        }
 
-        // Name/Identity - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(name|tên|ชื่อ|nama|pangalan|နာမည်|ឈ្មោះ|ຊື່|名前|이름|名字|nombre|nom|nome|имя|اسم|नाम)\b"))
-            return "[Name question]";
+        // Name/Identity questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(name|tên|ชื่อ|nama|pangalan|နာမည်|ឈ្មោះ|ຊື່|名前|이름|名字|tenaya|ai|assistant|bot)\b"))
+        {
+            return detectedLang.StartsWith("vi") ? "Tên bạn là gì?" :
+                   detectedLang.StartsWith("th") ? "คุณชื่ออะไร?" :
+                   detectedLang.StartsWith("id") ? "Siapa nama Anda?" :
+                   "What's your name?";
+        }
 
-        // Time - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(time|giờ|เวลา|waktu|oras|အချိန်|ពេលវេលា|ເວລາ|時間|시간|时间|hora|heure|zeit|tempo|время|وقت|समय)\b"))
-            return "[Time question]";
+        // Time questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(time|giờ|เวลา|waktu|oras|အချိန်|ពេលវេលា|ເວລາ|時間|시간|时间|clock|hour|minute)\b"))
+        {
+            return detectedLang.StartsWith("vi") ? "Mấy giờ rồi?" :
+                   detectedLang.StartsWith("th") ? "ตอนนี้กี่โมงแล้ว?" :
+                   detectedLang.StartsWith("id") ? "Jam berapa sekarang?" :
+                   "What time is it?";
+        }
 
-        // Thanks - ASEAN Focus
+        // Thanks expressions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(thank|cảm ơn|ขอบคุณ|terima kasih|salamat|ကျေးဇူးတင်|អរគុណ|ຂອບໃຈ|ありがとう|감사|谢谢|gracias|merci|danke|grazie|obrigado|спасибо|شكرا|धन्यवाद)\b"))
-            return "[Thanks]";
+        {
+            return detectedLang.StartsWith("vi") ? "Cảm ơn bạn!" :
+                   detectedLang.StartsWith("th") ? "ขอบคุณครับ" :
+                   detectedLang.StartsWith("id") ? "Terima kasih!" :
+                   "Thank you!";
+        }
 
-        // Goodbye - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(goodbye|bye|tạm biệt|ลาก่อน|selamat tinggal|paalam|သွားတော့မယ်|លាហើយ|ລາກ່ອນ|さようなら|안녕|再见|adiós|au revoir|auf wiedersehen|ciao|tchau|до свидания|وداعا|अलविदा)\b"))
-            return "[Goodbye]";
+        // ASEAN/Southeast Asia questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(asean|อาเซียน|အာဆီယံ|អាស៊ាន|ອາຊຽນ|アセアン|아세안|东盟|southeast asia|đông nam á|เอเชียตะวันออกเฉียงใต้|asia tenggara|timog silangang asya|အရှေ့တောင်အာရှ|អាស៊ីអាគ្នេយ៍|ອາຊີຕາເວັນອອກສຽງໃຕ້)\b"))
+        {
+            return detectedLang.StartsWith("vi") ? "ASEAN là gì?" :
+                   detectedLang.StartsWith("th") ? "อาเซียนคืออะไร?" :
+                   detectedLang.StartsWith("id") ? "Apa itu ASEAN?" :
+                   "What is ASEAN?";
+        }
 
-        // ASEAN/Southeast Asia specific
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(asean|อาเซียน|asean|asean|asean|အာဆီယံ|អាស៊ាន|ອາຊຽນ|アセアン|아세안|东盟|southeast asia|đông nam á|เอเชียตะวันออกเฉียงใต้|asia tenggara|timog silangang asya|အရှေ့တောင်အာရှ|អាស៊ីអាគ្នេយ៍|ອາຊີຕາເວັນອອກສຽງໃຕ້)\b"))
-            return "[ASEAN/Southeast Asia question]";
+        // General questions based on response content
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(capital|thủ đô|เมืองหลวง|ibu kota|kabisera|မြို့တော်|រាជធានី|ນະຄອນຫຼວງ|首都|수도)\b"))
+        {
+            return detectedLang.StartsWith("vi") ? "Thủ đô của [quốc gia] là gì?" :
+                   detectedLang.StartsWith("th") ? "เมืองหลวงของ[ประเทศ]คืออะไร?" :
+                   detectedLang.StartsWith("id") ? "Apa ibu kota [negara]?" :
+                   "What's the capital of [country]?";
+        }
 
-        // Help/How - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(help|how|làm sao|ช่วย|อย่างไร|bantu|bagaimana|tulong|paano|ကူညီ|ဘယ်လို|ជួយ|យ៉ាងណា|ຊ່ວຍ|ແນວໃດ|どうやって|어떻게|怎么|cómo|comment|wie|come|como|как|كيف|कैसे)\b"))
-            return "[How-to question]";
-
-        // What/Definition - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(what|gì|อะไร|apa|ano|ဘာ|អ្វី|ຫຍັງ|何|무엇|什么|qué|quoi|was|cosa|o que|что|ماذا|क्या)\b"))
-            return "[What question]";
-
-        // Where - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(where|đâu|ที่ไหน|dimana|saan|ဘယ်မှာ|ណា|ໃສ|どこ|어디|哪里|dónde|où|wo|dove|onde|где|أين|कहाँ)\b"))
-            return "[Where question]";
-
-        // Why - ASEAN Focus
-        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(why|tại sao|ทำไม|mengapa|bakit|ဘာကြောင့်|ហេតុអ្វី|ເປັນຫຍັງ|なぜ|왜|为什么|por qué|pourquoi|warum|perché|por que|почему|لماذا|क्यों)\b"))
-            return "[Why question]";
-
+        // Fallback with more context from response
         else
-            return "[General question]";
+        {
+            // Try to extract key words from response to create better question
+            string[] responseWords = lowerResponse.Split(' ');
+            string keyWord = responseWords.Length > 2 ? responseWords[1] : "something";
+
+            return detectedLang.StartsWith("vi") ? $"❓ [Hỏi về {keyWord}]" :
+                   detectedLang.StartsWith("th") ? $"❓ [ถามเกี่ยวกับ {keyWord}]" :
+                   detectedLang.StartsWith("id") ? $"❓ [Bertanya tentang {keyWord}]" :
+                   $"❓ [Asked about {keyWord}]";
+        }
     }
     #endregion
     

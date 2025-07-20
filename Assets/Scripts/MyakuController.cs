@@ -34,6 +34,12 @@ public class MyakuController : MonoBehaviour
     private const float QUESTION_TIMEOUT = 10f; // 10 giây timeout
     private Coroutine questionTimeoutCoroutine;
 
+    // Enhanced Speech Controller Integration
+    private bool isListening = false;
+    private bool isRecording = false;
+    private bool isThinking = false;
+    private bool isSpeaking = false;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -394,6 +400,32 @@ public class MyakuController : MonoBehaviour
         return isMoving;
     }
 
+    /// <summary>
+    /// Di chuyển Myaku đến vị trí gần để tương tác
+    /// </summary>
+    public void MoveToNear()
+    {
+        if (nearTransform != null)
+        {
+            targetTransform = nearTransform;
+            isMoving = true;
+            Debug.Log("🚶 Myaku: Moving to near position");
+        }
+    }
+
+    /// <summary>
+    /// Di chuyển Myaku đến vị trí xa để nghỉ ngơi
+    /// </summary>
+    public void MoveToFar()
+    {
+        if (farTransform != null)
+        {
+            targetTransform = farTransform;
+            isMoving = true;
+            Debug.Log("🚶 Myaku: Moving to far position");
+        }
+    }
+
     private void OnDestroy()
     {
         if (listeningSounds != null)
@@ -405,4 +437,216 @@ public class MyakuController : MonoBehaviour
             foreach (var clip in thinkingSounds) Destroy(clip);
         }
     }
+
+    #region Enhanced Speech Controller Integration
+    /// <summary>
+    /// Bắt đầu chế độ lắng nghe - Myaku sẵn sàng nhận câu hỏi
+    /// </summary>
+    public void StartListening()
+    {
+        isListening = true;
+        isRecording = false;
+        isThinking = false;
+        isSpeaking = false;
+
+        // Animation: Idle/listening state
+        animator.SetBool("listen", true);
+        animator.SetBool("record", false);
+        animator.SetBool("think", false);
+        animator.SetBool("answer", false);
+
+        // Move to near position for interaction
+        MoveToNear();
+
+        // Play listening sound
+        PlayRandomListeningSound();
+
+        Debug.Log("🎧 Myaku: Started listening mode");
+    }
+
+    /// <summary>
+    /// Bắt đầu ghi âm - Người dùng đang nói
+    /// </summary>
+    public void StartRecording()
+    {
+        isListening = false;
+        isRecording = true;
+        isThinking = false;
+        isSpeaking = false;
+
+        // Animation: Recording state
+        animator.SetBool("listen", false);
+        animator.SetBool("record", true);
+        animator.SetBool("think", false);
+        animator.SetBool("answer", false);
+
+        // Show record panel
+        if (recordPanelAnimator != null)
+        {
+            recordPanelAnimator.SetBool("show", true);
+        }
+
+        Debug.Log("🎤 Myaku: Started recording mode");
+    }
+
+    /// <summary>
+    /// Dừng ghi âm - Người dùng đã nói xong
+    /// </summary>
+    public void StopRecording()
+    {
+        isRecording = false;
+
+        // Hide record panel
+        if (recordPanelAnimator != null)
+        {
+            recordPanelAnimator.SetBool("show", false);
+        }
+
+        Debug.Log("🛑 Myaku: Stopped recording");
+    }
+
+    /// <summary>
+    /// Bắt đầu suy nghĩ - AI đang xử lý câu hỏi
+    /// </summary>
+    public void StartThinking()
+    {
+        isListening = false;
+        isRecording = false;
+        isThinking = true;
+        isSpeaking = false;
+
+        // Animation: Thinking state
+        animator.SetBool("listen", false);
+        animator.SetBool("record", false);
+        animator.SetBool("think", true);
+        animator.SetBool("answer", false);
+
+        // Play thinking sound
+        PlayRandomThinkingSound();
+
+        Debug.Log("🤔 Myaku: Started thinking mode");
+    }
+
+    /// <summary>
+    /// Dừng suy nghĩ
+    /// </summary>
+    public void StopThinking()
+    {
+        isThinking = false;
+
+        // Animation: Stop thinking
+        animator.SetBool("think", false);
+
+        Debug.Log("🛑 Myaku: Stopped thinking");
+    }
+
+    /// <summary>
+    /// Bắt đầu nói - AI đang phát câu trả lời
+    /// </summary>
+    public void StartSpeaking()
+    {
+        isListening = false;
+        isRecording = false;
+        isThinking = false;
+        isSpeaking = true;
+
+        // Animation: Speaking/answering state
+        animator.SetBool("listen", false);
+        animator.SetBool("record", false);
+        animator.SetBool("think", false);
+        animator.SetBool("answer", true);
+
+        // Show speak panel
+        if (speakPanelAnimator != null)
+        {
+            speakPanelAnimator.SetBool("show", true);
+        }
+
+        Debug.Log("🗣️ Myaku: Started speaking mode");
+    }
+
+    /// <summary>
+    /// Kết thúc nói - AI đã phát xong câu trả lời
+    /// </summary>
+    public void FinishSpeaking()
+    {
+        isSpeaking = false;
+
+        // Animation: Stop speaking
+        animator.SetBool("answer", false);
+
+        // Hide speak panel
+        if (speakPanelAnimator != null)
+        {
+            speakPanelAnimator.SetBool("show", false);
+        }
+
+        Debug.Log("✅ Myaku: Finished speaking");
+    }
+
+    /// <summary>
+    /// Dừng tất cả hoạt động - Kết thúc session
+    /// </summary>
+    public void StopAllActivities()
+    {
+        isListening = false;
+        isRecording = false;
+        isThinking = false;
+        isSpeaking = false;
+
+        // Reset all animations
+        animator.SetBool("listen", false);
+        animator.SetBool("record", false);
+        animator.SetBool("think", false);
+        animator.SetBool("answer", false);
+
+        // Hide all panels
+        if (recordPanelAnimator != null)
+        {
+            recordPanelAnimator.SetBool("show", false);
+        }
+
+        if (speakPanelAnimator != null)
+        {
+            speakPanelAnimator.SetBool("show", false);
+        }
+
+        // Move to far position
+        MoveToFar();
+
+        Debug.Log("🛑 Myaku: Stopped all activities");
+    }
+
+    /// <summary>
+    /// Phát âm thanh listening ngẫu nhiên
+    /// </summary>
+    private void PlayRandomListeningSound()
+    {
+        if (listeningSounds != null && listeningSounds.Length > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, listeningSounds.Length);
+            if (listeningSounds[randomIndex] != null)
+            {
+                audioPlayer.clip = listeningSounds[randomIndex];
+                audioPlayer.Play();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Phát âm thanh thinking ngẫu nhiên
+    /// </summary>
+    private void PlayRandomThinkingSound()
+    {
+        if (thinkingSounds != null && thinkingSounds.Length > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, thinkingSounds.Length);
+            if (thinkingSounds[randomIndex] != null)
+            {
+                audioPlayer.clip = thinkingSounds[randomIndex];
+                audioPlayer.Play();
+            }
+        }
+    }
+    #endregion
 }
