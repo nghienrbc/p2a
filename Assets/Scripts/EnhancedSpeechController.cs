@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -34,6 +35,7 @@ public class EnhancedSpeechController : MonoBehaviour
     [Header("API Configuration")]
     public string geminiApiKey = "AIzaSyDR5fVgJABDSkaVfmy-iimLzsLLOBkrBgA";
     public string ttsApiKey = "AIzaSyCF2J81GFiPZ_itPBXrrPJ2d3oGW_R397c";
+    public string googleTranslateApiKey = "AIzaSyCF2J81GFiPZ_itPBXrrPJ2d3oGW_R397c"; // For language detection
 
     [Header("Wake Word Detection")]
     [Tooltip("Enable wake word 'Hey DT' detection via audioPlugin")]
@@ -68,6 +70,134 @@ public class EnhancedSpeechController : MonoBehaviour
     [Header("Language Detection")]
     [Tooltip("Force a specific language for TTS (leave empty for auto-detection)")]
     public string forceLanguageCode = "";
+
+    // Language mappings from RecordAudio.cs (complete list)
+    private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
+    {
+       { "af-ZA", "Afrikaans (South Africa)" },
+        { "ar-XA", "Arabic" },
+        { "bn-IN", "Bengali (India)" },
+        { "bg-BG", "Bulgarian (Bulgaria)" },
+        { "ca-ES", "Catalan (Spain)" },
+        { "zh-CN", "Chinese (Mandarin/China)" },
+        { "zh-TW", "Chinese (Mandarin/Taiwan)" },
+        { "hr-HR", "Croatian (Croatia)" },
+        { "cs-CZ", "Czech (Czech Republic)" },
+        { "da-DK", "Danish (Denmark)" },
+        { "nl-NL", "Dutch (Netherlands)" },
+        { "en-AU", "English (Australia)" },
+        { "en-IN", "English (India)" },
+        { "en-GB", "English (UK)" },
+        { "en-SG", "English (Singapore)" },
+        { "en-US", "English (US)" },
+        { "fi-FI", "Finnish (Finland)" },
+        { "fr-FR", "French (France)" },
+        { "fr-CA", "French (Canada)" },
+        { "de-DE", "German (Germany)" },
+        { "el-GR", "Greek (Greece)" },
+        { "gu-IN", "Gujarati (India)" },
+        { "he-IL", "Hebrew (Israel)" },
+        { "hi-IN", "Hindi (India)" },
+        { "hu-HU", "Hungarian (Hungary)" },
+        { "id-ID", "Indonesian (Indonesia)" },
+        { "it-IT", "Italian (Italy)" },
+        { "ja-JP", "Japanese (Japan)" },
+        { "kn-IN", "Kannada (India)" },
+        { "km-KH", "Khmer (Cambodia)" },
+        { "ko-KR", "Korean (South Korea)" },
+        { "lo-LA", "Lao (Laos)" },
+        { "lv-LV", "Latvian (Latvia)" },
+        { "lt-LT", "Lithuanian (Lithuania)" },
+        { "ms-MY", "Malay (Malaysia)" },
+        { "ml-IN", "Malayalam (India)" },
+        { "mr-IN", "Marathi (India)" },
+        { "my-MM", "Myanmar (Burmese)" },
+        { "nb-NO", "Norwegian (Norway)" },
+        { "fil-PH", "Filipino (Philippines)" },
+        { "pl-PL", "Polish (Poland)" },
+        { "pt-BR", "Portuguese (Brazil)" },
+        { "pt-PT", "Portuguese (Portugal)" },
+        { "pa-IN", "Punjabi (India)" },
+        { "ro-RO", "Romanian (Romania)" },
+        { "ru-RU", "Russian (Russia)" },
+        { "sr-RS", "Serbian (Serbia)" },
+        { "sk-SK", "Slovak (Slovakia)" },
+        { "sl-SI", "Slovenian (Slovenia)" },
+        { "es-ES", "Spanish (Spain)" },
+        { "es-US", "Spanish (US)" },
+        { "sw-TZ", "Swahili (Tanzania)" },
+        { "sv-SE", "Swedish (Sweden)" },
+        { "ta-IN", "Tamil (India)" },
+        { "te-IN", "Telugu (India)" },
+        { "th-TH", "Thai (Thailand)" },
+        { "tr-TR", "Turkish (Turkey)" },
+        { "uk-UA", "Ukrainian (Ukraine)" },
+        { "vi-VN", "Vietnamese (Vietnam)" }
+    };
+
+    // Ánh xạ ngôn ngữ với giọng nói chuẩn
+    private static readonly Dictionary<string, string> VoiceMappings = new Dictionary<string, string>
+    {
+        { "af-ZA", "af-ZA-Standard-A" },
+        { "ar-XA", "ar-XA-Standard-B" },
+        { "bn-IN", "bn-IN-Standard-B" },
+        { "bg-BG", "bg-BG-Standard-B" },
+        { "ca-ES", "ca-ES-Standard-B" },
+        { "zh-CN", "cmn-CN-Standard-A" },//
+        { "zh-TW", "cmn-TW-Standard-A" },//
+        { "hr-HR", "hr-HR-Standard-A" },
+        { "cs-CZ", "cs-CZ-Standard-B" },
+        { "da-DK", "da-DK-Standard-G" },
+        { "nl-NL", "nl-NL-Standard-G" },
+        { "en-AU", "en-AU-Standard-B" },
+        { "en-IN", "en-IN-Standard-B" },
+        { "en-GB", "en-GB-Standard-B" },
+        { "en-SG", "en-SG-Standard-A" },
+        { "en-US", "en-US-Standard-A" },
+        { "fi-FI", "fi-FI-Standard-B" },
+        { "fr-FR", "fr-FR-Standard-G" },
+        { "fr-CA", "fr-CA-Standard-B" },
+        { "de-DE", "de-DE-Standard-H" },
+        { "el-GR", "el-GR-Standard-B" },
+        { "gu-IN", "gu-IN-Standard-B" },
+        { "he-IL", "he-IL-Standard-B" },
+        { "hi-IN", "hi-IN-Standard-B" },
+        { "hu-HU", "hu-HU-Standard-B" },
+        { "id-ID", "id-ID-Standard-B" },
+        { "it-IT", "it-IT-Standard-F" },
+        { "ja-JP", "ja-JP-Standard-C" },
+        { "kn-IN", "kn-IN-Standard-B" },
+        { "km-KH", "km-KH-Standard-A" },
+        { "ko-KR", "ko-KR-Standard-C" },
+        { "lo-LA", "lo-LA-Standard-A" },
+        { "lv-LV", "lv-LV-Standard-B" },
+        { "lt-LT", "lt-LT-Standard-B" },
+        { "ms-MY", "ms-MY-Standard-B" },
+        { "ml-IN", "ml-IN-Standard-B" },
+        { "mr-IN", "mr-IN-Standard-B" },
+        { "my-MM", "my-MM-Standard-A" },//
+        { "nb-NO", "nb-NO-Standard-G" },
+        { "fil-PH", "fil-PH-Standard-C" },
+        { "pl-PL", "pl-PL-Standard-G" },
+        { "pt-BR", "pt-BR-Standard-B" },
+        { "pt-PT", "pt-PT-Standard-F" },
+        { "pa-IN", "pa-IN-Standard-B" },
+        { "ro-RO", "ro-RO-Standard-B" },
+        { "ru-RU", "ru-RU-Standard-B" },
+        { "sr-RS", "sr-RS-Standard-B" },
+        { "sk-SK", "sk-SK-Standard-B" },
+        { "sl-SI", "sl-SI-Standard-A" },//
+        { "es-ES", "es-ES-Standard-E" },
+        { "es-US", "es-US-Standard-B" },
+        { "sw-TZ", "sw-TZ-Standard-A" },
+        { "sv-SE", "sv-SE-Standard-D" },
+        { "ta-IN", "ta-IN-Standard-B" },
+        { "te-IN", "te-IN-Standard-B" },
+        { "th-TH", "th-TH-Standard-A" },
+        { "tr-TR", "tr-TR-Standard-B" },
+        { "uk-UA", "uk-UA-Standard-B" },
+        { "vi-VN", "vi-VN-Standard-B" }
+    };
     #endregion
     
     #region Private Fields
@@ -227,6 +357,214 @@ public class EnhancedSpeechController : MonoBehaviour
         }
 
         LogMessage("✅ Voice detection settings reloaded and applied successfully!");
+    }
+    #endregion
+
+    #region Language Detection (from RecordAudio.cs)
+    /// <summary>
+    /// Detect language using Google Cloud Translate API (from RecordAudio.cs)
+    /// </summary>
+    private IEnumerator DetectLanguageWithTranslateAPI(string text, System.Action<string> onComplete)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(googleTranslateApiKey))
+        {
+            LogMessage("❌ Empty text or missing Google Translate API Key");
+            onComplete?.Invoke("en-US"); // Default fallback
+            yield break;
+        }
+
+        var requestData = new
+        {
+            q = text
+        };
+
+        string jsonPayload = JsonConvert.SerializeObject(requestData);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+
+        using (UnityWebRequest request = new UnityWebRequest($"https://translation.googleapis.com/language/translate/v2/detect?key={googleTranslateApiKey}", "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 15;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseJson = request.downloadHandler.text;
+                LogMessage($"🌐 Google Translate API response: {responseJson}");
+
+                try
+                {
+                    // Parse JSON manually to avoid dynamic type issues in Unity
+                    var jsonResponse = JsonConvert.DeserializeObject<GoogleTranslateResponse>(responseJson);
+
+                    if (jsonResponse?.data?.detections != null &&
+                        jsonResponse.data.detections.Length > 0 &&
+                        jsonResponse.data.detections[0].Length > 0)
+                    {
+                        string detectedLanguage = jsonResponse.data.detections[0][0].language;
+
+                        if (string.IsNullOrEmpty(detectedLanguage))
+                        {
+                            LogMessage("⚠️ No language detected, using default");
+                            onComplete?.Invoke("en-US");
+                        }
+                        else
+                        {
+                            // Convert to TTS language code format
+                            string ttsLanguageCode = NormalizeLanguageCode(detectedLanguage);
+                            LogMessage($"🌐 Detected language: {detectedLanguage} → TTS: {ttsLanguageCode}");
+                            onComplete?.Invoke(ttsLanguageCode);
+                        }
+                    }
+                    else
+                    {
+                        LogMessage("⚠️ Invalid response format, using default");
+                        onComplete?.Invoke("en-US");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    LogMessage($"❌ Error parsing language detection response: {ex.Message}");
+                    onComplete?.Invoke("en-US");
+                }
+            }
+            else
+            {
+                LogMessage($"❌ Google Translate API error: {request.error}");
+                onComplete?.Invoke("en-US");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Normalize language code to supported TTS format (from RecordAudio.cs - complete mapping)
+    /// </summary>
+    private string NormalizeLanguageCode(string languageCode)
+    {
+        var languageMap = new Dictionary<string, string>
+        {
+            { "af", "af-ZA" },
+            { "ar", "ar-XA" },
+            { "bn", "bn-IN" },
+            { "bg", "bg-BG" },
+            { "ca", "ca-ES" },
+            { "zh", "zh-CN" },
+            { "zh-TW", "zh-TW" },
+            { "hr", "hr-HR" },
+            { "cs", "cs-CZ" },
+            { "da", "da-DK" },
+            { "nl", "nl-NL" },
+            { "en", "en-US" },
+            { "en-AU", "en-AU" },
+            { "en-IN", "en-IN" },
+            { "en-GB", "en-GB" },
+            { "en-SG", "en-SG" },
+            { "fi", "fi-FI" },
+            { "fr", "fr-FR" },
+            { "fr-CA", "fr-CA" },
+            { "de", "de-DE" },
+            { "el", "el-GR" },
+            { "gu", "gu-IN" },
+            { "he", "he-IL" },
+            { "hi", "hi-IN" },
+            { "hu", "hu-HU" },
+            { "id", "id-ID" },
+            { "it", "it-IT" },
+            { "ja", "ja-JP" },
+            { "kn", "kn-IN" },
+            { "km", "km-KH" },
+            { "ko", "ko-KR" },
+            { "lo", "lo-LA" },
+            { "lv", "lv-LV" },
+            { "lt", "lt-LT" },
+            { "ms", "ms-MY" },
+            { "ml", "ml-IN" },
+            { "mr", "mr-IN" },
+            { "nb", "nb-NO" },
+            { "fil", "fil-PH" },
+            { "pl", "pl-PL" },
+            { "pt", "pt-PT" },
+            { "pt-BR", "pt-BR" },
+            { "pa", "pa-IN" },
+            { "ro", "ro-RO" },
+            { "ru", "ru-RU" },
+            { "sr", "sr-RS" },
+            { "sk", "sk-SK" },
+            { "sl", "sl-SI" },
+            { "es", "es-ES" },
+            { "es-US", "es-US" },
+            { "sw", "sw-TZ" },
+            { "sv", "sv-SE" },
+            { "ta", "ta-IN" },
+            { "te", "te-IN" },
+            { "th", "th-TH" },
+            { "tr", "tr-TR" },
+            { "uk", "uk-UA" },
+            { "vi", "vi-VN" }
+        };
+
+        string normalizedCode = languageMap.ContainsKey(languageCode.ToLower())
+            ? languageMap[languageCode.ToLower()]
+            : "en-US";
+
+        // Ensure the normalized code is supported
+        if (SupportedLanguages.ContainsKey(normalizedCode))
+        {
+            return normalizedCode;
+        }
+
+        LogMessage($"⚠️ Language {normalizedCode} not supported, falling back to en-US");
+        return "en-US";
+    }
+
+    /// <summary>
+    /// Get human-readable language name from language code
+    /// </summary>
+    private string GetLanguageName(string languageCode)
+    {
+        if (SupportedLanguages.ContainsKey(languageCode))
+        {
+            return SupportedLanguages[languageCode];
+        }
+
+        return languageCode; // Fallback to language code itself
+    }
+
+    /// <summary>
+    /// Check if text contains non-English characters
+    /// </summary>
+    private bool ContainsNonEnglishCharacters(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return false;
+
+        // Check for Vietnamese characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ]"))
+            return true;
+
+        // Check for Chinese characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u4e00-\u9fff]"))
+            return true;
+
+        // Check for Japanese characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u3040-\u309f\u30a0-\u30ff]"))
+            return true;
+
+        // Check for Korean characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\uac00-\ud7af]"))
+            return true;
+
+        // Check for Thai characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u0e00-\u0e7f]"))
+            return true;
+
+        // Check for Arabic characters
+        if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u0600-\u06ff]"))
+            return true;
+
+        return false;
     }
     #endregion
 
@@ -637,9 +975,39 @@ public class EnhancedSpeechController : MonoBehaviour
                 string textResponse = ProcessTextResponse(request.downloadHandler.text);
                 if (!string.IsNullOrEmpty(textResponse))
                 {
-                    UIManager.Instance.WarningTxt.text = textResponse;
                     lastAIResponse = textResponse;
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
+
+                    // Detect input language using Google Translate API
+                    LogMessage($"🔍 DEBUG: Estimated user input for detection: '{estimatedUserInput}'");
+                    LogMessage($"🔍 DEBUG: AI Response for detection: '{textResponse}'");
+
+                    // Try to detect from AI response first (more reliable)
+                    string detectedInputLanguage = null;
+                    yield return StartCoroutine(DetectLanguageWithTranslateAPI(textResponse, (lang) => detectedInputLanguage = lang));
+
+                    LogMessage($"🔍 DEBUG: Detected language from AI response: '{detectedInputLanguage}'");
+
+                    // If detected as English but response contains non-English, try again with estimated input
+                    if (detectedInputLanguage == "en-US" && ContainsNonEnglishCharacters(textResponse))
+                    {
+                        LogMessage($"🔍 DEBUG: AI response contains non-English, re-detecting from estimated input...");
+                        yield return StartCoroutine(DetectLanguageWithTranslateAPI(estimatedUserInput, (lang) => detectedInputLanguage = lang));
+                        LogMessage($"🔍 DEBUG: Re-detected language: '{detectedInputLanguage}'");
+                    }
+
+                    // Update EstimateUserInputFromResponse with detected language
+                    estimatedUserInput = EstimateUserInputFromResponseWithLanguage(textResponse, detectedInputLanguage);
+
+                    // Display detected input language and AI response
+                    if (UIManager.Instance?.connectionTxt != null)
+                    {
+                        string languageName = GetLanguageName(detectedInputLanguage);
+                        UIManager.Instance.connectionTxt.text = $"🎤 Input: {languageName} | 🤖 {textResponse}";
+                        LogMessage($"🔍 DEBUG: connectionTxt updated: '{UIManager.Instance.connectionTxt.text}'");
+                    }
+
+                    LogMessage($"🎤 User Input: {estimatedUserInput} (Language: {detectedInputLanguage})");
 
                     UpdateUserQuestionWithTimestamp(estimatedUserInput);
                     UpdateAIResponse(textResponse);
@@ -680,14 +1048,20 @@ public class EnhancedSpeechController : MonoBehaviour
             myakuController.StartSpeaking();
         }
 
-        string responseLanguage;
+        string responseLanguage = null;
+
         if (!string.IsNullOrEmpty(forceLanguageCode))
         {
             responseLanguage = forceLanguageCode;
+            LogMessage($"🔧 Using forced language: {responseLanguage}");
         }
         else
         {
-            responseLanguage = DetectLanguageFromText(text);
+            // Use Google Translate API for language detection (more accurate)
+            yield return StartCoroutine(DetectLanguageWithTranslateAPI(text, (detectedLang) => {
+                responseLanguage = detectedLang;
+            }));
+            LogMessage($"🌐 Detected language via Google Translate: {responseLanguage}");
         }
 
         var voiceSettings = GetVoiceSettings(responseLanguage);
@@ -711,6 +1085,7 @@ public class EnhancedSpeechController : MonoBehaviour
         };
 
         string jsonData = JsonConvert.SerializeObject(requestData);
+        LogMessage($"🔍 DEBUG TTS Request: {jsonData}");
         string url = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={ttsApiKey}";
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -725,6 +1100,7 @@ public class EnhancedSpeechController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
+                LogMessage($"🔍 DEBUG TTS Response: {request.downloadHandler.text}");
                 var response = Newtonsoft.Json.Linq.JObject.Parse(request.downloadHandler.text);
                 string audioContent = response["audioContent"]?.ToString();
 
@@ -732,10 +1108,16 @@ public class EnhancedSpeechController : MonoBehaviour
                 {
                     yield return StartCoroutine(PlayTTSAudio(audioContent));
                 }
+                else
+                {
+                    LogMessage("❌ No audio content in TTS response");
+                }
             }
             else
             {
                 LogMessage($"❌ TTS request failed: {request.error}");
+                LogMessage($"❌ TTS Response Code: {request.responseCode}");
+                LogMessage($"❌ TTS Response Text: {request.downloadHandler?.text}");
             }
         }
 
@@ -1058,17 +1440,17 @@ public class EnhancedSpeechController : MonoBehaviour
         string timestamp = System.DateTime.Now.ToString("HH:mm:ss");
         if (userQuestionText != null)
         {
-            userQuestionText.text = $"👤 [{timestamp}] User: {question}";
+            UIManager.Instance.WarningTxt.text = $"👤 [{timestamp}] User: {question}";
         }
         LogMessage($"👤 [{timestamp}] User Question: {question}");
     }
 
     private void UpdateAIResponse(string response)
     {
-        if (aiResponseText != null)
-        {
-            aiResponseText.text = $"🤖 AI: {response}";
-        }
+    //     if (aiResponseText != null)
+    //     {
+    //         aiResponseText.text = $"🤖 AI: {response}";
+    //     }
         LogMessage($"🤖 AI Response: {response}");
     }
 
@@ -1244,21 +1626,20 @@ public class EnhancedSpeechController : MonoBehaviour
 
     private (string languageCode, string voiceName, string gender) GetVoiceSettings(string languageCode)
     {
-        return languageCode switch
+        // Use VoiceMappings from RecordAudio.cs
+        if (VoiceMappings.ContainsKey(languageCode))
         {
-            "vi-VN" => ("vi-VN", "vi-VN-Standard-A", "FEMALE"),
-            "th-TH" => ("th-TH", "th-TH-Standard-A", "FEMALE"),
-            "id-ID" => ("id-ID", "id-ID-Standard-A", "FEMALE"),
-            "ms-MY" => ("ms-MY", "ms-MY-Standard-A", "FEMALE"),
-            "fil-PH" => ("fil-PH", "fil-PH-Standard-A", "FEMALE"),
-            "ja-JP" => ("ja-JP", "ja-JP-Standard-A", "FEMALE"),
-            "ko-KR" => ("ko-KR", "ko-KR-Standard-A", "FEMALE"),
-            "zh-CN" => ("zh-CN", "zh-CN-Standard-A", "FEMALE"),
-            "es-ES" => ("es-ES", "es-ES-Standard-A", "FEMALE"),
-            "fr-FR" => ("fr-FR", "fr-FR-Standard-A", "FEMALE"),
-            "de-DE" => ("de-DE", "de-DE-Standard-A", "FEMALE"),
-            _ => ("en-US", "en-US-Standard-C", "FEMALE")
-        };
+            string voiceName = VoiceMappings[languageCode];
+            // Fix gender - should be MALE/FEMALE/NEUTRAL, not NEURAL2/STANDARD
+            string gender = voiceName.Contains("-A") || voiceName.Contains("-C") ? "FEMALE" :
+                           voiceName.Contains("-B") || voiceName.Contains("-D") ? "MALE" : "NEUTRAL";
+            LogMessage($"🔍 DEBUG Voice Settings: {languageCode} → {voiceName} → {gender}");
+            return (languageCode, voiceName, gender);
+        }
+
+        // Default fallback
+        LogMessage($"⚠️ Language {languageCode} not found in VoiceMappings, using default");
+        return ("en-US", "en-US-Journey-D", "MALE");
     }
     #endregion
 
@@ -1280,48 +1661,88 @@ public class EnhancedSpeechController : MonoBehaviour
                    "Hello!";
         }
 
+        // Default fallback
+        return "❓ [Question not detected]";
+    }
+
+    /// <summary>
+    /// Estimate user input from AI response using Google Translate detected language
+    /// </summary>
+    private string EstimateUserInputFromResponseWithLanguage(string aiResponse, string detectedLanguage)
+    {
+        if (string.IsNullOrEmpty(aiResponse))
+            return "❓ [Question not detected]";
+
+        string lowerResponse = aiResponse.ToLower();
+
+        // Greetings - use detected language for better accuracy
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(hello|hi|xin chào|chào|สวัสดี|halo|selamat|kumusta)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "Xin chào!" :
+                   detectedLanguage.StartsWith("th") ? "สวัสดีครับ" :
+                   detectedLanguage.StartsWith("id") ? "Halo!" :
+                   detectedLanguage.StartsWith("zh") ? "你好!" :
+                   detectedLanguage.StartsWith("ja") ? "こんにちは!" :
+                   detectedLanguage.StartsWith("ko") ? "안녕하세요!" :
+                   detectedLanguage.StartsWith("ar") ? "مرحبا!" :
+                   detectedLanguage.StartsWith("hi") ? "नमस्ते!" :
+                   "Hello!";
+        }
+
         // Weather questions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(weather|thời tiết|อากาศ|cuaca|temperature|rain|sunny|cloudy)\b"))
         {
-            return detectedLang.StartsWith("vi") ? "Thời tiết hôm nay thế nào?" :
-                   detectedLang.StartsWith("th") ? "อากาศวันนี้เป็นอย่างไร?" :
-                   detectedLang.StartsWith("id") ? "Bagaimana cuaca hari ini?" :
+            return detectedLanguage.StartsWith("vi") ? "Thời tiết hôm nay thế nào?" :
+                   detectedLanguage.StartsWith("th") ? "อากาศวันนี้เป็นอย่างไร?" :
+                   detectedLanguage.StartsWith("id") ? "Bagaimana cuaca hari ini?" :
+                   detectedLanguage.StartsWith("zh") ? "今天天气怎么样?" :
+                   detectedLanguage.StartsWith("ja") ? "今日の天気はどうですか?" :
+                   detectedLanguage.StartsWith("ko") ? "오늘 날씨는 어때요?" :
                    "What's the weather like today?";
         }
 
         // Name/Identity questions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(name|tên|ชื่อ|nama|tenaya|ai|assistant|bot)\b"))
         {
-            return detectedLang.StartsWith("vi") ? "Tên bạn là gì?" :
-                   detectedLang.StartsWith("th") ? "คุณชื่ออะไร?" :
-                   detectedLang.StartsWith("id") ? "Siapa nama Anda?" :
+            return detectedLanguage.StartsWith("vi") ? "Tên bạn là gì?" :
+                   detectedLanguage.StartsWith("th") ? "คุณชื่ออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Siapa nama Anda?" :
+                   detectedLanguage.StartsWith("zh") ? "你叫什么名字?" :
+                   detectedLanguage.StartsWith("ja") ? "お名前は何ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "이름이 뭐예요?" :
                    "What's your name?";
         }
 
         // Time questions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(time|giờ|เวลา|waktu|clock|hour|minute)\b"))
         {
-            return detectedLang.StartsWith("vi") ? "Mấy giờ rồi?" :
-                   detectedLang.StartsWith("th") ? "ตอนนี้กี่โมงแล้ว?" :
-                   detectedLang.StartsWith("id") ? "Jam berapa sekarang?" :
+            return detectedLanguage.StartsWith("vi") ? "Mấy giờ rồi?" :
+                   detectedLanguage.StartsWith("th") ? "ตอนนี้กี่โมงแล้ว?" :
+                   detectedLanguage.StartsWith("id") ? "Jam berapa sekarang?" :
+                   detectedLanguage.StartsWith("zh") ? "现在几点了?" :
+                   detectedLanguage.StartsWith("ja") ? "今何時ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "지금 몇 시예요?" :
                    "What time is it?";
         }
 
         // ASEAN questions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(asean|อาเซียน|southeast asia|đông nam á|asia tenggara)\b"))
         {
-            return detectedLang.StartsWith("vi") ? "ASEAN là gì?" :
-                   detectedLang.StartsWith("th") ? "อาเซียนคืออะไร?" :
-                   detectedLang.StartsWith("id") ? "Apa itu ASEAN?" :
+            return detectedLanguage.StartsWith("vi") ? "ASEAN là gì?" :
+                   detectedLanguage.StartsWith("th") ? "อาเซียนคืออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Apa itu ASEAN?" :
+                   detectedLanguage.StartsWith("zh") ? "什么是东盟?" :
+                   detectedLanguage.StartsWith("ja") ? "ASEANとは何ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "아세안이 뭐예요?" :
                    "What is ASEAN?";
         }
 
         // Capital questions
         else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(capital|thủ đô|เมืองหลวง|ibu kota)\b"))
         {
-            return detectedLang.StartsWith("vi") ? "Thủ đô của [quốc gia] là gì?" :
-                   detectedLang.StartsWith("th") ? "เมืองหลวงของ[ประเทศ]คืออะไร?" :
-                   detectedLang.StartsWith("id") ? "Apa ibu kota [negara]?" :
+            return detectedLanguage.StartsWith("vi") ? "Thủ đô của [quốc gia] là gì?" :
+                   detectedLanguage.StartsWith("th") ? "เมืองหลวงของ[ประเทศ]คืออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Apa ibu kota [negara]?" :
                    "What's the capital of [country]?";
         }
 
@@ -1331,9 +1752,12 @@ public class EnhancedSpeechController : MonoBehaviour
             string[] responseWords = lowerResponse.Split(' ');
             string keyWord = responseWords.Length > 2 ? responseWords[1] : "something";
 
-            return detectedLang.StartsWith("vi") ? $"❓ [Hỏi về {keyWord}]" :
-                   detectedLang.StartsWith("th") ? $"❓ [ถามเกี่ยวกับ {keyWord}]" :
-                   detectedLang.StartsWith("id") ? $"❓ [Bertanya tentang {keyWord}]" :
+            return detectedLanguage.StartsWith("vi") ? $"❓ [Hỏi về {keyWord}]" :
+                   detectedLanguage.StartsWith("th") ? $"❓ [ถามเกี่ยวกับ {keyWord}]" :
+                   detectedLanguage.StartsWith("id") ? $"❓ [Bertanya tentang {keyWord}]" :
+                   detectedLanguage.StartsWith("zh") ? $"❓ [询问关于 {keyWord}]" :
+                   detectedLanguage.StartsWith("ja") ? $"❓ [{keyWord}について質問]" :
+                   detectedLanguage.StartsWith("ko") ? $"❓ [{keyWord}에 대한 질문]" :
                    $"❓ [Asked about {keyWord}]";
         }
     }
@@ -1481,3 +1905,24 @@ User: 'Thủ đô Việt Nam là gì?' → 'Thủ đô của Việt Nam là Hà 
     }
     #endregion
 }
+
+#region Google Translate API Response Classes
+[System.Serializable]
+public class GoogleTranslateResponse
+{
+    public GoogleTranslateData data;
+}
+
+[System.Serializable]
+public class GoogleTranslateData
+{
+    public GoogleTranslateDetection[][] detections;
+}
+
+[System.Serializable]
+public class GoogleTranslateDetection
+{
+    public string language;
+    public float confidence;
+}
+#endregion
