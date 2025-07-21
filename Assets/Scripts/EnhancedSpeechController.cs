@@ -579,6 +579,13 @@ public class EnhancedSpeechController : MonoBehaviour
             return;
         }
 
+        // Clear conversation history for new session
+        conversationHistory.Clear();
+        LogMessage("🗑️ Conversation history cleared for new session");
+
+        // Clear conversation display UI
+        ClearConversationDisplay();
+
         isFirstSessionAfterWakeWord = true;
         StartCoroutine(BeginContinuousConversation());
     }
@@ -628,6 +635,7 @@ public class EnhancedSpeechController : MonoBehaviour
     private IEnumerator BeginContinuousConversation()
     {
         LogMessage("\n🚀 === STARTING ENHANCED SPEECH SESSION ===");
+        LogMessage("🗑️ Fresh session - Previous conversation history cleared");
         LogMessage("🎤 Session active - Speak anytime, AI will respond automatically");
         LogMessage("🤖 Myaku animations enabled for immersive experience");
 
@@ -1242,10 +1250,8 @@ public class EnhancedSpeechController : MonoBehaviour
         isFirstSessionAfterWakeWord = true;
         LogMessage($"🔍 DEBUG: Set isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
 
-        // // Start new session automatically
-        // StartContinuousSession();
- 
-        StartCoroutine(BeginContinuousConversation());
+        // Start new session automatically
+        StartContinuousSession();  
     }
 
     /// <summary>
@@ -1285,6 +1291,13 @@ public class EnhancedSpeechController : MonoBehaviour
         // Reset states
         isRecording = false;
         isPlayingResponse = false;
+
+        // Clear conversation history for new session
+        conversationHistory.Clear();
+        LogMessage("🗑️ Conversation history cleared for new session");
+
+        // Clear conversation display UI
+        ClearConversationDisplay();
 
         // Disable Hey DT during session
         enableHeyDT = false;
