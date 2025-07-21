@@ -1213,11 +1213,12 @@ CRITICAL AUDIO ANALYSIS:
 RESPONSE RULES:
 - ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
 - NEVER use language from previous messages - treat each input independently for language choice
-- For greetings (hello, xin chào, สวัสดี, etc.), respond naturally and offer help:
+- For greetings (hello, xin chào, สวัสดี, etc.) ONLY when user actually greets, respond naturally and offer help:
   * Vietnamese: ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
   * English: ""Hello! How can I help you today?""
   * Thai: ""สวัสดีครับ! มีอะไรให้ผมช่วยไหม?""
   * Chinese: ""你好！我能为您做些什么吗？""
+- If user asks questions directly without greeting, answer the question normally even if it's the first message
 - For other questions: Provide concise but complete answers (2-4 sentences, each under 25 words)
 - NO repetitive greetings in ongoing conversations
 - Focus on answering what was asked directly but provide sufficient detail
@@ -1232,11 +1233,112 @@ LANGUAGE DETECTION & MATCHING:
 - Any other language → Match exactly
 - If input is multilingual, use the primary detected language
 
+EXPO 2025 KNOWLEDGE BASE:
+When asked about EXPO 2025, Japan Expo, Osaka exhibition, or Myaku-Myaku, use this information:
+
+**EXPO 2025 Overview:**
+- Location: Yumeshima Island, Osaka Bay, Kansai, Japan
+- Duration: April 13 - October 13, 2025 (184 days)
+- Theme: ""Designing Future Society for Our Lives""
+- Expected visitors: 28.2 million (3.5 million international)
+- Participants: 153 countries/territories + 6 international organizations
+- Organizers: BIE (Bureau International des Expositions) + Japan Association for the 2025 World Exposition
+- This is Osaka's second EXPO (first was 1970)
+
+**Key Features:**
+- Mascot: Myaku-Myaku (red & blue design, represents ""life"" and ""water"", symbolizes connection and adaptation)
+- Main Symbol: The Grand Roof - world's largest wooden structure (2km perimeter, 20m high)
+- Logo: Designed by Tamotsu Shimada, inspired by Sun Tower from EXPO 1970
+- Focus: 17 UN Sustainable Development Goals by 2030
+- Model: ""Green EXPO"" - carbon neutral, using recycled materials and renewable energy
+
+**Vietnam Participation:**
+- Theme: ""An Inclusive Society Where People Are Centered""
+- Location: ""Empowering Lives"" zone, near Japan Pavilion
+- Area: 300m²
+- Organizer: International Cooperation Department, Ministry of Culture, Sports and Tourism of Vietnam
+- Opening: April 12, 2025 with ASEAN Secretary-General Kao Kim Hourn attending
+- Purpose: Showcase Vietnamese culture, people, sustainable values, products, and technologies
+
+**Major Events:**
+- Opening Ceremony (April 12, 2025): Emperor Naruhito, Empress Masako, Crown Prince Fumihito + 1,300 guests
+- Daily activities: National Days, cultural performances, technology exhibitions
+- Myaku-Myaku participates in parades, photo sessions, and interactive activities
+
+**Ticket Info:**
+- Available from late 2024 at www.expo2025.or.jp
+- Contact: Japan Association for 2025 World Exposition or Vietnam's International Cooperation Department
+
+P2A (PASSAGE TO ASEAN) KNOWLEDGE BASE:
+When asked about P2A, Passage to ASEAN, ASEAN education cooperation, or student exchange programs, use this information:
+
+**P2A Overview:**
+- Full Name: Passage to ASEAN (P2A)
+- Established: June 2012 in Thailand
+- Type: Non-profit educational organization
+- Motto: ""One Vision, One Identity, One Community""
+- Mission: Bridge universities/colleges in ASEAN, promote educational/cultural exchange, develop high-quality human resources for ASEAN integration
+
+**Founding Members (2012):**
+- Rangsit University (Thailand)
+- Duy Tan University (Vietnam)
+- Norton University (Cambodia)
+- National University of Laos
+- Myanmar Institute of Information Technology
+
+**Current Scale:**
+- Over 80 member institutions from all 10 ASEAN countries
+- Connects over 1 million students across the region
+- Countries: Brunei, Cambodia, Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand, Vietnam
+
+**Vietnamese Members (7 universities):**
+- Duy Tan University (founding member)
+- Van Lang University
+- Thu Dau Mot University (joined 2018)
+- FPT University
+- Plus 3 other institutions
+
+**Main Activities:**
+- Student Exchange Programs: Flexible exchange for students, faculty, staff across ASEAN
+- Open Access E-Learning: Online courses and educational materials for ASEAN students
+- Bilateral/Multilateral Cooperation: Research, training, international events
+- Cultural Exchange Events: Workshops, cultural activities, business visits
+- ASEAN Student Conferences and virtual entrepreneurship competitions
+
+**Notable Events:**
+- ASEAN Student Conference 2016 (P2A – ASEAN in One) in Vietnam
+- ASEAN Virtual Entrepreneurship Hackathon E-Finale (Jan 15, 2022)
+- P2A Ice Cream Launch (Jan 6, 2022)
+- COVID-19 Virtual Mobility Program (2020-2021): ""Learning Never Stops""
+
+**P2A Connection to EXPO 2025:**
+- Vietnam's participation in EXPO 2025 with theme ""An Inclusive Society Where People Are Centered""
+- ASEAN Secretary-General Kao Kim Hourn attending Vietnam Pavilion opening (April 12, 2025)
+- P2A can promote EXPO 2025 through exchange programs and workshops
+- Opportunities for P2A students to visit Japan during EXPO 2025
+- P2A can organize EXPO-related cultural and sustainability events
+- Integration of Myaku-Myaku mascot in P2A educational programs
+
+**Impact & Achievements:**
+- Expanded from 5 to 80+ members in 10+ years
+- Maintained activities during COVID-19 through virtual programs
+- Enhanced ASEAN unity and cultural understanding
+- Strengthened Vietnamese universities' regional position
+- Supported career development through business connections
+
+**How to Join P2A:**
+- Students: Contact international relations offices at member universities
+- Universities: Apply through P2A secretariat at www.p2a.asia
+- Participate in online courses and workshops organized by P2A
+
 EXAMPLES:
-User audio: [clear ""hello""] → ""Hello! How can I help you today?""
-User audio: [clear ""xin chào""] → ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
+User audio: [clear ""hello""] → ""Hello! How can I help you today?"" (greeting response)
+User audio: [clear ""xin chào""] → ""Chào bạn! Tôi có thể giúp gì cho bạn không?"" (greeting response)
+User audio: [clear ""What is EXPO 2025?""] → [direct answer about EXPO 2025] (NO greeting, direct answer)
+User audio: [clear ""P2A là gì?""] → [direct answer about P2A] (NO greeting, direct answer)
 User audio: [cough/unclear] → ""Audio unclear - please speak clearly""
-User audio: [clear question] → [appropriate answer in detected language]
+User audio: [clear question about EXPO 2025] → [appropriate answer using EXPO knowledge base in detected language]
+User audio: [clear question about P2A] → [appropriate answer using P2A knowledge base in detected language]
 
 ";
 
@@ -1992,6 +2094,67 @@ User audio: [clear question] → [appropriate answer in detected language]
                    detectedLanguage.StartsWith("ja") ? "ASEANとは何ですか?" :
                    detectedLanguage.StartsWith("ko") ? "아세안이 뭐예요?" :
                    "What is ASEAN?";
+        }
+
+        // EXPO 2025 questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(expo|triển lãm|world exposition|osaka|myaku|มหกรรม|万博|엑스포|pameran dunia)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "EXPO 2025 tại Nhật Bản là gì?" :
+                   detectedLanguage.StartsWith("th") ? "EXPO 2025 ที่ญี่ปุ่นคืออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Apa itu EXPO 2025 di Jepang?" :
+                   detectedLanguage.StartsWith("zh") ? "日本2025年世博会是什么?" :
+                   detectedLanguage.StartsWith("ja") ? "2025年日本万博とは何ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "일본 2025 엑스포가 뭐예요?" :
+                   "What is EXPO 2025 in Japan?";
+        }
+
+        // Vietnam participation in EXPO questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(vietnam|việt nam|vietnamese pavilion|gian hàng việt nam)\b") && 
+                 System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(expo|triển lãm|exhibition|งาน|万博|엑스포|pameran)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "Việt Nam tham gia EXPO 2025 như thế nào?" :
+                   detectedLanguage.StartsWith("th") ? "เวียดนามเข้าร่วม EXPO 2025 อย่างไร?" :
+                   detectedLanguage.StartsWith("id") ? "Bagaimana Vietnam berpartisipasi di EXPO 2025?" :
+                   detectedLanguage.StartsWith("zh") ? "越南如何参加2025年世博会?" :
+                   detectedLanguage.StartsWith("ja") ? "ベトナムは2025年万博にどう参加しますか?" :
+                   detectedLanguage.StartsWith("ko") ? "베트남이 2025 엑스포에 어떻게 참여하나요?" :
+                   "How does Vietnam participate in EXPO 2025?";
+        }
+
+        // Myaku-Myaku mascot questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(myaku|mascot|linh vật|มาสคอต|マスコット|마스코트|maskot)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "Myaku-Myaku là gì?" :
+                   detectedLanguage.StartsWith("th") ? "Myaku-Myaku คืออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Apa itu Myaku-Myaku?" :
+                   detectedLanguage.StartsWith("zh") ? "Myaku-Myaku是什么?" :
+                   detectedLanguage.StartsWith("ja") ? "ミャクミャクとは何ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "미야쿠미야쿠가 뭐예요?" :
+                   "What is Myaku-Myaku?";
+        }
+
+        // P2A questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(p2a|passage to asean|student exchange|trao đổi sinh viên|แลกเปลี่ยนนักศึกษา|学生交流|학생교환|pertukaran mahasiswa)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "P2A là gì?" :
+                   detectedLanguage.StartsWith("th") ? "P2A คืออะไร?" :
+                   detectedLanguage.StartsWith("id") ? "Apa itu P2A?" :
+                   detectedLanguage.StartsWith("zh") ? "P2A是什么?" :
+                   detectedLanguage.StartsWith("ja") ? "P2Aとは何ですか?" :
+                   detectedLanguage.StartsWith("ko") ? "P2A가 뭐예요?" :
+                   "What is P2A?";
+        }
+
+        // ASEAN education/university cooperation questions
+        else if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(asean university|asean education|duy tan|van lang|hợp tác giáo dục|ความร่วมมือการศึกษา|교육협력|kerjasama pendidikan)\b"))
+        {
+            return detectedLanguage.StartsWith("vi") ? "Hợp tác giáo dục ASEAN như thế nào?" :
+                   detectedLanguage.StartsWith("th") ? "ความร่วมมือการศึกษาอาเซียนเป็นอย่างไร?" :
+                   detectedLanguage.StartsWith("id") ? "Bagaimana kerjasama pendidikan ASEAN?" :
+                   detectedLanguage.StartsWith("zh") ? "东盟教育合作如何?" :
+                   detectedLanguage.StartsWith("ja") ? "ASEAN教育協力はどうですか?" :
+                   detectedLanguage.StartsWith("ko") ? "아세안 교육협력은 어떤가요?" :
+                   "How does ASEAN education cooperation work?";
         }
 
         // Capital questions
