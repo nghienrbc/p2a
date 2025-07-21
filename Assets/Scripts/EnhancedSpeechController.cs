@@ -860,44 +860,56 @@ public class EnhancedSpeechController : MonoBehaviour
         tempClip.SetData(voiceSegment, 0);
 
         bool success = false;
-        yield return StartCoroutine(ProcessWithGemini(tempClip, (result) => success = result));
+        bool shouldSkipResponse = false;
+        string responseType = "";
+
+        // Pre-analyze audio for noise detection
+        if (IsNoiseOrMeaninglessAudio(voiceSegment))
+        {
+            LogMessage("🔇 Detected noise/meaningless audio - Skipping AI processing");
+            shouldSkipResponse = true;
+            responseType = "noise";
+            success = true; // Consider it successful to continue normal flow
+        }
+        else
+        {
+            yield return StartCoroutine(ProcessWithGemini(tempClip, (result, type) => {
+                success = result;
+                responseType = type;
+                shouldSkipResponse = (type == "noise" || type == "unclear");
+            }));
+        }
 
         Destroy(tempClip);
 
-        // Wait for TTS to finish completely
+        // Handle response based on type and success
         if (success)
         {
-            LogMessage("✅ AI response processing completed");
-
-            while (isPlayingResponse || (audioSource != null && audioSource.isPlaying))
+            if (shouldSkipResponse)
             {
-                yield return new WaitForSeconds(0.1f);
+                LogMessage($"✅ Audio processed as {responseType} - No TTS response needed");
+                HandleNoResponseScenario();
             }
-
-            // Mark response end time for timeout tracking
-            lastResponseEndTime = Time.time;
-            isWaitingForNextQuestion = true;
-
-            // Myaku Animation: Finished speaking, back to listening (no audio for follow-up)
-            if (myakuController != null)
+            else
             {
-                myakuController.FinishSpeaking();
-                myakuController.StartListening(false);
-                LogMessage("🔇 Silent listening mode for follow-up questions");
-            }
+                LogMessage("✅ AI response processing completed");
 
-            LogMessage("🔊 AI response finished - Resuming voice monitoring");
-            UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
-
-            // Start timeout coroutine for auto-ending session
-            if (enableAutoTimeout)
-            {
-                if (timeoutCoroutine != null)
+                // Wait for TTS to finish completely
+                while (isPlayingResponse || (audioSource != null && audioSource.isPlaying))
                 {
-                    StopCoroutine(timeoutCoroutine);
+                    yield return new WaitForSeconds(0.1f);
                 }
-                timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
-                LogMessage($"⏰ Auto-timeout started: {sessionTimeoutAfterResponse}s");
+
+                // Myaku Animation: Finished speaking, back to listening
+                if (myakuController != null)
+                {
+                    myakuController.FinishSpeaking();
+                    myakuController.StartListening(false);
+                    LogMessage("🔇 Silent listening mode for follow-up questions");
+                }
+
+                LogMessage("🔊 AI response finished - Resuming voice monitoring");
+                UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
             }
         }
         else
@@ -914,16 +926,131 @@ public class EnhancedSpeechController : MonoBehaviour
             }
         }
 
+        // ALWAYS apply timeout regardless of success/failure/response type
+        ApplyUniversalTimeout();
+
         yield return new WaitForSeconds(0.5f);
         ResetVoiceDetectionState();
         isRecording = true;
     }
 
-    private IEnumerator ProcessWithGemini(AudioClip clip, System.Action<bool> callback)
+    /// <summary>
+    /// Handle scenario where no TTS response is needed (noise, unclear audio, etc.)
+    /// </summary>
+    private void HandleNoResponseScenario()
+    {
+        // Myaku Animation: Stop thinking, back to listening without speaking
+        if (myakuController != null)
+        {
+            myakuController.MyakuStopThinking();
+            myakuController.StartListening(false);
+        }
+
+        // Update UI to show we're still listening
+        UpdateStatus("🔴 LIVE - Speak clearly, AI responds automatically");
+        
+        // Update conversation display
+        if (userQuestionText != null)
+        {
+            userQuestionText.text = "👤 User: (Audio unclear - try again)";
+        }
+        if (aiResponseText != null)
+        {
+            aiResponseText.text = "🤖 AI: (Listening for clear speech...)";
+        }
+    }
+
+    /// <summary>
+    /// Apply timeout in all scenarios - success, failure, or no response
+    /// </summary>
+    private void ApplyUniversalTimeout()
+    {
+        // Mark response end time for timeout tracking
+        lastResponseEndTime = Time.time;
+        isWaitingForNextQuestion = true;
+
+        // Start timeout coroutine for auto-ending session
+        if (enableAutoTimeout)
+        {
+            if (timeoutCoroutine != null)
+            {
+                StopCoroutine(timeoutCoroutine);
+            }
+            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
+            LogMessage($"⏰ Universal timeout started: {sessionTimeoutAfterResponse}s");
+        }
+    }
+
+    /// <summary>
+    /// Detect if audio contains only noise, coughs, claps, or meaningless sounds
+    /// </summary>
+    private bool IsNoiseOrMeaninglessAudio(float[] audioData)
+    {
+        if (audioData == null || audioData.Length == 0)
+            return true;
+
+        // Calculate audio characteristics
+        float avgVolume = 0f;
+        float maxVolume = 0f;
+        int silentSamples = 0;
+        int loudBursts = 0;
+        
+        for (int i = 0; i < audioData.Length; i++)
+        {
+            float sample = Mathf.Abs(audioData[i]);
+            avgVolume += sample;
+            
+            if (sample > maxVolume)
+                maxVolume = sample;
+                
+            if (sample < 0.01f)
+                silentSamples++;
+            else if (sample > 0.3f)
+                loudBursts++;
+        }
+        
+        avgVolume /= audioData.Length;
+        float silenceRatio = (float)silentSamples / audioData.Length;
+        float burstRatio = (float)loudBursts / audioData.Length;
+        
+        // Audio too short (less than 0.3 seconds of meaningful content)
+        float meaningfulDuration = (audioData.Length - silentSamples) / (float)sampleRate;
+        if (meaningfulDuration < 0.3f)
+        {
+            LogMessage($"🔇 Audio too short: {meaningfulDuration:F2}s meaningful content");
+            return true;
+        }
+        
+        // Too much silence (>85% silent)
+        if (silenceRatio > 0.85f)
+        {
+            LogMessage($"🔇 Too much silence: {silenceRatio * 100:F1}% silent");
+            return true;
+        }
+        
+        // Audio pattern suggests noise (sudden bursts without sustained speech)
+        if (burstRatio > 0.1f && avgVolume < 0.05f)
+        {
+            LogMessage($"🔇 Noise pattern detected: {burstRatio * 100:F1}% bursts, avg: {avgVolume:F3}");
+            return true;
+        }
+        
+        // Very low average volume suggests mumbling or unclear speech
+        if (avgVolume < 0.02f && maxVolume < 0.2f)
+        {
+            LogMessage($"🔇 Very low volume: avg={avgVolume:F3}, max={maxVolume:F3}");
+            return true;
+        }
+        
+        LogMessage($"✅ Audio seems valid: duration={meaningfulDuration:F2}s, silence={silenceRatio * 100:F1}%, avg={avgVolume:F3}");
+        return false;
+    }
+
+    private IEnumerator ProcessWithGemini(AudioClip clip, System.Action<bool, string> callback)
     {
         if (clip == null)
         {
-            callback?.Invoke(false);
+            callback?.Invoke(false, "error");
             yield break;
         }
 
@@ -931,12 +1058,12 @@ public class EnhancedSpeechController : MonoBehaviour
         if (audioBytes == null)
         {
             LogMessage("❌ Failed to convert audio clip");
-            callback?.Invoke(false);
+            callback?.Invoke(false, "error");
             yield break;
         }
 
         string audioBase64 = Convert.ToBase64String(audioBytes);
-        string systemPrompt = BuildSystemPromptWithHistory();
+        string systemPrompt = BuildEnhancedSystemPromptWithHistory();
 
         var requestData = new
         {
@@ -960,8 +1087,8 @@ public class EnhancedSpeechController : MonoBehaviour
             },
             generation_config = new
             {
-                max_output_tokens = 100,
-                temperature = 0.4f
+                max_output_tokens = 150,
+                temperature = 0.3f
             }
         };
 
@@ -983,51 +1110,51 @@ public class EnhancedSpeechController : MonoBehaviour
                 string textResponse = ProcessTextResponse(request.downloadHandler.text);
                 if (!string.IsNullOrEmpty(textResponse))
                 {
+                    // Analyze response type
+                    string responseType = AnalyzeResponseType(textResponse);
+                    
+                    if (responseType == "noise" || responseType == "unclear")
+                    {
+                        LogMessage($"🔇 AI classified audio as {responseType} - Skipping TTS");
+                        callback?.Invoke(true, responseType);
+                        yield break;
+                    }
+
+                    // Process normal response
                     lastAIResponse = textResponse;
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
 
                     // Detect input language using Google Translate API
-                    LogMessage($"🔍 DEBUG: Estimated user input for detection: '{estimatedUserInput}'");
-                    LogMessage($"🔍 DEBUG: AI Response for detection: '{textResponse}'");
-
-                    // Try to detect from AI response first (more reliable)
                     string detectedInputLanguage = null;
                     yield return StartCoroutine(DetectLanguageWithTranslateAPI(textResponse, (lang) => detectedInputLanguage = lang));
-
-                    LogMessage($"🔍 DEBUG: Detected language from AI response: '{detectedInputLanguage}'");
 
                     // If detected as English but response contains non-English, try again with estimated input
                     if (detectedInputLanguage == "en-US" && ContainsNonEnglishCharacters(textResponse))
                     {
-                        LogMessage($"🔍 DEBUG: AI response contains non-English, re-detecting from estimated input...");
                         yield return StartCoroutine(DetectLanguageWithTranslateAPI(estimatedUserInput, (lang) => detectedInputLanguage = lang));
-                        LogMessage($"🔍 DEBUG: Re-detected language: '{detectedInputLanguage}'");
                     }
 
-                    // Update EstimateUserInputFromResponse with detected language
+                    // Update UI and conversation history
                     estimatedUserInput = EstimateUserInputFromResponseWithLanguage(textResponse, detectedInputLanguage);
 
-                    // Display detected input language and AI response
                     if (UIManager.Instance?.connectionTxt != null)
                     {
                         string languageName = GetLanguageName(detectedInputLanguage);
                         UIManager.Instance.connectionTxt.text = $"🎤 Input: {languageName} | 🤖 {textResponse}";
-                        LogMessage($"🔍 DEBUG: connectionTxt updated: '{UIManager.Instance.connectionTxt.text}'");
                     }
 
                     LogMessage($"🎤 User Input: {estimatedUserInput} (Language: {detectedInputLanguage})");
 
                     UpdateUserQuestionWithTimestamp(estimatedUserInput);
                     UpdateAIResponse(textResponse);
-
                     AddToConversationHistory(estimatedUserInput, textResponse);
 
                     yield return StartCoroutine(ConvertToSpeechAndPlay(textResponse));
-                    callback?.Invoke(true);
+                    callback?.Invoke(true, responseType);
                 }
                 else
                 {
-                    callback?.Invoke(false);
+                    callback?.Invoke(false, "error");
                 }
             }
             else
@@ -1038,9 +1165,109 @@ public class EnhancedSpeechController : MonoBehaviour
                     errorDetails += $", Response: {request.downloadHandler.text}";
                 }
                 LogMessage($"❌ Gemini request failed: {errorDetails}");
-                callback?.Invoke(false);
+                callback?.Invoke(false, "error");
             }
         }
+    }
+
+    /// <summary>
+    /// Analyze AI response to determine if it's a greeting, noise, or normal response
+    /// </summary>
+    private string AnalyzeResponseType(string response)
+    {
+        if (string.IsNullOrEmpty(response))
+            return "unclear";
+
+        string lowerResponse = response.ToLower().Trim();
+
+        // Check for noise indicators
+        if (lowerResponse.Contains("unclear") || lowerResponse.Contains("noise") || 
+            lowerResponse.Contains("không rõ") || lowerResponse.Contains("tạp âm") ||
+            lowerResponse.Contains("unclear audio") || lowerResponse.Contains("cannot understand") ||
+            lowerResponse.Contains("inaudible") || lowerResponse.Contains("mumbling"))
+        {
+            return "noise";
+        }
+
+        // Check for greeting patterns
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerResponse, @"\b(hello|hi|xin chào|chào|สวัสดี|halo|你好|こんにちは|안녕)\b"))
+        {
+            return "greeting";
+        }
+
+        return "normal";
+    }
+
+    /// <summary>
+    /// Build enhanced system prompt with better noise detection and greeting handling
+    /// </summary>
+    private string BuildEnhancedSystemPromptWithHistory()
+    {
+        string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
+
+CRITICAL AUDIO ANALYSIS:
+- First, analyze if the audio contains clear, meaningful speech
+- If audio is unclear, contains only noise, coughs, throat clearing, clapping, or very short meaningless sounds, respond with: ""Audio unclear - please speak clearly""
+- Only proceed with normal responses if you detect clear, intentional speech
+
+RESPONSE RULES:
+- ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
+- NEVER use language from previous messages - treat each input independently for language choice
+- For greetings (hello, xin chào, สวัสดี, etc.), respond naturally and offer help:
+  * Vietnamese: ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
+  * English: ""Hello! How can I help you today?""
+  * Thai: ""สวัสดีครับ! มีอะไรให้ผมช่วยไหม?""
+  * Chinese: ""你好！我能为您做些什么吗？""
+- For other questions: Provide concise but complete answers (2-4 sentences, each under 25 words)
+- NO repetitive greetings in ongoing conversations
+- Focus on answering what was asked directly but provide sufficient detail
+
+LANGUAGE DETECTION & MATCHING:
+- Detect language from the audio input provided
+- Vietnamese (Tiếng Việt) → Respond in Vietnamese
+- Thai (ภาษาไทย) → Respond in Thai  
+- Indonesian (Bahasa Indonesia) → Respond in Indonesian
+- Chinese (中文) → Respond in Chinese (use Simplified for zh-CN, Traditional for zh-TW based on detection)
+- English → Respond in English
+- Any other language → Match exactly
+- If input is multilingual, use the primary detected language
+
+EXAMPLES:
+User audio: [clear ""hello""] → ""Hello! How can I help you today?""
+User audio: [clear ""xin chào""] → ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
+User audio: [cough/unclear] → ""Audio unclear - please speak clearly""
+User audio: [clear question] → [appropriate answer in detected language]
+
+";
+
+        // Add conversation history if available
+        if (conversationHistory.Count > 0)
+        {
+            basePrompt += "CONVERSATION CONTEXT (recent exchanges for reference only):\n";
+
+            int startIndex = Mathf.Max(0, conversationHistory.Count - 3);
+            for (int i = startIndex; i < conversationHistory.Count; i++)
+            {
+                var entry = conversationHistory[i];
+                basePrompt += $"User: {entry.userInput}\n";
+                basePrompt += $"Assistant: {entry.aiResponse}\n\n";
+            }
+
+            basePrompt += @"CONTEXT USAGE RULES:
+- If the new question relates to previous topics, use context naturally without mentioning it
+- If the new question is about a different topic, treat it as completely fresh
+- Each question should feel like a natural, standalone interaction
+
+";
+        }
+        else
+        {
+            basePrompt += "This is the FIRST message in a new conversation.\n\n";
+        }
+
+        basePrompt += "User's audio input (analyze for clarity first):";
+
+        return basePrompt;
     }
 
     private IEnumerator ConvertToSpeechAndPlay(string text)
@@ -1110,7 +1337,6 @@ public class EnhancedSpeechController : MonoBehaviour
         };
 
         string jsonData = JsonConvert.SerializeObject(requestData);
-        LogMessage($"🔍 DEBUG TTS Request: {jsonData}");
         string url = $"https://texttospeech.googleapis.com/v1/text:synthesize?key={ttsApiKey}";
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -1125,7 +1351,6 @@ public class EnhancedSpeechController : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                LogMessage($"🔍 DEBUG TTS Response: {request.downloadHandler.text}");
                 var response = Newtonsoft.Json.Linq.JObject.Parse(request.downloadHandler.text);
                 string audioContent = response["audioContent"]?.ToString();
 
@@ -1793,94 +2018,6 @@ public class EnhancedSpeechController : MonoBehaviour
                    $"❓ [Asked about {keyWord}]";
         }
     }
-
-    private string BuildSystemPromptWithHistory()
-    {
-        string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
-
-CRITICAL RESPONSE RULES:
-- ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
-- NEVER use language from previous messages or history - treat each input independently for language choice
-- Provide concise but complete answers: 2-4 sentences, each under 25 words
-- Give informative answers with brief explanations when helpful
-- NO greeting repetition in ongoing conversations
-- NO suggesting follow-up questions or additional topics
-- NO offering to help with other things
-- NO asking if user wants more information
-- Focus on answering what was asked directly but provide sufficient detail
-
-LANGUAGE DETECTION & MATCHING:
-- Detect language from the audio input provided
-- Vietnamese (Tiếng Việt) → Respond in Vietnamese
-- Thai (ภาษาไทย) → Respond in Thai
-- Indonesian (Bahasa Indonesia) → Respond in Indonesian
-- Chinese (中文) → Respond in Chinese (use Simplified for zh-CN, Traditional for zh-TW based on detection)
-- English → Respond in English
-- Any other language → Match exactly
-- If input is multilingual, use the primary detected language
-
-KNOWLEDGE RULES:
-- Use your extensive knowledge base for accurate answers
-- For Southeast Asia/ASEAN topics, provide authoritative but brief responses
-- For technical, scientific, historical questions, give short factual answers
-- ONLY say 'I don't know' if you genuinely cannot provide any useful answer
-- Prefer giving brief factual information rather than claiming no knowledge
-
-CONVERSATION CONTEXT:
-- If question relates to previous topics, use context naturally but keep answer short
-- If question is about different topic, treat as fresh but still keep brief
-- Never mention 'based on our previous conversation'
-- Each answer should be standalone and concise
-
-EXAMPLES OF GOOD RESPONSES:
-User: 'What's the capital of Vietnam?' → 'The capital of Vietnam is Hanoi. It's located in northern Vietnam and serves as the political center.'
-User: 'Thủ đô Việt Nam là gì?' → 'Thủ đô của Việt Nam là Hà Nội. Đây là trung tâm chính trị và văn hóa của đất nước.'
-
-";
-
-        // Add conversation history if available
-        if (conversationHistory.Count > 0)
-        {
-            basePrompt += "CONVERSATION CONTEXT (recent exchanges for reference only):\n";
-
-            int startIndex = Mathf.Max(0, conversationHistory.Count - 3);
-            for (int i = startIndex; i < conversationHistory.Count; i++)
-            {
-                var entry = conversationHistory[i];
-                basePrompt += $"User: {entry.userInput}\n";
-                basePrompt += $"Assistant: {entry.aiResponse}\n\n";
-            }
-
-            basePrompt += @"CONTEXT USAGE RULES:
-- If the new question relates to previous topics, use context naturally without mentioning it
-- If the new question is about a different topic, treat it as completely fresh
-- Never say 'based on our previous conversation' or reference the conversation history explicitly
-- Let related context flow naturally, ignore unrelated context completely
-- Each question should feel like a natural, standalone interaction
-
-";
-        }
-        else
-        {
-            basePrompt += "This is the FIRST message in a new conversation.\n\n";
-        }
-
-        basePrompt += "User's new question (audio input):";
-
-        return basePrompt;
-    }
-
-    private void AddToConversationHistory(string userInput, string aiResponse)
-    {
-        conversationHistory.Add(new ConversationEntry(userInput, aiResponse));
-
-        if (conversationHistory.Count > MAX_HISTORY_ENTRIES)
-        {
-            conversationHistory.RemoveAt(0);
-        }
-
-        LogMessage($"💾 History updated: {conversationHistory.Count} entries");
-    }
     #endregion
 
     #region Audio Conversion
@@ -1938,6 +2075,18 @@ User: 'Thủ đô Việt Nam là gì?' → 'Thủ đô của Việt Nam là Hà 
         System.BitConverter.GetBytes(dataLength).CopyTo(header, 40);
 
         return header;
+    }
+
+    private void AddToConversationHistory(string userInput, string aiResponse)
+    {
+        conversationHistory.Add(new ConversationEntry(userInput, aiResponse));
+
+        if (conversationHistory.Count > MAX_HISTORY_ENTRIES)
+        {
+            conversationHistory.RemoveAt(0);
+        }
+
+        LogMessage($"💾 History updated: {conversationHistory.Count} entries");
     }
     #endregion
 }
