@@ -661,8 +661,8 @@ public class MyakuController : MonoBehaviour
             if (listeningSounds[randomIndex] != null)
             {
                 Debug.Log($"🎵 Playing listening sound {randomIndex}: {listeningSounds[randomIndex].name}");
-                audioPlayer.clip = listeningSounds[randomIndex];
-                audioPlayer.Play();
+                // audioPlayer.clip = listeningSounds[randomIndex];
+                // audioPlayer.Play();
             }
             else
             {

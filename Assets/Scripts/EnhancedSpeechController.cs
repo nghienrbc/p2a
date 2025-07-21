@@ -1070,6 +1070,23 @@ public class EnhancedSpeechController : MonoBehaviour
                 responseLanguage = detectedLang;
             }));
             LogMessage($"🌐 Detected language via Google Translate: {responseLanguage}");
+
+            // Fallback: If detected as English but contains non-English characters, force appropriate language
+            if (responseLanguage == "en-US" && ContainsNonEnglishCharacters(text))
+            {
+                // Check for specific languages
+                if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u4e00-\u9fff]")) // Chinese
+                {
+                    responseLanguage = "zh-CN"; // Default to Simplified Chinese
+                    LogMessage("🔄 Fallback: Detected Chinese characters, forcing zh-CN");
+                }
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ]")) // Vietnamese
+                {
+                    responseLanguage = "vi-VN";
+                    LogMessage("🔄 Fallback: Detected Vietnamese characters, forcing vi-VN");
+                }
+                // Add more language fallbacks if needed
+            }
         }
 
         var voiceSettings = GetVoiceSettings(responseLanguage);
@@ -1088,7 +1105,7 @@ public class EnhancedSpeechController : MonoBehaviour
             {
                 audioEncoding = "LINEAR16",
                 sampleRateHertz = 22050,
-                speakingRate = 1.2
+                speakingRate = 1.1f
             }
         };
 
@@ -1782,7 +1799,8 @@ public class EnhancedSpeechController : MonoBehaviour
         string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
 
 CRITICAL RESPONSE RULES:
-- ALWAYS respond in the EXACT SAME LANGUAGE as the user's question
+- ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
+- NEVER use language from previous messages or history - treat each input independently for language choice
 - Provide concise but complete answers: 2-4 sentences, each under 25 words
 - Give informative answers with brief explanations when helpful
 - NO greeting repetition in ongoing conversations
@@ -1792,11 +1810,14 @@ CRITICAL RESPONSE RULES:
 - Focus on answering what was asked directly but provide sufficient detail
 
 LANGUAGE DETECTION & MATCHING:
+- Detect language from the audio input provided
 - Vietnamese (Tiếng Việt) → Respond in Vietnamese
 - Thai (ภาษาไทย) → Respond in Thai
 - Indonesian (Bahasa Indonesia) → Respond in Indonesian
+- Chinese (中文) → Respond in Chinese (use Simplified for zh-CN, Traditional for zh-TW based on detection)
 - English → Respond in English
 - Any other language → Match exactly
+- If input is multilingual, use the primary detected language
 
 KNOWLEDGE RULES:
 - Use your extensive knowledge base for accurate answers
