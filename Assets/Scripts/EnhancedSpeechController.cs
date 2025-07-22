@@ -7,6 +7,7 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
  
 public class EnhancedSpeechController : MonoBehaviour
 {
@@ -250,7 +251,12 @@ public class EnhancedSpeechController : MonoBehaviour
     // Conversation History
     private System.Collections.Generic.List<ConversationEntry> conversationHistory = new System.Collections.Generic.List<ConversationEntry>();
     private const int MAX_HISTORY_ENTRIES = 10;
+    private const int MAX_CONTEXT_ENTRIES = 3; // Maximum entries to include in context (reduced for long sessions)
     private string lastAIResponse = "";
+    
+    // Topic management for smart history filtering
+    private string lastTopic = "";
+    private int sessionQuestionCount = 0;
 
     // Wake Word Detection (AudioPlugin)
     private AndroidJavaObject audioPlugin;
@@ -608,7 +614,9 @@ public class EnhancedSpeechController : MonoBehaviour
 
         // Clear conversation history for new session
         conversationHistory.Clear();
-        LogMessage("🗑️ Conversation history cleared for new session");
+        sessionQuestionCount = 0;
+        lastTopic = "";
+        LogMessage("🗑️ Conversation history cleared for new session - Session counters reset");
 
         // Clear conversation display UI
         ClearConversationDisplay();
@@ -1361,18 +1369,51 @@ public class EnhancedSpeechController : MonoBehaviour
     {
         string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
 
-RESPONSE RULES:
-- ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
-- NEVER use language from previous messages - treat each input independently for language choice
-- For greetings (hello, xin chào, สวัสดี, etc.) ONLY when user actually greets, respond naturally and offer help:
+🔴 CRITICAL LANGUAGE MATCHING RULES (MUST FOLLOW):
+- STEP 1: Listen carefully to identify the exact language of the CURRENT audio input
+- STEP 2: Respond in the EXACT SAME LANGUAGE as the input - NO EXCEPTIONS
+- STEP 3: Completely IGNORE language from previous conversation history - each input is independent
+- STEP 4: If unsure about language, default to Vietnamese for unclear inputs
+
+🎯 LANGUAGE DETECTION EXAMPLES:
+Input in English → Respond in English ONLY
+Input in Vietnamese → Respond in Vietnamese ONLY  
+Input in Thai → Respond in Thai ONLY
+Input in Chinese → Respond in Chinese ONLY
+Input mixed languages → Use primary/dominant language detected
+
+🚫 FORBIDDEN BEHAVIORS:
+- Never mix languages in one response
+- Never use English if input was Vietnamese (and vice versa)
+- Never be influenced by conversation history language
+- Never assume user language preference from past messages
+
+✅ CORRECT RESPONSE PATTERNS:
+
+🔵 **GREETING DETECTION & RESPONSE**:
+- ONLY respond with greeting IF user input contains PURE greeting words: ""hello"", ""hi"", ""xin chào"", ""chào"", ""สวัสดี"", ""你好"", etc.
+- If user asks question + greeting (e.g., ""Hello, what is ASEAN?""), respond directly to the QUESTION (skip greeting)
+- If user only greets (e.g., ""Hello""), then respond with greeting + offer help:
   * Vietnamese: ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
   * English: ""Hello! How can I help you today?""
   * Thai: ""สวัสดีครับ! มีอะไรให้ผมช่วยไหม?""
   * Chinese: ""你好！我能为您做些什么吗？""
-- If user asks questions directly without greeting, answer the question normally even if it's the first message
-- For other questions: Provide concise but complete answers (2-4 sentences, each under 25 words)
-- NO repetitive greetings in ongoing conversations
-- Focus on answering what was asked directly but provide sufficient detail
+
+🔵 **DIRECT QUESTION HANDLING**:
+- If user asks direct questions (even as first message), answer IMMEDIATELY without greeting
+- Examples: ""What is ASEAN?"" → Direct answer about ASEAN (NO ""Hello! ASEAN is..."")
+- Examples: ""ASEAN là gì?"" → Direct answer in Vietnamese (NO ""Xin chào! ASEAN là..."")
+
+🚫 **FORBIDDEN RESPONSE PATTERNS**:
+- Never repeat or rephrase the user's question in your response
+- Never echo back what the user said (e.g., ""You asked about ASEAN..."")
+- Never start with greetings unless user ONLY greeted
+- Never use phrases like ""Based on your question..."", ""As you asked..."", ""You mentioned...""
+
+✅ **RESPONSE STYLE**:
+- Provide direct, concise answers (2-4 sentences, each under 25 words)
+- Start immediately with the information requested
+- Focus purely on answering what was asked
 - If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
 
 CAMERA/PHOTO FUNCTIONALITY:
@@ -1674,32 +1715,66 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
 
 ";
 
-        // Add conversation history if available
+        // Smart conversation history management for long sessions
         if (conversationHistory.Count > 0)
         {
-            basePrompt += "CONVERSATION CONTEXT (recent exchanges for reference only):\n";
-
-            int startIndex = Mathf.Max(0, conversationHistory.Count - 3);
-            for (int i = startIndex; i < conversationHistory.Count; i++)
+            var contextEntries = GetRelevantContextEntries();
+            
+            if (contextEntries.Count > 0)
             {
-                var entry = conversationHistory[i];
-                basePrompt += $"User: {entry.userInput}\n";
-                basePrompt += $"Assistant: {entry.aiResponse}\n\n";
-            }
+                basePrompt += "\n🗂️ CONVERSATION CONTEXT (for topic reference ONLY - IGNORE LANGUAGE PATTERNS):\n";
 
-            basePrompt += @"CONTEXT USAGE RULES:
-- If the new question relates to previous topics, use context naturally without mentioning it
-- If the new question is about a different topic, treat it as completely fresh
-- Each question should feel like a natural, standalone interaction
+                foreach (var entry in contextEntries)
+                {
+                    basePrompt += $"Previous User: {entry.userInput}\n";
+                    basePrompt += $"Previous Assistant: {entry.aiResponse}\n\n";
+                }
+
+                basePrompt += @"🔴 CONTEXT USAGE RULES:
+- Use context ONLY for topic continuity - NEVER for language choice
+- The current input language is COMPLETELY INDEPENDENT of previous messages
+- If new question relates to previous topics, continue the topic in the NEW INPUT'S LANGUAGE
+- If new question is different topic, treat as completely fresh
+- NEVER let previous conversation language influence current response language
+
+⚠️ REMINDER: Respond to current input in its detected language, regardless of conversation history languages!
 
 ";
+            }
+            else
+            {
+                basePrompt += "\n📝 Starting fresh topic - Previous conversation on different subject.\n\n";
+            }
         }
         else
         {
-            basePrompt += "This is the FIRST message in a new conversation.\n\n";
+            basePrompt += "\n📝 This is the FIRST message in a new conversation.\n\n";
         }
 
-        basePrompt += "User's audio input (analyze for clarity first):";
+        basePrompt += @"
+🎯 **RESPONSE EXAMPLES**:
+
+❌ WRONG RESPONSES:
+User: ""What is ASEAN?"" 
+AI: ""Hello! You asked about ASEAN. ASEAN is..."" (DON'T repeat question, DON'T greet)
+
+User: ""ASEAN là gì?""
+AI: ""Xin chào! Bạn hỏi về ASEAN. ASEAN là..."" (DON'T repeat question, DON'T greet)
+
+✅ CORRECT RESPONSES:
+User: ""What is ASEAN?""
+AI: ""ASEAN is the Association of Southeast Asian Nations, established in 1967..."" (Direct answer)
+
+User: ""ASEAN là gì?""
+AI: ""ASEAN là Hiệp hội các quốc gia Đông Nam Á, thành lập năm 1967..."" (Direct answer)
+
+User: ""Hello""
+AI: ""Hello! How can I help you today?"" (Pure greeting gets greeting response)
+
+User: ""Xin chào""
+AI: ""Chào bạn! Tôi có thể giúp gì cho bạn không?"" (Pure greeting gets greeting response)
+
+User's audio input (analyze for clarity first):";
 
         return basePrompt;
     }
@@ -1726,32 +1801,82 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
         }
         else
         {
-            // Use Google Translate API for language detection (more accurate)
+            // Step 1: Use Google Translate API for language detection (more accurate)
             yield return StartCoroutine(DetectLanguageWithTranslateAPI(text, (detectedLang) => {
                 responseLanguage = detectedLang;
             }));
-            LogMessage($"🌐 Detected language via Google Translate: {responseLanguage}");
+            LogMessage($"🌐 Primary detection via Google Translate: {responseLanguage}");
 
-            // Fallback: If detected as English but contains non-English characters, force appropriate language
+            // Step 2: Enhanced fallback with character-based detection
             if (responseLanguage == "en-US" && ContainsNonEnglishCharacters(text))
             {
-                // Check for specific languages
-                if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u4e00-\u9fff]")) // Chinese
-                {
-                    responseLanguage = "zh-CN"; // Default to Simplified Chinese
-                    LogMessage("🔄 Fallback: Detected Chinese characters, forcing zh-CN");
-                }
-                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵĐ]")) // Vietnamese
+                LogMessage("⚠️ English detected but contains non-English characters - applying fallback...");
+                
+                // Vietnamese detection (highest priority for this app)
+                if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ]"))
                 {
                     responseLanguage = "vi-VN";
-                    LogMessage("🔄 Fallback: Detected Vietnamese characters, forcing vi-VN");
+                    LogMessage("🔄 Fallback: Vietnamese diacritics detected → vi-VN");
                 }
-                // Add more language fallbacks if needed
+                // Chinese detection
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u4e00-\u9fff]"))
+                {
+                    responseLanguage = "zh-CN";
+                    LogMessage("🔄 Fallback: Chinese characters detected → zh-CN");
+                }
+                // Thai detection
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u0E00-\u0E7F]"))
+                {
+                    responseLanguage = "th-TH";
+                    LogMessage("🔄 Fallback: Thai characters detected → th-TH");
+                }
+                // Japanese detection
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u3040-\u309f\u30a0-\u30ff]"))
+                {
+                    responseLanguage = "ja-JP";
+                    LogMessage("🔄 Fallback: Japanese characters detected → ja-JP");
+                }
+                // Korean detection
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\uac00-\ud7af]"))
+                {
+                    responseLanguage = "ko-KR";
+                    LogMessage("🔄 Fallback: Korean characters detected → ko-KR");
+                }
+                // Arabic detection
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[\u0600-\u06ff]"))
+                {
+                    responseLanguage = "ar-XA";
+                    LogMessage("🔄 Fallback: Arabic characters detected → ar-XA");
+                }
+                else
+                {
+                    LogMessage("⚠️ Non-English characters found but specific language not identified");
+                }
+            }
+            
+            // Step 3: Additional validation for common misdetections
+            if (responseLanguage == "en-US")
+            {
+                // Count English vs non-English word patterns
+                string lowerText = text.ToLower();
+                int vietnamesePatterns = System.Text.RegularExpressions.Regex.Matches(lowerText, @"\b(tôi|bạn|là|có|không|được|của|và|trong|với|từ|cho|về|này|đó|như|sẽ|đã|đang|việt|asean)\b").Count;
+                int englishPatterns = System.Text.RegularExpressions.Regex.Matches(lowerText, @"\b(the|and|or|but|in|on|at|to|for|of|with|by|from|about|what|how|when|where|why|vietnam|asean)\b").Count;
+                
+                if (vietnamesePatterns > englishPatterns && vietnamesePatterns >= 2)
+                {
+                    responseLanguage = "vi-VN";
+                    LogMessage($"🔄 Pattern-based override: Vietnamese words ({vietnamesePatterns}) > English words ({englishPatterns}) → vi-VN");
+                }
             }
         }
 
         var voiceSettings = GetVoiceSettings(responseLanguage);
-        LogMessage($"🗣️ TTS Language: {responseLanguage} → Voice: {voiceSettings.voiceName}");
+        LogMessage($"🎯 === FINAL TTS DECISION ===");
+        LogMessage($"📝 Response Text: {text}");
+        LogMessage($"🔍 Detected Language: {responseLanguage}");
+        LogMessage($"🗣️ TTS Voice: {voiceSettings.voiceName}");
+        LogMessage($"🌐 Language Name: {GetLanguageName(responseLanguage)}");
+        LogMessage($"=============================");
 
         var requestData = new
         {
@@ -1970,7 +2095,9 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
 
         // Clear conversation history for new session
         conversationHistory.Clear();
-        LogMessage("🗑️ Conversation history cleared for new session");
+        sessionQuestionCount = 0;
+        lastTopic = "";
+        LogMessage("🗑️ Conversation history cleared for new session - Session counters reset");
 
         // Clear conversation display UI
         ClearConversationDisplay();
@@ -2584,6 +2711,10 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
 
     private void AddToConversationHistory(string userInput, string aiResponse)
     {
+        // Update session tracking
+        sessionQuestionCount++;
+        string currentTopic = DetectTopicFromInput(userInput);
+        
         conversationHistory.Add(new ConversationEntry(userInput, aiResponse));
 
         if (conversationHistory.Count > MAX_HISTORY_ENTRIES)
@@ -2591,7 +2722,135 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
             conversationHistory.RemoveAt(0);
         }
 
-        LogMessage($"💾 History updated: {conversationHistory.Count} entries");
+        // Log topic changes for debugging
+        if (!string.IsNullOrEmpty(lastTopic) && currentTopic != lastTopic)
+        {
+            LogMessage($"🔄 Topic changed: {lastTopic} → {currentTopic}");
+        }
+        
+        lastTopic = currentTopic;
+        LogMessage($"💾 History updated: {conversationHistory.Count} entries | Question #{sessionQuestionCount} | Topic: {currentTopic}");
+    }
+
+    /// <summary>
+    /// Get relevant context entries based on session length and topic similarity
+    /// </summary>
+    private System.Collections.Generic.List<ConversationEntry> GetRelevantContextEntries()
+    {
+        var relevantEntries = new System.Collections.Generic.List<ConversationEntry>();
+        
+        if (conversationHistory.Count == 0) return relevantEntries;
+
+        // Progressive context reduction for long sessions
+        int maxEntries = CalculateOptimalContextSize();
+        
+        // For very long sessions (>8 questions), be more selective
+        if (sessionQuestionCount > 8)
+        {
+            LogMessage($"🧠 Long session detected ({sessionQuestionCount} questions) - Using smart context filtering");
+            
+            // Get only recent entries with similar topics
+            var recentEntries = conversationHistory.TakeLast(maxEntries * 2).ToList();
+            string lastUserInput = conversationHistory.Last().userInput;
+            string currentTopic = DetectTopicFromInput(lastUserInput);
+            
+            foreach (var entry in recentEntries)
+            {
+                string entryTopic = DetectTopicFromInput(entry.userInput);
+                if (entryTopic == currentTopic || IsTopicRelated(currentTopic, entryTopic))
+                {
+                    relevantEntries.Add(entry);
+                    if (relevantEntries.Count >= maxEntries) break;
+                }
+            }
+            
+            LogMessage($"🎯 Filtered {recentEntries.Count} → {relevantEntries.Count} relevant entries");
+        }
+        else
+        {
+            // For shorter sessions, use recent entries normally
+            int startIndex = Mathf.Max(0, conversationHistory.Count - maxEntries);
+            for (int i = startIndex; i < conversationHistory.Count; i++)
+            {
+                relevantEntries.Add(conversationHistory[i]);
+            }
+        }
+
+        return relevantEntries;
+    }
+
+    /// <summary>
+    /// Calculate optimal context size based on session length
+    /// </summary>
+    private int CalculateOptimalContextSize()
+    {
+        if (sessionQuestionCount <= 3) return 3; // Early session: full context
+        if (sessionQuestionCount <= 6) return 2; // Mid session: reduced context
+        return 1; // Long session: minimal context to avoid overflow
+    }
+
+    /// <summary>
+    /// Detect topic from user input using keyword matching
+    /// </summary>
+    private string DetectTopicFromInput(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return "general";
+        
+        string lowerInput = input.ToLower();
+        
+        // ASEAN topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(asean|อาเซียน|southeast asia|đông nam á|asia tenggara)\b"))
+            return "asean";
+            
+        // EXPO 2025 topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(expo|triển lãm|world exposition|osaka|myaku|มหกรรม|万博|엑스포|pameran dunia)\b"))
+            return "expo2025";
+            
+        // P2A topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(p2a|passage to asean|student exchange|trao đổi sinh viên|แลกเปลี่ยนนักศึกษา)\b"))
+            return "p2a";
+            
+        // DTU topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(duy tan|dtu|đại học duy tân|university)\b"))
+            return "dtu";
+            
+        // Vietnam topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(vietnam|việt nam|vietnamese|saigon|hanoi|ho chi minh)\b"))
+            return "vietnam";
+            
+        // Technology topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(technology|ai|artificial intelligence|computer|software|engineering|programming)\b"))
+            return "technology";
+            
+        // Camera/photo topics
+        if (System.Text.RegularExpressions.Regex.IsMatch(lowerInput, @"\b(photo|camera|picture|chụp ảnh|ถ่ายรูป|拍照|사진)\b"))
+            return "camera";
+            
+        return "general";
+    }
+
+    /// <summary>
+    /// Check if two topics are related
+    /// </summary>
+    private bool IsTopicRelated(string topic1, string topic2)
+    {
+        if (topic1 == topic2) return true;
+        
+        // Define related topic groups
+        var relatedGroups = new[]
+        {
+            new[] { "asean", "vietnam", "p2a", "expo2025" }, // Regional cooperation
+            new[] { "dtu", "p2a", "vietnam" }, // Education
+            new[] { "technology", "dtu" }, // Tech education
+        };
+        
+        foreach (var group in relatedGroups)
+        {
+            if (group.Contains(topic1) && group.Contains(topic2))
+                return true;
+        }
+        
+        return false;
     }
     #endregion
 
