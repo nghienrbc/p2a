@@ -649,6 +649,8 @@ public class EnhancedSpeechController : MonoBehaviour
         LogMessage($"🔍 DEBUG: isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
         LogMessage($"🔍 DEBUG: myakuController = {(myakuController != null ? "NOT NULL" : "NULL")}");
 
+        bool needToWaitForListeningSound = false;
+
         if (myakuController != null)
         {
             if (isFirstSessionAfterWakeWord)
@@ -657,6 +659,7 @@ public class EnhancedSpeechController : MonoBehaviour
                 LogMessage("🎯 WAKE WORD SESSION - Calling myakuController.StartListening(true)");
                 myakuController.StartListening(true);
                 LogMessage("🎵 Playing welcome sound for wake word session");
+                needToWaitForListeningSound = true; // Need to wait for sound to finish
                 isFirstSessionAfterWakeWord = false; // Reset flag
                 LogMessage("🔍 DEBUG: Reset isFirstSessionAfterWakeWord to false");
             }
@@ -673,11 +676,50 @@ public class EnhancedSpeechController : MonoBehaviour
             LogMessage("❌ myakuController is null!");
         }
 
+        // Wait for listening sound to finish before starting recording
+        if (needToWaitForListeningSound && myakuController != null)
+        {
+            LogMessage("⏳ Waiting for listening sound to finish before starting microphone recording...");
+            
+            // Wait for audio to start playing (small delay to ensure it begins)
+            yield return new WaitForSeconds(0.2f);
+            
+            // Wait for audio to finish playing using the new method
+            float timeoutCounter = 0f;
+            const float MAX_WAIT_TIME = 10f; // Maximum 10 seconds timeout
+            
+            while (myakuController.IsPlayingAudio() && timeoutCounter < MAX_WAIT_TIME)
+            {
+                float remainingTime = myakuController.GetRemainingAudioTime();
+                if (timeoutCounter % 1f < 0.1f) // Log every second (approximately)
+                {
+                    LogMessage($"⏳ Still waiting... Remaining audio time: {remainingTime:F1}s");
+                }
+                
+                yield return new WaitForSeconds(0.1f);
+                timeoutCounter += 0.1f;
+            }
+            
+            if (timeoutCounter >= MAX_WAIT_TIME)
+            {
+                LogMessage("⚠️ Listening sound timeout reached - Proceeding with recording");
+            }
+            else
+            {
+                LogMessage("✅ Listening sound finished naturally");
+            }
+            
+            // Add small buffer time to ensure audio system is clear
+            yield return new WaitForSeconds(0.3f);
+            
+            LogMessage("✅ Audio buffer cleared - Now starting microphone recording");
+        }
+
         string statusText = enableFastMode ? "⚡ FAST LIVE" : "🔴 LIVE";
         UpdateStatus($"{statusText} - Speak anytime, AI responds automatically");
         UpdateButtonStates();
 
-        // Start continuous recording
+        // Start continuous recording after listening sound is finished
         yield return StartCoroutine(InitializeContinuousRecording());
 
         // Start initial timeout for first question

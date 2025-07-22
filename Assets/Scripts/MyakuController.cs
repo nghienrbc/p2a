@@ -657,12 +657,24 @@ public class MyakuController : MonoBehaviour
 
         if (listeningSounds != null && listeningSounds.Length > 0)
         {
+            // Stop any currently playing audio to avoid conflicts
+            if (audioPlayer.isPlaying)
+            {
+                Debug.Log("🛑 Stopping current audio before playing listening sound");
+                audioPlayer.Stop();
+            }
+
             int randomIndex = UnityEngine.Random.Range(0, listeningSounds.Length);
             if (listeningSounds[randomIndex] != null)
             {
-                Debug.Log($"🎵 Playing listening sound {randomIndex}: {listeningSounds[randomIndex].name}");
-                // audioPlayer.clip = listeningSounds[randomIndex];
-                // audioPlayer.Play();
+                AudioClip selectedClip = listeningSounds[randomIndex];
+                Debug.Log($"🎵 Playing listening sound {randomIndex}: {selectedClip.name} (duration: {selectedClip.length:F2}s)");
+                
+                audioPlayer.clip = selectedClip;
+                audioPlayer.volume = 0.7f; // Ensure proper volume
+                audioPlayer.Play();
+                
+                Debug.Log($"✅ Listening sound started playing - EnhancedSpeechController will wait for it to finish");
             }
             else
             {
@@ -689,6 +701,28 @@ public class MyakuController : MonoBehaviour
                 audioPlayer.Play();
             }
         }
+    }
+
+    /// <summary>
+    /// Kiểm tra xem có đang phát âm thanh không
+    /// </summary>
+    /// <returns>True nếu đang phát âm thanh</returns>
+    public bool IsPlayingAudio()
+    {
+        return audioPlayer != null && audioPlayer.isPlaying;
+    }
+
+    /// <summary>
+    /// Lấy thời gian còn lại của âm thanh đang phát (giây)
+    /// </summary>
+    /// <returns>Thời gian còn lại, hoặc 0 nếu không có âm thanh đang phát</returns>
+    public float GetRemainingAudioTime()
+    {
+        if (audioPlayer != null && audioPlayer.isPlaying && audioPlayer.clip != null)
+        {
+            return audioPlayer.clip.length - audioPlayer.time;
+        }
+        return 0f;
     }
     #endregion
 }
