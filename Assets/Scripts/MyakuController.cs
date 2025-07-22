@@ -93,7 +93,7 @@ public class MyakuController : MonoBehaviour
             }
 
             // Danh sách file âm thanh (hard-code, thay bằng tên file thực tế)
-            string[] expectedFiles = { "Response1.mp3", "thinking1.mp3", "thinking3.mp3", "thinking4.mp3" }; // Cập nhật tên file thực tế
+            string[] expectedFiles = { "Response1.mp3", "thinking1.mp3" }; // Cập nhật tên file thực tế
 
             foreach (string fileName in expectedFiles)
             {
@@ -494,6 +494,7 @@ public class MyakuController : MonoBehaviour
         {
             Debug.Log("🎧 Myaku: Started listening mode (silent)");
         }
+        UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
     }
 
     /// <summary>
@@ -613,8 +614,10 @@ public class MyakuController : MonoBehaviour
         //     speakPanelAnimator.SetBool("show", false);
         // }
 
-        UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
+        //UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
         Debug.Log("✅ Myaku: Finished speaking");
+        
+        MyakuStopThinking();
     }
 
     /// <summary>

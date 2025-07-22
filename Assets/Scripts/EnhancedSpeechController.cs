@@ -42,20 +42,26 @@ public class EnhancedSpeechController : MonoBehaviour
     public bool enableWakeWordDetection = true;
 
     [Header("Audio Detection")]
+    [Tooltip("QUAN TRỌNG: Ngưỡng im lặng - audio dưới mức này được coi là im lặng")]
     public float silenceThreshold = 0.01f;
+    [Tooltip("Thời gian timeout phát hiện giọng nói (legacy - dùng cho tương thích)")]
     public float voiceDetectionTimeout = 2.0f;
     
-    [Header("Advanced Voice Detection")]
-    [Tooltip("Ngưỡng âm lượng tối thiểu để phát hiện giọng nói (tránh tạp âm)")]
+    [Header("Advanced Voice Detection - CÁC THÔNG SỐ QUAN TRỌNG")]
+    [Tooltip("QUAN TRỌNG NHẤT: Ngưỡng âm lượng tối thiểu để phát hiện giọng nói (tránh tạp âm). Giá trị cao = ít nhạy cảm, thấp = nhạy cảm hơn")]
     public float voiceVolumeThreshold = 0.02f;
-    [Tooltip("Thời gian tối thiểu phát hiện giọng nói liên tục để xác nhận là speech")]
+    [Tooltip("QUAN TRỌNG: Thời gian tối thiểu phát hiện giọng nói liên tục để xác nhận là speech (giây). Tránh phát hiện nhầm tiếng ho, tiếng gõ")]
     public float minimumSpeechDuration = 0.3f;
-    [Tooltip("Số frame liên tục phải có âm thanh để xác nhận giọng nói")]
+    [Tooltip("QUAN TRỌNG: Số frame liên tục phải có âm thanh để xác nhận giọng nói. Giá trị cao = ổn định hơn, thấp = phản ứng nhanh hơn")]
     public int consecutiveVoiceFrames = 5;
     
     [Header("Voice Detection Timing")]
-    [Tooltip("Thời gian chờ sau khi không phát hiện giọng nói trước khi bắt đầu xử lý")]
-    public float silenceDetectionTime = 1.2f;
+    [Tooltip("QUAN TRỌNG: Thời gian chờ sau khi không phát hiện giọng nói trước khi bắt đầu xử lý (giây). Giá trị cao = chờ lâu hơn, thấp = phản ứng nhanh hơn")]
+    public float silenceDetectionTime = 1.0f;
+    
+    [Header("Maximum Recording Duration")]
+    [Tooltip("Thời gian ghi âm tối đa cho một câu hỏi (giây) - Tránh ghi âm vô hạn do tiếng ồn xung quanh")]
+    public float maxRecordingDuration = 15f;
     
     [Header("Speed Optimization")]
     public bool enableFastMode = true;
@@ -70,6 +76,16 @@ public class EnhancedSpeechController : MonoBehaviour
     [Header("Language Detection")]
     [Tooltip("Force a specific language for TTS (leave empty for auto-detection)")]
     public string forceLanguageCode = "";
+
+    [Header("Audio Recording Technical Parameters - THÔNG SỐ KỸ THUẬT")]
+    [Tooltip("QUAN TRỌNG: Tần số lấy mẫu âm thanh (Hz). 16000 = chất lượng tốt cho speech recognition, 44100 = chất lượng cao nhưng tốn tài nguyên")]
+    [SerializeField] private int sampleRate = 16000;
+    [Tooltip("QUAN TRỌNG: Kích thước buffer âm thanh (samples). 1024 = cân bằng giữa độ trễ và hiệu suất")]
+    [SerializeField] private int bufferSize = 1024;
+    [Tooltip("Hiển thị mức âm lượng thời gian thực")]
+    [SerializeField] private bool showRealTimeAudioLevel = true;
+
+    
 
     // Language mappings from RecordAudio.cs (complete list)
     private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
@@ -210,10 +226,14 @@ public class EnhancedSpeechController : MonoBehaviour
 
     // Audio processing
     private string microphoneDevice = "";
-    private int sampleRate = 16000;
     private float[] audioBuffer;
     private int bufferPosition = 0;
-    private const int BUFFER_SIZE = 1024;
+    
+    // Audio level tracking - THEO DÕI MỨC ÂM LƯỢNG
+    private float currentAudioLevel = 0f;
+    private float peakAudioLevel = 0f;
+    private float lastDisplayUpdateTime = 0f;
+    private const float DISPLAY_UPDATE_INTERVAL = 0.1f; // Update UI every 0.1 seconds
 
     // Continuous conversation state
     private float lastVoiceTime = 0f;
@@ -334,6 +354,13 @@ public class EnhancedSpeechController : MonoBehaviour
         {
             consecutiveVoiceFrames = PlayerPrefs.GetInt("ConsecutiveVoiceFrames");
             LogMessage($"🔧 Loaded Consecutive Voice Frames: {consecutiveVoiceFrames}");
+        }
+
+        // Load maximum recording duration
+        if (PlayerPrefs.HasKey("MaxRecordingDuration"))
+        {
+            maxRecordingDuration = PlayerPrefs.GetFloat("MaxRecordingDuration");
+            LogMessage($"🔧 Loaded Maximum Recording Duration: {maxRecordingDuration:F1}s");
         }
 
         LogMessage("🔧 Voice detection settings loaded from PlayerPrefs");
@@ -628,8 +655,56 @@ public class EnhancedSpeechController : MonoBehaviour
             LogMessage("❌ No microphone found!");
         }
 
+        // Log detailed recording parameters explanation
+        LogRecordingParametersExplanation();
+
         // Initialize AudioPlugin for wake word detection
         InitializeAudioPlugin();
+    }
+
+    /// <summary>
+    /// Log comprehensive explanation of all recording parameters
+    /// </summary>
+    private void LogRecordingParametersExplanation()
+    {
+        LogMessage("\n🔧 === THÔNG SỐ GHI ÂM CHI TIẾT ===");
+        LogMessage("📊 CÁC THÔNG SỐ QUAN TRỌNG NHẤT:");
+        LogMessage($"• voiceVolumeThreshold = {voiceVolumeThreshold:F3} - Ngưỡng phát hiện giọng nói");
+        LogMessage($"  ↳ Càng THẤP = càng nhạy cảm (phát hiện giọng nhỏ), càng CAO = ít nhạy cảm");
+        LogMessage($"  ↳ Khuyến nghị: 0.015-0.025 cho môi trường yên tĩnh, 0.03-0.05 cho ồn");
+        
+        LogMessage($"• minimumSpeechDuration = {minimumSpeechDuration:F1}s - Thời gian tối thiểu xác nhận giọng nói");
+        LogMessage($"  ↳ Tránh phát hiện nhầm tiếng ho, tiếng gõ. Khuyến nghị: 0.3-0.5s");
+        
+        LogMessage($"• consecutiveVoiceFrames = {consecutiveVoiceFrames} - Số frame liên tục cần thiết");
+        LogMessage($"  ↳ Tăng độ ổn định phát hiện. Khuyến nghị: 3-7 frames");
+        
+        LogMessage($"• silenceDetectionTime = {silenceDetectionTime:F1}s - Thời gian chờ kết thúc câu");
+        LogMessage($"  ↳ Sau khi im lặng bao lâu thì xử lý. Càng ngắn = phản ứng nhanh hơn");
+        
+        LogMessage($"• maxRecordingDuration = {maxRecordingDuration:F1}s - Thời gian ghi âm tối đa");
+        LogMessage($"  ↳ Tránh ghi âm vô hạn do tiếng ồn. Khuyến nghị: 10-20 giây");
+        
+        LogMessage("📊 CÁC THÔNG SỐ KỸ THUẬT:");
+        LogMessage($"• sampleRate = {sampleRate} Hz - Tần số lấy mẫu âm thanh");
+        LogMessage($"  ↳ 16000 Hz = tối ưu cho speech recognition, 44100 Hz = chất lượng cao");
+        
+        LogMessage($"• bufferSize = {bufferSize} samples - Kích thước buffer xử lý");
+        LogMessage($"  ↳ 1024 = cân bằng tốt, 512 = độ trễ thấp, 2048 = ổn định cao");
+        
+        LogMessage($"• silenceThreshold = {silenceThreshold:F3} - Ngưỡng im lặng tuyệt đối");
+        LogMessage($"  ↳ Audio dưới mức này = hoàn toàn im lặng");
+        
+        LogMessage("🎯 TÍNH NĂNG HIỂN THỊ MỚI:");
+        LogMessage($"• showRealTimeAudioLevel = {showRealTimeAudioLevel} - Hiển thị mức âm lượng thời gian thực");
+        LogMessage($"• DISPLAY_UPDATE_INTERVAL = {DISPLAY_UPDATE_INTERVAL:F1}s - Tần suất cập nhật UI");
+        LogMessage("• WarningTxt = Hiển thị mức âm lượng đang thu âm LIÊN TỤC");
+        LogMessage("• volumeTxt = Hiển thị mức âm lượng CAO NHẤT sau mỗi câu hỏi");
+        
+        LogMessage("🎯 KIỂM SOÁT TẠP ÂM:"); 
+        LogMessage($"  ↳ TRUE = Gửi TẤT CẢ audio đến Gemini (không lọc tạp âm)"); 
+        LogMessage($"  ↳ Giúp debug tại sao audio bị từ chối hoặc chấp nhận");
+        LogMessage("===========================================\n");
     }
 
     private IEnumerator BeginContinuousConversation()
@@ -753,7 +828,7 @@ public class EnhancedSpeechController : MonoBehaviour
 
         // Start continuous recording (30 minutes max)
         continuousClip = Microphone.Start(microphoneDevice, true, 1800, sampleRate);
-        audioBuffer = new float[BUFFER_SIZE];
+        audioBuffer = new float[bufferSize];
         bufferPosition = 0;
 
         yield return new WaitForSeconds(0.1f);
@@ -776,7 +851,7 @@ public class EnhancedSpeechController : MonoBehaviour
         if (samplesToRead < 0)
             samplesToRead += continuousClip.samples;
 
-        if (samplesToRead < BUFFER_SIZE / 4) return;
+        if (samplesToRead < bufferSize / 4) return;
 
         // Read audio data
         float[] samples = new float[samplesToRead];
@@ -786,6 +861,20 @@ public class EnhancedSpeechController : MonoBehaviour
         // Enhanced voice activity analysis
         float audioLevel = GetAudioLevel(samples);
         bool currentVoiceDetected = audioLevel > voiceVolumeThreshold;
+
+        // Update current audio level and peak tracking
+        currentAudioLevel = audioLevel;
+        if (audioLevel > peakAudioLevel)
+        {
+            peakAudioLevel = audioLevel;
+        }
+
+        // Update UI with real-time audio level (throttled to avoid performance issues)
+        if (showRealTimeAudioLevel && Time.time - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL)
+        {
+            UpdateRealTimeAudioDisplay(audioLevel);
+            lastDisplayUpdateTime = Time.time;
+        }
 
         if (currentVoiceDetected)
         {
@@ -808,6 +897,9 @@ public class EnhancedSpeechController : MonoBehaviour
                 voiceStartTime = firstVoiceDetectionTime;
                 LogMessage("🗣️ Voice CONFIRMED - Recording speech...");
                 UpdateStatus("🎤 Recording your voice...");
+
+                // Reset peak audio level tracking for this new recording
+                ResetPeakAudioLevel();
 
                 // Cancel timeout when user starts speaking
                 if (timeoutCoroutine != null)
@@ -848,23 +940,28 @@ public class EnhancedSpeechController : MonoBehaviour
             else if (confirmedVoiceDetected)
             {
                 float currentTimeout = CalculateOptimalTimeout();
+                float recordingDuration = Time.time - voiceStartTime;
 
-                if (Time.time - lastVoiceTime > currentTimeout)
+                // Check for silence timeout OR maximum recording duration
+                bool silenceTimeout = Time.time - lastVoiceTime > currentTimeout;
+                bool maxDurationReached = recordingDuration > maxRecordingDuration;
+
+                if (silenceTimeout || maxDurationReached)
                 {
-                    totalVoiceDuration = Time.time - voiceStartTime;
+                    totalVoiceDuration = recordingDuration;
                     voiceDetected = false;
                     confirmedVoiceDetected = false;
                     consecutiveVoiceFrameCount = 0;
 
-                    string timeoutInfo = $"silence: {currentTimeout:F1}s, spoke: {totalVoiceDuration:F1}s";
+                    string endReason = maxDurationReached ? "max duration reached" : "silence timeout";
+                    string timeoutInfo = $"reason: {endReason}, duration: {recordingDuration:F1}s, silence: {currentTimeout:F1}s";
                     LogMessage($"✅ Voice ended ({timeoutInfo}) - Processing...");
 
-                    // Myaku Animation: Stop recording, start thinking
+                    // Myaku Animation: Stop recording only, thinking will start after noise check
                     if (myakuController != null)
                     {
                         myakuController.StopRecording();
-                        LogMessage("🤔 Calling myakuController.MyakuThinking() - AI is thinking");
-                        myakuController.MyakuThinking();
+                        LogMessage("🛑 Stopped recording - Will start thinking after audio analysis");
                     }
 
                     StartCoroutine(ProcessVoiceSegment());
@@ -884,10 +981,10 @@ public class EnhancedSpeechController : MonoBehaviour
             aiResponseText.text = "🤖 AI: (Processing your question...)";
         }
 
-        // Myaku Animation: Ensure thinking animation is active
+        // Start thinking animation - audio detected
         if (myakuController != null)
         {
-            LogMessage("🤔 Ensuring MyakuThinking animation is active during processing");
+            LogMessage("🤔 Starting AI thinking - Processing audio");
             myakuController.MyakuThinking();
         }
 
@@ -902,57 +999,36 @@ public class EnhancedSpeechController : MonoBehaviour
         tempClip.SetData(voiceSegment, 0);
 
         bool success = false;
-        bool shouldSkipResponse = false;
-        string responseType = "";
 
-        // Pre-analyze audio for noise detection
-        if (IsNoiseOrMeaninglessAudio(voiceSegment))
-        {
-            LogMessage("🔇 Detected noise/meaningless audio - Skipping AI processing");
-            shouldSkipResponse = true;
-            responseType = "noise";
-            success = true; // Consider it successful to continue normal flow
-        }
-        else
-        {
-            yield return StartCoroutine(ProcessWithGemini(tempClip, (result, type) => {
-                success = result;
-                responseType = type;
-                shouldSkipResponse = (type == "noise" || type == "unclear");
-            }));
-        }
+        // Send audio directly to Gemini for processing
+        LogMessage("🚀 Sending audio to Gemini for processing...");
+        yield return StartCoroutine(ProcessWithGemini(tempClip, (result) => {
+            success = result;
+        }));
 
         Destroy(tempClip);
 
-        // Handle response based on type and success
+        // Handle response
         if (success)
         {
-            if (shouldSkipResponse)
+            LogMessage("✅ AI response processing completed");
+
+            // Wait for TTS to finish completely
+            while (isPlayingResponse || (audioSource != null && audioSource.isPlaying))
             {
-                LogMessage($"✅ Audio processed as {responseType} - No TTS response needed");
-                HandleNoResponseScenario();
+                yield return new WaitForSeconds(0.1f);
             }
-            else
+
+            // Myaku Animation: Finished speaking, back to listening
+            if (myakuController != null)
             {
-                LogMessage("✅ AI response processing completed");
-
-                // Wait for TTS to finish completely
-                while (isPlayingResponse || (audioSource != null && audioSource.isPlaying))
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
-                // Myaku Animation: Finished speaking, back to listening
-                if (myakuController != null)
-                {
-                    myakuController.FinishSpeaking();
-                    myakuController.StartListening(false);
-                    LogMessage("🔇 Silent listening mode for follow-up questions");
-                }
-
-                LogMessage("🔊 AI response finished - Resuming voice monitoring");
-                UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
+                myakuController.FinishSpeaking();
+                myakuController.StartListening(false);
+                LogMessage("🔇 Silent listening mode for follow-up questions");
             }
+
+            LogMessage("🔊 AI response finished - Resuming voice monitoring");
+            UpdateStatus("🔴 LIVE - Speak anytime, AI responds automatically");
         }
         else
         {
@@ -966,9 +1042,18 @@ public class EnhancedSpeechController : MonoBehaviour
                 myakuController.MyakuStopThinking();
                 myakuController.StartListening(false);
             }
+
+            // Show error message to user
+            if (UIManager.Instance?.connectionTxt != null)
+            {
+                UIManager.Instance.connectionTxt.text = "Cannot understand the question - please speak clearly";
+            }
         }
 
-        // ALWAYS apply timeout regardless of success/failure/response type
+        // Display peak audio level for this question (regardless of success/failure)
+        DisplayPeakAudioLevel();
+
+        // ALWAYS apply timeout regardless of success/failure
         ApplyUniversalTimeout();
 
         yield return new WaitForSeconds(0.5f);
@@ -981,11 +1066,12 @@ public class EnhancedSpeechController : MonoBehaviour
     /// </summary>
     private void HandleNoResponseScenario()
     {
-        // Myaku Animation: Stop thinking, back to listening without speaking
+        // Myaku Animation: No thinking needed, back to listening directly
         if (myakuController != null)
         {
-            myakuController.MyakuStopThinking();
+            // Don't call MyakuStopThinking() since we never started thinking for noise
             myakuController.StartListening(false);
+            LogMessage("🔇 No meaningful audio detected - Back to listening");
         }
 
         // Update UI to show we're still listening
@@ -1088,11 +1174,11 @@ public class EnhancedSpeechController : MonoBehaviour
         return false;
     }
 
-    private IEnumerator ProcessWithGemini(AudioClip clip, System.Action<bool, string> callback)
+    private IEnumerator ProcessWithGemini(AudioClip clip, System.Action<bool> callback)
     {
         if (clip == null)
         {
-            callback?.Invoke(false, "error");
+            callback?.Invoke(false);
             yield break;
         }
 
@@ -1100,7 +1186,7 @@ public class EnhancedSpeechController : MonoBehaviour
         if (audioBytes == null)
         {
             LogMessage("❌ Failed to convert audio clip");
-            callback?.Invoke(false, "error");
+            callback?.Invoke(false);
             yield break;
         }
 
@@ -1152,13 +1238,23 @@ public class EnhancedSpeechController : MonoBehaviour
                 string textResponse = ProcessTextResponse(request.downloadHandler.text);
                 if (!string.IsNullOrEmpty(textResponse))
                 {
-                    // Analyze response type
-                    string responseType = AnalyzeResponseType(textResponse);
-                    
-                    if (responseType == "noise" || responseType == "unclear")
+                    // Check if response indicates unrecognized speech
+                    string lowerResponse = textResponse.ToLower().Trim();
+                    if (lowerResponse.Contains("unclear") || lowerResponse.Contains("noise") || 
+                        lowerResponse.Contains("không rõ") || lowerResponse.Contains("tạp âm") ||
+                        lowerResponse.Contains("unclear audio") || lowerResponse.Contains("cannot understand") ||
+                        lowerResponse.Contains("inaudible") || lowerResponse.Contains("mumbling") ||
+                        lowerResponse.Contains("không nhận dạng được"))
                     {
-                        LogMessage($"🔇 AI classified audio as {responseType} - Skipping TTS");
-                        callback?.Invoke(true, responseType);
+                        LogMessage($"🔇 AI could not understand audio: {textResponse}");
+                        
+                        // Show error message in connectionTxt only (no TTS)
+                        if (UIManager.Instance?.connectionTxt != null)
+                        {
+                            UIManager.Instance.connectionTxt.text = "Cannot understand the question - please speak clearly";
+                        }
+                        
+                        callback?.Invoke(true);
                         yield break;
                     }
 
@@ -1192,11 +1288,11 @@ public class EnhancedSpeechController : MonoBehaviour
                     AddToConversationHistory(estimatedUserInput, textResponse);
 
                     yield return StartCoroutine(ConvertToSpeechAndPlay(textResponse));
-                    callback?.Invoke(true, responseType);
+                    callback?.Invoke(true);
                 }
                 else
                 {
-                    callback?.Invoke(false, "error");
+                    callback?.Invoke(false);
                 }
             }
             else
@@ -1207,7 +1303,7 @@ public class EnhancedSpeechController : MonoBehaviour
                     errorDetails += $", Response: {request.downloadHandler.text}";
                 }
                 LogMessage($"❌ Gemini request failed: {errorDetails}");
-                callback?.Invoke(false, "error");
+                callback?.Invoke(false);
             }
         }
     }
@@ -1247,11 +1343,6 @@ public class EnhancedSpeechController : MonoBehaviour
     {
         string basePrompt = @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
 
-CRITICAL AUDIO ANALYSIS:
-- First, analyze if the audio contains clear, meaningful speech
-- If audio is unclear, contains only noise, coughs, throat clearing, clapping, or very short meaningless sounds, respond with: ""Audio unclear - please speak clearly""
-- Only proceed with normal responses if you detect clear, intentional speech
-
 RESPONSE RULES:
 - ALWAYS detect the language from the CURRENT audio input and respond EXACTLY in THAT language
 - NEVER use language from previous messages - treat each input independently for language choice
@@ -1264,6 +1355,7 @@ RESPONSE RULES:
 - For other questions: Provide concise but complete answers (2-4 sentences, each under 25 words)
 - NO repetitive greetings in ongoing conversations
 - Focus on answering what was asked directly but provide sufficient detail
+- If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
 
 LANGUAGE DETECTION & MATCHING:
 - Detect language from the audio input provided
@@ -1373,14 +1465,187 @@ When asked about P2A, Passage to ASEAN, ASEAN education cooperation, or student 
 - Universities: Apply through P2A secretariat at www.p2a.asia
 - Participate in online courses and workshops organized by P2A
 
+COMPREHENSIVE ASEAN KNOWLEDGE BASE:
+When asked about ASEAN (Association of Southeast Asian Nations), use this detailed information:
+
+**ASEAN Overview (Founded August 8, 1967):**
+- Purpose: Promote peace, stability, economic cooperation, cultural and social development
+- Members: 10 countries - Brunei, Cambodia, Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand, Vietnam
+- Observer: Timor Leste (candidate for full membership)
+- Headquarters: Jakarta, Indonesia
+
+**Core Objectives (Bangkok Declaration 1967 & ASEAN Charter 2007):**
+- Promote economic growth, social progress, and cultural development
+- Maintain regional peace and stability through international law, especially UNCLOS 1982
+- Strengthen multilateral cooperation, regional connectivity, and international integration
+- Build ASEAN Community on three pillars: Political-Security (APSC), Economic (AEC), Cultural-Social (ASCC)
+- Vision: ""Unity in Diversity"" - rule-based, people-centered, growth epicenter
+
+**ASEAN Vision 2025 and Beyond:**
+- Post-2025 Vision proposed by Vietnam at 37th ASEAN Summit (2020)
+- Goals: Unified, sustainable, inclusive ASEAN as regional growth center
+
+**Recent ASEAN Activities (2022-2025):**
+
+*2022 - Cambodia Chairmanship (PM Hun Sen):*
+- Theme: ""Addressing Challenges Together""
+- 40th & 41st ASEAN Summits in Phnom Penh
+- Key outcomes: 55th Anniversary Declaration, COVID-19 recovery, digital transformation, green economy
+- South China Sea Code of Conduct (COC) discussions
+
+*2023 - Indonesia Chairmanship (President Joko Widodo):*
+- Theme: ""ASEAN Matters: Epicentrum of Growth""
+- 42nd ASEAN Summit in Labuan Bajo
+- Focus: Financial stability, energy security, sustainable development, electric vehicle ecosystem
+
+*2024 - Laos Chairmanship (PM Sonexay Siphandone):*
+- Theme: ""Enhancing Connectivity and Resilience""
+- Focus: Regional connectivity improvement and global challenge response
+
+*2025 - Malaysia Chairmanship (PM Anwar Ibrahim):*
+- 58th ASEAN Foreign Ministers Meeting (July 8-11, Kuala Lumpur)
+- Preparing for Post-2025 ASEAN Community Vision
+
+**Key ASEAN Mechanisms:**
+- ASEAN Regional Forum (ARF)
+- ASEAN+1, ASEAN+3 partnerships
+- East Asia Summit (EAS)
+- ASEAN Defence Ministers Meeting Plus (ADMM+)
+
+**COVID-19 Response:**
+- ASEAN COVID-19 Response Fund
+- ASEAN Reserve of Medical Supplies
+- ASEAN Centre for Public Health Emergencies (ACPHEED)
+
+**Economic Cooperation:**
+- Regional Comprehensive Economic Partnership (RCEP) signed 2020
+- Focus: Digital transformation, green economy, sustainable development
+- Enhanced strategic partnerships with China (2021), US (2022), Japan & India (2023)
+
+**Current ASEAN Leaders (as of July 2025):**
+
+*Vietnam:*
+- General Secretary: Tô Lâm
+- President: Lương Cường  
+- Prime Minister: Phạm Minh Chính
+- National Assembly Chairman: Trần Thanh Mẫn
+
+*Other ASEAN Leaders:*
+- Brunei: Sultan Hassanal Bolkiah (Head of State & PM since 1967)
+- Cambodia: PM Hun Manet (since August 22, 2023, succeeding Hun Sen)
+- Indonesia: President Prabowo Subianto (since October 20, 2024)
+- Laos: PM Sonexay Siphandone (since December 30, 2022)
+- Malaysia: PM Anwar Ibrahim (since November 24, 2022)
+- Myanmar: Acting President Myint Swe (since February 1, 2021, post-coup)
+- Philippines: President Ferdinand Marcos Jr. (since June 30, 2022)
+- Singapore: PM Lawrence Wong (since May 15, 2024)
+- Thailand: PM Paetongtarn Shinawatra (since August 16, 2024)
+
+**Vietnam's Role in ASEAN:**
+*2020 ASEAN Chairmanship Achievements:*
+- Proposed Post-2025 ASEAN Community Vision
+- Established COVID-19 Response Fund and ACPHEED
+- Successfully organized 37th ASEAN Summit and special COVID-19 meetings
+- Promoted RCEP signing and strategic partnerships
+
+*Ongoing Contributions:*
+- Active participation in regional dialogue (PM Phạm Minh Chính)
+- Emphasis on unity, digital transformation, South China Sea peaceful resolution
+- Bridge-building role between major powers and ASEAN centrality
+
+**Current Challenges & Focus Areas:**
+- Myanmar political situation
+- South China Sea tensions and COC implementation
+- Post-pandemic economic recovery
+- Digital transformation and green economy
+- Energy security and sustainable development
+- Preparing Post-2025 Vision implementation
+
 EXAMPLES:
 User audio: [clear ""hello""] → ""Hello! How can I help you today?"" (greeting response)
 User audio: [clear ""xin chào""] → ""Chào bạn! Tôi có thể giúp gì cho bạn không?"" (greeting response)
 User audio: [clear ""What is EXPO 2025?""] → [direct answer about EXPO 2025] (NO greeting, direct answer)
 User audio: [clear ""P2A là gì?""] → [direct answer about P2A] (NO greeting, direct answer)
-User audio: [cough/unclear] → ""Audio unclear - please speak clearly""
-User audio: [clear question about EXPO 2025] → [appropriate answer using EXPO knowledge base in detected language]
-User audio: [clear question about P2A] → [appropriate answer using P2A knowledge base in detected language]
+User audio: [clear ""Tell me about Duy Tan University""] → [direct answer about DTU] (NO greeting, direct answer)
+User audio: [clear ""Đại học Duy Tân có những ngành nào?""] → [direct answer about DTU programs in Vietnamese] (NO greeting, direct answer)
+User audio: [unclear/incomprehensible] → ""Cannot understand the question""
+
+DUY TAN UNIVERSITY (DTU) KNOWLEDGE BASE:
+When asked about Duy Tan University, Đại học Duy Tân, DTU, or related topics, use this information:
+
+**University Overview (Founded November 11, 1994):**
+- First and largest private university in Central Vietnam
+- Upgraded to full university status (October 7, 2024) - Decision 1115/QĐ-TTg
+- First private university in Vietnam, 8th university nationwide
+- Location: 254 Nguyen Van Linh, Thanh Khe District, Da Nang City (Pacific Coast)
+- 5 campuses, 85,000+ m², 254+ labs/practice rooms
+
+**Leadership:**
+- Chairman of University Council: Distinguished Educator & Labor Hero Le Cong Co (founder)
+- University Director (Rector): Dr. Le Nguyen Bao
+
+**Academic Structure (7 Schools + 2 Institutes):**
+*Schools:* Computer Science, Technology, Economics & Business, Languages & Humanities, Tourism, Medicine & Pharmacy, International Education
+*Institutes:* Nam Khue Management Institute, Vietnam-Japan Institute
+
+**Key Programs & Rankings:**
+*International Accreditation:*
+- 4 ABET-accredited programs (USA): Software Engineering, Network Engineering, MIS, Electrical Engineering
+- 2 UNWTO TedQual programs: International Hotel/Restaurant Management
+
+*Global Rankings (2024-2025):*
+- QS World University Rankings: #495 globally (highest in Vietnam)
+- Computer Science: Top 351-400 (QS), Top 140 (US News)
+- Engineering, Environmental Science: Top 351-400 (QS)
+- Tourism & Hospitality: Top 101-150 (QS)
+- Medicine: Top 501-550 (QS)
+
+**Academic Excellence:**
+- Total enrolled: 153,771+ students (63 PhD, 3,045 Masters, 109,130+ undergrad/college)
+- Graduated: 87,116+ doctors, masters, engineers, architects, bachelors
+- Employment rate: 95%+ within 6 months (100% for IT, Engineering, Architecture)
+- Research: 1,500+ projects, 79 national-level, 12,008+ international publications
+
+**Study Programs:**
+*Information Technology:* Software Engineering, AI, Network Engineering, MIS
+*Engineering:* Electrical-Electronics, Construction, Architecture, Food Technology, Environmental Management
+*Economics:* Business Administration, Marketing, Banking-Finance, Accounting, Economic Law
+*Tourism:* Tourism Management, Hotel, Travel, Events & Entertainment
+*Health Sciences:* General Medicine, Dentistry, Pharmacy, Nursing
+*Languages & Humanities:* English, Korean, Chinese, International Relations, Literature-Journalism
+*International Programs:* Partnerships with Carnegie Mellon, Penn State (USA), UK, Canada, Singapore universities
+
+**Innovation & Facilities:**
+- E-University system: 3D technology, video conferencing, anytime-anywhere learning
+- MedSIM (Medical Simulation Center)
+- Silver Swallows Studio (film production)
+- Advanced Data Center
+- Digital library (VISTA, Springer access)
+
+**Student Support:**
+- Annual Job Fair: 3,000-5,000 job positions
+- Scholarships: 50 full/partial scholarships (18+ billion VND), 225 talent scholarships (14+ billion VND)
+- International cooperation: 300+ corporations and universities worldwide
+
+**Awards & Recognition:**
+- Labor Order First Class (2019), Second Class (2014), Third Class (2009)
+- Multiple commendations from President, Prime Minister, Ministry of Education
+- Student achievements: CDIO Academy Champion 2013 (MIT/Harvard), IDEERS Asia-Pacific Champion 2014, Microsoft Imagine Cup Vietnam Winner 2016
+
+**Vision & Mission:**
+*Mission:* Education integrated with scientific research, developing patriotic graduates with humanitarian values, community consciousness, and comprehensive skills for global entrepreneurship
+*Vision:* Reach Top 300 Asian universities (QS Asia Ranking) by 2030
+
+**Connection to ASEAN & P2A:**
+- Founding member of P2A (Passage to ASEAN) network since 2012
+- Key role in ASEAN educational cooperation and student exchange
+- Bridge for Vietnam-ASEAN academic collaboration
+- Participation in regional conferences and initiatives
+
+EXAMPLES:
+User audio: [clear ""Hello! I'm interested in studying abroad. Can you tell me about Duy Tan University?""] → ""Duy Tan University is a top-ranked private university in Central Vietnam. It offers a wide range of programs in various fields, including engineering, business, and international studies. The university has a strong focus on practical skills and international collaboration. If you're interested in studying abroad, Duy Tan University is a great choice.""
+User audio: [clear ""What's the admission process like at Duy Tan University?""] → ""The admission process at Duy Tan University is competitive but fair. Students need to submit their application materials through the university's online portal. The university also accepts international students through exchange programs and partnerships. For more information, you can visit the university's official website.""
+User audio: [clear ""What are the student life like at Duy Tan University?""] → ""Duy Tan University offers a vibrant student life with various clubs and organizations. Students can participate in sports, cultural activities, and international exchange programs. The university also provides support for international students, including language classes and cultural orientation programs.""
 
 ";
 
@@ -1451,7 +1716,7 @@ User audio: [clear question about P2A] → [appropriate answer using P2A knowled
                     responseLanguage = "zh-CN"; // Default to Simplified Chinese
                     LogMessage("🔄 Fallback: Detected Chinese characters, forcing zh-CN");
                 }
-                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ]")) // Vietnamese
+                else if (System.Text.RegularExpressions.Regex.IsMatch(text, @"[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵĐ]")) // Vietnamese
                 {
                     responseLanguage = "vi-VN";
                     LogMessage("🔄 Fallback: Detected Vietnamese characters, forcing vi-VN");
@@ -1722,6 +1987,16 @@ User audio: [clear question about P2A] → [appropriate answer using P2A knowled
         confirmedVoiceDetected = false;
         consecutiveVoiceFrameCount = 0;
         lastVoiceTime = Time.time;
+        
+        // Reset audio level tracking
+        currentAudioLevel = 0f;
+        // Note: Don't reset peakAudioLevel here as it should persist until displayed
+        
+        // Clear real-time audio display
+        if (UIManager.Instance?.WarningTxt != null)
+        {
+            UIManager.Instance.WarningTxt.text = "👂 LISTENING - Waiting for voice...";
+        }
     }
 
     private float CalculateOptimalTimeout()
@@ -2294,6 +2569,113 @@ User audio: [clear question about P2A] → [appropriate answer using P2A knowled
         LogMessage($"💾 History updated: {conversationHistory.Count} entries");
     }
     #endregion
+
+    /// <summary>
+    /// Update real-time audio level display on WarningTxt
+    /// </summary>
+    private void UpdateRealTimeAudioDisplay(float audioLevel)
+    {
+        if (UIManager.Instance?.WarningTxt != null)
+        {
+            string statusIcon = confirmedVoiceDetected ? "🎤" : "👂";
+            string voiceStatus = confirmedVoiceDetected ? "RECORDING" : "LISTENING";
+            string levelBar = GenerateAudioLevelBar(audioLevel);
+            
+            UIManager.Instance.WarningTxt.text = $"{statusIcon} {voiceStatus} | Level: {audioLevel:F3} {levelBar}";
+        }
+    }
+
+    /// <summary>
+    /// Generate visual audio level bar
+    /// </summary>
+    private string GenerateAudioLevelBar(float level)
+    {
+        int barLength = Mathf.RoundToInt(level * 100); // Scale to 0-100
+        barLength = Mathf.Clamp(barLength, 0, 20); // Max 20 characters
+        
+        return "[" + new string('█', barLength).PadRight(20, '░') + "]";
+    }
+
+    /// <summary>
+    /// Reset peak audio level tracking when starting new recording
+    /// </summary>
+    private void ResetPeakAudioLevel()
+    {
+        peakAudioLevel = 0f;
+        LogMessage("🔄 Peak audio level reset for new recording");
+    }
+
+    /// <summary>
+    /// Display peak audio level on volumeTxt after question ends
+    /// </summary>
+    private void DisplayPeakAudioLevel()
+    {
+        if (UIManager.Instance?.volumeTxt != null)
+        {
+            string peakBar = GenerateAudioLevelBar(peakAudioLevel);
+            UIManager.Instance.volumeTxt.text = $"Peak Volume: {peakAudioLevel:F3} {peakBar}";
+            LogMessage($"📊 Peak audio level recorded: {peakAudioLevel:F3}");
+        }
+        else
+        {
+            LogMessage($"📊 Peak audio level: {peakAudioLevel:F3} (volumeTxt not found)");
+        }
+    }
+
+    /// <summary>
+    /// Log detailed audio analysis for debugging purposes
+    /// </summary>
+    private void LogDetailedAudioAnalysis(float[] audioData)
+    {
+        if (audioData == null || audioData.Length == 0)
+        {
+            LogMessage("🔍 AUDIO ANALYSIS: Empty or null audio data");
+            return;
+        }
+
+        // Calculate comprehensive audio characteristics
+        float avgVolume = 0f;
+        float maxVolume = 0f;
+        float minVolume = float.MaxValue;
+        int silentSamples = 0;
+        int loudBursts = 0;
+        int moderateVolumeSamples = 0;
+        
+        for (int i = 0; i < audioData.Length; i++)
+        {
+            float sample = Mathf.Abs(audioData[i]);
+            avgVolume += sample;
+            
+            if (sample > maxVolume) maxVolume = sample;
+            if (sample < minVolume) minVolume = sample;
+                
+            if (sample < 0.01f)
+                silentSamples++;
+            else if (sample > 0.3f)
+                loudBursts++;
+            else if (sample > 0.02f)
+                moderateVolumeSamples++;
+        }
+        
+        avgVolume /= audioData.Length;
+        float silenceRatio = (float)silentSamples / audioData.Length;
+        float burstRatio = (float)loudBursts / audioData.Length;
+        float moderateRatio = (float)moderateVolumeSamples / audioData.Length;
+        float meaningfulDuration = (audioData.Length - silentSamples) / (float)sampleRate;
+        float totalDuration = audioData.Length / (float)sampleRate;
+        
+        LogMessage("🔍 === DETAILED AUDIO ANALYSIS ===");
+        LogMessage($"📏 Duration: {totalDuration:F2}s total, {meaningfulDuration:F2}s meaningful");
+        LogMessage($"📊 Volume: avg={avgVolume:F4}, max={maxVolume:F4}, min={minVolume:F4}");
+        LogMessage($"📈 Distribution: {silenceRatio*100:F1}% silent, {moderateRatio*100:F1}% moderate, {burstRatio*100:F1}% loud");
+        LogMessage($"🎚️ Thresholds: voiceVolumeThreshold={voiceVolumeThreshold:F3}, silenceThreshold={silenceThreshold:F3}");
+        LogMessage($"✅ Peak vs Threshold: {maxVolume:F4} vs {voiceVolumeThreshold:F3} = {(maxVolume > voiceVolumeThreshold ? "PASS" : "FAIL")}");
+        
+        // Decision analysis
+        bool wouldPassOldLogic = !IsNoiseOrMeaninglessAudio(audioData);
+        LogMessage($"🤖 Old Logic Decision: {(wouldPassOldLogic ? "SEND to Gemini" : "REJECT as noise")}"); 
+        LogMessage("=======================================");
+    }
 }
 
 #region Google Translate API Response Classes

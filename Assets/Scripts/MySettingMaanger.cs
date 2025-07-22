@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 public class MySettingMaanger : MonoBehaviour
 {
     private Coroutine inactivityCoroutine; // Coroutine đếm ngược
-    private const float INACTIVITY_TIMEOUT = 90f; // 30 giây
+    private const float INACTIVITY_TIMEOUT = 180f; // 30 giây
     public TMP_InputField passwordInputField; 
     public TMP_InputField showTimeInputField;
     public TextMeshProUGUI validateTxt;
@@ -19,6 +19,7 @@ public class MySettingMaanger : MonoBehaviour
     public TMP_InputField minimumSpeechDurationInputField;   // Thời gian tối thiểu để xác nhận giọng nói
     public TMP_InputField sessionTimeoutInputField;          // Thời gian timeout session (20s)
     public TMP_InputField consecutiveVoiceFramesInputField;  // Số frame liên tiếp để xác nhận giọng nói
+    public TMP_InputField maxRecordingDurationInputField;    // Thời gian ghi âm tối đa (15s)
 
     // Start is called before the first frame update
     void Start()
@@ -124,6 +125,20 @@ public class MySettingMaanger : MonoBehaviour
             PlayerPrefs.SetInt("ConsecutiveVoiceFrames", defaultValue);
             PlayerPrefs.Save();
         }
+
+        // Maximum Recording Duration (15f default)
+        if (PlayerPrefs.HasKey("MaxRecordingDuration"))
+        {
+            float savedValue = PlayerPrefs.GetFloat("MaxRecordingDuration");
+            maxRecordingDurationInputField.text = savedValue.ToString("F1");
+        }
+        else
+        {
+            float defaultValue = 15f;
+            maxRecordingDurationInputField.text = defaultValue.ToString("F1");
+            PlayerPrefs.SetFloat("MaxRecordingDuration", defaultValue);
+            PlayerPrefs.Save();
+        }
     }
 
     // Hàm sẽ được gọi khi Button được nhấn
@@ -215,6 +230,19 @@ public class MySettingMaanger : MonoBehaviour
             return;
         }
 
+        // Maximum Recording Duration
+        inputValue = maxRecordingDurationInputField.text;
+        if (float.TryParse(inputValue, out float maxRecordingDuration))
+        {
+            PlayerPrefs.SetFloat("MaxRecordingDuration", maxRecordingDuration);
+            Debug.Log("Maximum Recording Duration saved: " + maxRecordingDuration);
+        }
+        else
+        {
+            validateTxt.text = "Please enter a valid numeric value for Maximum Recording Duration.";
+            return;
+        }
+
         PlayerPrefs.Save();
         Debug.Log("All voice detection settings saved successfully!");
 
@@ -224,7 +252,7 @@ public class MySettingMaanger : MonoBehaviour
         // Show success message to user
         if (validateTxt != null)
         {
-            validateTxt.text = "✅ Settings saved and applied successfully!";
+            validateTxt.text = $"✅ Settings saved!";
         }
     }
 
@@ -265,6 +293,7 @@ public class MySettingMaanger : MonoBehaviour
             minimumSpeechDurationInputField.interactable = true;
             sessionTimeoutInputField.interactable = true;
             consecutiveVoiceFramesInputField.interactable = true;
+            maxRecordingDurationInputField.interactable = true;
 
             validateTxt.text = "";
             passwordInputField.text = "";
@@ -285,6 +314,7 @@ public class MySettingMaanger : MonoBehaviour
         minimumSpeechDurationInputField.interactable = false;
         sessionTimeoutInputField.interactable = false;
         consecutiveVoiceFramesInputField.interactable = false;
+        maxRecordingDurationInputField.interactable = false;
 
         validateTxt.text = "";
     }
