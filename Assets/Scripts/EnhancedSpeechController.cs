@@ -1258,6 +1258,24 @@ public class EnhancedSpeechController : MonoBehaviour
                         yield break;
                     }
 
+                    // Check if response indicates camera request
+                    if (lowerResponse.Contains("camera_request"))
+                    {
+                        LogMessage($"📸 AI detected camera request: {textResponse}");
+                        
+                        // Trigger camera functionality
+                        TriggerCameraFunction();
+                        
+                        // Show confirmation message in connectionTxt
+                        if (UIManager.Instance?.connectionTxt != null)
+                        {
+                            UIManager.Instance.connectionTxt.text = "📸 Opening camera for you...";
+                        }
+                        
+                        callback?.Invoke(true);
+                        yield break;
+                    }
+
                     // Process normal response
                     lastAIResponse = textResponse;
                     string estimatedUserInput = EstimateUserInputFromResponse(textResponse);
@@ -1356,6 +1374,11 @@ RESPONSE RULES:
 - NO repetitive greetings in ongoing conversations
 - Focus on answering what was asked directly but provide sufficient detail
 - If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
+
+CAMERA/PHOTO FUNCTIONALITY:
+- If user requests taking a photo or opening camera (phrases like ""take a photo"", ""chụp ảnh"", ""mở camera"", ""take a picture"", ""ถ่ายรูป"", ""拍照"", ""사진 찍기""), respond with: ""CAMERA_REQUEST""
+- This special response will trigger the camera interface automatically
+- Examples of photo requests: ""Can you take a photo?"", ""Chụp ảnh cho tôi"", ""Take a picture"", ""Open camera"", ""Mở máy ảnh"", ""ถ่ายรูปให้หน่อย"", ""帮我拍照"", ""사진 좀 찍어줘""
 
 LANGUAGE DETECTION & MATCHING:
 - Detect language from the audio input provided
@@ -1568,6 +1591,8 @@ User audio: [clear ""What is EXPO 2025?""] → [direct answer about EXPO 2025] (
 User audio: [clear ""P2A là gì?""] → [direct answer about P2A] (NO greeting, direct answer)
 User audio: [clear ""Tell me about Duy Tan University""] → [direct answer about DTU] (NO greeting, direct answer)
 User audio: [clear ""Đại học Duy Tân có những ngành nào?""] → [direct answer about DTU programs in Vietnamese] (NO greeting, direct answer)
+User audio: [clear ""Can you take a photo?""] → ""CAMERA_REQUEST"" (triggers camera interface)
+User audio: [clear ""Chụp ảnh cho tôi""] → ""CAMERA_REQUEST"" (triggers camera interface)
 User audio: [unclear/incomprehensible] → ""Cannot understand the question""
 
 DUY TAN UNIVERSITY (DTU) KNOWLEDGE BASE:
@@ -2675,6 +2700,82 @@ User audio: [clear ""What are the student life like at Duy Tan University?""] �
         bool wouldPassOldLogic = !IsNoiseOrMeaninglessAudio(audioData);
         LogMessage($"🤖 Old Logic Decision: {(wouldPassOldLogic ? "SEND to Gemini" : "REJECT as noise")}"); 
         LogMessage("=======================================");
+    }
+
+    /// <summary>
+    /// Trigger camera functionality when user requests photo taking
+    /// </summary>
+    public void TriggerCameraFunction()
+    {
+        if (UIManager.Instance != null)
+        {
+            LogMessage("📸 User requested photo - Opening camera...");
+            
+            // Use the same logic as CameraBtn.cs
+            UIManager.Instance.BtnTakePhotoClick();
+            UIManager.Instance.functionName = "camera";
+            UIManager.Instance.MoveMyaku(false);
+            UIManager.Instance.ShowHidePanel(UIManager.Instance.locationPanel, MyGame.Enums.ShowHide.Hide, 0.5f);
+            UIManager.Instance.MovePanel(UIManager.Instance.cameraPanel, PanelMover.Direction.Up, false, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapDetailPanel, PanelMover.Direction.Down, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.mapPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.gamePanel, PanelMover.Direction.Left, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, true, 3000);
+            UIManager.Instance.ShowHideTestPanel(false);
+            
+            LogMessage("📸 Camera interface opened successfully");
+        }
+        else
+        {
+            LogMessage("❌ UIManager not found - Cannot open camera");
+        }
+    }
+
+    /// <summary>
+    /// Public method for testing camera functionality
+    /// Can be called from other scripts or UI buttons for testing
+    /// </summary>
+    public void TestCameraFunction()
+    {
+        LogMessage("🧪 Testing camera function manually...");
+        TriggerCameraFunction();
+    }
+
+    /// <summary>
+    /// Check if camera request is detected in text (for debugging)
+    /// </summary>
+    public static bool IsCameraRequest(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return false;
+        
+        string lowerText = text.ToLower();
+        
+        // English phrases
+        if (lowerText.Contains("take a photo") || lowerText.Contains("take a picture") || 
+            lowerText.Contains("open camera") || lowerText.Contains("camera please") ||
+            lowerText.Contains("photo please") || lowerText.Contains("snap a photo"))
+            return true;
+            
+        // Vietnamese phrases
+        if (lowerText.Contains("chụp ảnh") || lowerText.Contains("mở camera") || 
+            lowerText.Contains("chụp hình") || lowerText.Contains("mở máy ảnh") ||
+            lowerText.Contains("chụp một tấm"))
+            return true;
+            
+        // Thai phrases
+        if (lowerText.Contains("ถ่ายรูป") || lowerText.Contains("เปิดกล้อง"))
+            return true;
+            
+        // Chinese phrases
+        if (lowerText.Contains("拍照") || lowerText.Contains("照相") || lowerText.Contains("开相机"))
+            return true;
+            
+        // Korean phrases
+        if (lowerText.Contains("사진") || lowerText.Contains("카메라"))
+            return true;
+        
+        return false;
     }
 }
 
