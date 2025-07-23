@@ -293,8 +293,6 @@ public class MyakuController : MonoBehaviour
 
         // Ensure all other states are off
         animator.SetBool("listen", false);
-        animator.SetBool("record", false);
-        animator.SetBool("think", false);
 
         // Start answer animation
         animator.SetBool("answer", true);
@@ -475,9 +473,7 @@ public class MyakuController : MonoBehaviour
         isSpeaking = false;
 
         // Animation: Idle/listening state
-        animator.SetBool("listen", true);
-        animator.SetBool("record", false);
-        animator.SetBool("think", false);
+        animator.SetBool("listen", true);  
         animator.SetBool("answer", false);
 
         // Move to near position for interaction
@@ -509,8 +505,6 @@ public class MyakuController : MonoBehaviour
 
         // Animation: Recording state
         animator.SetBool("listen", false);
-        animator.SetBool("record", true);
-        animator.SetBool("think", false);
         animator.SetBool("answer", false);
 
         // Show record panel
@@ -549,9 +543,8 @@ public class MyakuController : MonoBehaviour
         isSpeaking = false;
 
         // Animation: Thinking state
+        animator.SetBool("thinking", true);
         animator.SetBool("listen", false);
-        animator.SetBool("record", false);
-        animator.SetBool("think", true);
         animator.SetBool("answer", false);
 
         // Play thinking sound
@@ -568,7 +561,7 @@ public class MyakuController : MonoBehaviour
         isThinking = false;
 
         // Animation: Stop thinking
-        animator.SetBool("think", false);
+        animator.SetBool("thinking", false);
 
         Debug.Log("🛑 Myaku: Stopped thinking");
     }
@@ -585,8 +578,7 @@ public class MyakuController : MonoBehaviour
 
         // Animation: Prepare for speaking (không set answer = true ở đây)
         animator.SetBool("listen", false);
-        animator.SetBool("record", false);
-        animator.SetBool("think", false);
+        
         // Không set answer = true ở đây, để MyakuAnswer() xử lý
 
         // Show speak panel
@@ -631,9 +623,7 @@ public class MyakuController : MonoBehaviour
         isSpeaking = false;
 
         // Reset all animations
-        animator.SetBool("listen", false);
-        animator.SetBool("record", false);
-        animator.SetBool("think", false);
+        animator.SetBool("listen", false);        
         animator.SetBool("answer", false);
 
         // Hide all panels

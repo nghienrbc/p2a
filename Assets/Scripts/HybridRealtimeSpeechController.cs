@@ -11,9 +11,9 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Hybrid Realtime Speech Controller
-/// Kết hợp OpenAI Realtime WebSocket với Enhanced Speech features
-/// Wake word detection, session management, và real-time speech-to-speech
+/// Simplified Realtime Speech Controller - Pure OpenAI WebSocket
+/// Chỉ sử dụng OpenAI Realtime WebSocket, loại bỏ tất cả logic speech-to-speech phức tạp
+/// VAD hoàn toàn do OpenAI xử lý, speech flow control đơn giản
 /// </summary>
 public class HybridRealtimeSpeechController : MonoBehaviour
 {
@@ -30,9 +30,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     public AudioSource audioSource;
     
     [Header("Conversation Display")]
-    [Tooltip("Hiển thị câu hỏi của người dùng")]
     public TMP_Text userQuestionText;
-    [Tooltip("Hiển thị câu trả lời của AI")]
     public TMP_Text aiResponseText;
     
     [Header("Myaku Integration")]
@@ -40,96 +38,73 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     #endregion
 
     #region Configuration
-    [Header("OpenAI Realtime Configuration")]
-    [SerializeField] private string openAIApiKey = ""; // Nhập API key trong Inspector
-    [SerializeField] private string model = "gpt-4o-realtime-preview-2024-10-01";
-    [SerializeField] private string voice = "alloy"; // OpenAI voice: alloy, echo, fable, onyx, nova, shimmer
-    
     [Header("Audio Configuration")]
-    [SerializeField] private int sampleRate = 24000; // OpenAI Realtime API supports 24kHz
-    [SerializeField] private float recordingChunkSize = 0.1f; // Send audio every 100ms
-    [SerializeField] private string audioFormat = "pcm16"; // PCM 16-bit format
-    
-    [Header("Audio Enhancement")]
-    [SerializeField] private bool enableInputNoiseReduction = false; // Tắt để OpenAI xử lý
-    [SerializeField] private bool enableOutputNormalization = true;
-    [SerializeField] private bool enableSmoothTransition = true;
+    [SerializeField] private int sampleRate = 24000;
+    [SerializeField] private string audioFormat = "pcm16";
     [SerializeField, Range(0.1f, 1.0f)] private float audioVolume = 0.8f;
-    [SerializeField, Range(0.01f, 0.2f)] private float fadeDuration = 0.1f;
-    [SerializeField, Range(1, 10)] private int audioBufferMultiplier = 3;
-    [SerializeField] private bool enableAdvancedFadeOut = true;
+    
+    [Header("Simple Speech Control")]
+    [Tooltip("Delay after AI finishes speaking before allowing recording again (seconds)")]
+    public float speechEndDelay = 2.0f; // Increased from 0.5f to 2.0f to prevent feedback
+    [Tooltip("Auto session timeout after response (seconds)")]
+    public float sessionTimeoutAfterResponse = 20f;
     
     [Header("Wake Word Detection")]
-    [Tooltip("Enable wake word 'Hey DT' detection via audioPlugin")]
     public bool enableWakeWordDetection = true;
-
-    [Header("Voice Detection Settings")]
-    [Tooltip("Ngưỡng âm lượng tối thiểu để phát hiện giọng nói")]
-    public float voiceVolumeThreshold = 0.02f;
-    [Tooltip("Thời gian tối thiểu phát hiện giọng nói liên tục")]
-    public float minimumSpeechDuration = 0.3f;
-    [Tooltip("Số frame liên tục phải có âm thanh để xác nhận giọng nói")]
-    public int consecutiveVoiceFrames = 5;
     
-    [Header("Session Management")]
-    [Tooltip("Thời gian chờ sau khi kết thúc phát audio trước khi tự động kết thúc session (giây)")]
-    public float sessionTimeoutAfterResponse = 20f;
-    [Tooltip("Enable auto-timeout feature")]
-    public bool enableAutoTimeout = true;
-    
-    [SerializeField, TextArea(5, 15)] private string customInstructions = ""; // Custom instructions
+    [SerializeField, TextArea(3, 10)] private string customInstructions = "";
     #endregion
 
-    #region Private Fields
+    #region Config System
+    [System.Serializable]
+    public class Config
+    {
+        public string openAIApiKey;
+        public string model = "gpt-4o-realtime-preview-2024-10-01";
+        public string voice = "alloy";
+        public string customInstructions = "";
+    }
+
+    private Config config;
+    #endregion
+
+    #region Private Fields - Simplified
     // WebSocket và OpenAI Realtime
     private WebSocket webSocket;
     private bool isConnected = false;
     private bool isSessionActive = false;
     private const string WEBSOCKET_URL = "wss://api.openai.com/v1/realtime?model=";
     
-    // Audio recording
+    // Simple speech control
     private bool isRecording = false;
-    private bool isPlayingResponse = false;
+    private bool isAISpeaking = false; // CRITICAL: Block recording when AI speaks
+    private bool isWaitingForSpeechEnd = false; // CRITICAL: Block recording during delay
+    private Coroutine aiSpeakingTimeoutCoroutine; // Safety timeout for stuck AI speaking state
+    
+    // Audio recording
     private AudioClip microphoneClip;
     private string microphoneDevice;
     private int lastMicrophonePosition = 0;
     
-    // Enhanced audio playback system
+    // Simple audio playback
     private Queue<float[]> audioPlaybackQueue = new Queue<float[]>();
     private List<float> audioBuffer = new List<float>();
     private bool isPlayingAudio = false;
-    private float lastAudioSample = 0f;
-    private int targetBufferSize;
     private bool isAIResponseComplete = false;
-    private float silenceTimer = 0f;
-    private const float SILENCE_THRESHOLD = 0.01f;
-    private const float SILENCE_DURATION = 0.3f;
-    
-    // Voice detection
-    private bool voiceDetected = false;
-    private bool confirmedVoiceDetected = false;
-    private int consecutiveVoiceFrameCount = 0;
-    private float firstVoiceDetectionTime = 0f;
-    private float lastVoiceTime = 0f;
-    private float voiceStartTime = 0f;
+    private bool hasSpeechStarted = false; // Track if AI has started speaking
     
     // Session management
     private float sessionStartTime = 0f;
-    private float lastResponseEndTime = 0f;
     private bool isWaitingForNextQuestion = false;
     private Coroutine timeoutCoroutine;
     private bool isFirstSessionAfterWakeWord = true;
     
-    // Wake Word Detection (AudioPlugin)
+    // Wake Word Detection
     private AndroidJavaObject audioPlugin;
     private bool enableHeyDT = true;
     
     // Logging
     private string logMessages = "";
-    
-    // Audio processing
-    private float[] noiseProfile;
-    private bool noiseProfileCaptured = false;
     #endregion
 
     #region Unity Lifecycle
@@ -139,6 +114,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            LoadConfiguration();
         }
         else
         {
@@ -149,8 +125,9 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private void Start()
     {
         InitializeComponent();
-        LogMessage("🎤 Hybrid Realtime Speech Controller Ready");
-        LogMessage("🤖 Myaku Animation Integration Enabled");
+        LogMessage("🎤 Simplified Realtime Speech Controller Ready");
+        LogMessage("✅ Pure OpenAI WebSocket - No client-side VAD");
+        LogMessage("🤖 Myaku Integration Enabled");
         UpdateStatus("Click START or say 'Hey DT' to begin");
     }
 
@@ -161,13 +138,13 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         webSocket?.DispatchMessageQueue();
         #endif
 
-        // Process audio recording only if not playing response
-        if (isSessionActive && isRecording && !isPlayingResponse && microphoneClip != null)
+        // Simple recording logic - only when allowed
+        if (isSessionActive && isRecording && microphoneClip != null && CanRecord())
         {
             ProcessMicrophoneAudio();
         }
 
-        // Process audio playback with buffering
+        // Simple audio playback
         ProcessAudioPlayback();
     }
 
@@ -176,14 +153,12 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         StopRecording();
         DisconnectWebSocket();
         
-        // Cleanup AudioPlugin
         #if UNITY_ANDROID && !UNITY_EDITOR
         if (audioPlugin != null)
         {
             try
             {
                 audioPlugin.Dispose();
-                LogMessage("🧹 AudioPlugin disposed");
             }
             catch (System.Exception e)
             {
@@ -194,13 +169,249 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     }
     #endregion
 
+    #region Configuration
+    private void LoadConfiguration()
+    {
+        try
+        {
+            TextAsset configFile = Resources.Load<TextAsset>("config");
+            if (configFile != null)
+            {
+                LogMessage($"📄 Config file found - Content: {configFile.text.Substring(0, Math.Min(100, configFile.text.Length))}...");
+                config = JsonUtility.FromJson<Config>(configFile.text);
+                LogMessage("✅ Configuration loaded from Resources/config.json");
+                LogMessage($"🔑 API Key loaded: {(string.IsNullOrEmpty(config.openAIApiKey) ? "MISSING" : "Present")}");
+                LogMessage($"🎵 Model: {config.model}");
+                LogMessage($"🗣️ Voice: {config.voice}");
+                
+                if (!string.IsNullOrEmpty(config.customInstructions))
+                {
+                    customInstructions = config.customInstructions;
+                    LogMessage("📝 Custom instructions loaded from config");
+                }
+            }
+            else
+            {
+                config = new Config();
+                LogMessage("⚠️ Config file not found in Resources/, using defaults");
+                LogMessage("❌ API Key will be MISSING - check Resources/config.json");
+            }
+        }
+        catch (Exception e)
+        {
+            config = new Config();
+            LogMessage($"❌ Failed to load config: {e.Message}");
+            LogMessage("❌ API Key will be MISSING - check Resources/config.json format");
+        }
+    }
+    #endregion
+
+    #region Simple Speech Control
+    /// <summary>
+    /// CRITICAL: Xác định khi nào có thể ghi âm
+    /// Microphone sẽ được stop hoàn toàn khi AI nói, nên method này chỉ cần check cơ bản
+    /// </summary>
+    private bool CanRecord()
+    {
+        if (isAISpeaking)
+        {
+            // LogMessage("🚫 Cannot record - AI is speaking");
+            return false;
+        }
+        
+        if (isWaitingForSpeechEnd)
+        {
+            // LogMessage("🚫 Cannot record - Waiting for speech end delay");
+            return false;
+        }
+        
+        // LogMessage("✅ Can record - AI not speaking");
+        return true;
+    }
+
+    /// <summary>
+    /// CRITICAL: Được gọi khi AI bắt đầu phát audio đầu tiên
+    /// Microphone đã được stop trong response.audio.delta, chỉ cần update states
+    /// </summary>
+    private void OnAIStartSpeaking()
+    {
+        if (!hasSpeechStarted)
+        {
+            hasSpeechStarted = true;
+            isAISpeaking = true;
+            isWaitingForSpeechEnd = false;
+            
+            // Microphone đã được stop trong response.audio.delta case
+            LogMessage("🔊 AI started speaking - Already blocked in audio.delta");
+            
+            // Myaku animation
+            // if (myakuController != null)
+            // {
+            //     myakuController.MyakuAnswer();
+            // }
+        }
+    }
+
+    /// <summary>
+    /// CRITICAL: Được gọi khi AI hoàn thành việc phát tất cả audio
+    /// Đây là điểm chính xác "phát xong câu trả lời"
+    /// </summary>
+    private void OnAIFinishedSpeaking()
+    {
+        isAISpeaking = false;
+        isWaitingForSpeechEnd = true;
+        hasSpeechStarted = false;
+        
+        // Stop safety timeout coroutine
+        if (aiSpeakingTimeoutCoroutine != null)
+        {
+            StopCoroutine(aiSpeakingTimeoutCoroutine);
+            aiSpeakingTimeoutCoroutine = null;
+        }
+        
+        LogMessage($"✅ AI finished speaking - Starting {speechEndDelay}s delay");
+        
+        // Ensure microphone is definitely stopped
+        if (isRecording)
+        {
+            Microphone.End(microphoneDevice);
+            isRecording = false;
+            LogMessage("🛑 Final microphone stop in OnAIFinishedSpeaking");
+        }
+        
+        // Myaku animation
+        // if (myakuController != null)
+        // {
+        //     myakuController.FinishSpeaking();
+        // }
+        
+        // Start delay before allowing recording again
+        StartCoroutine(SpeechEndDelayCoroutine());
+    }
+
+    /// <summary>
+    /// Delay sau khi AI nói xong trước khi cho phép recording
+    /// </summary>
+    private IEnumerator SpeechEndDelayCoroutine()
+    {
+        LogMessage($"⏳ Starting speech end delay: {speechEndDelay}s");
+        
+        // Wait for the configured delay
+        yield return new WaitForSeconds(speechEndDelay);
+        
+        // Additional safety check - ensure AudioSource has completely stopped
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            LogMessage("⚠️ AudioSource still playing - waiting additional 1s");
+            yield return new WaitForSeconds(1f);
+        }
+        
+        // Another safety check - wait a bit more for any echo to die down
+        LogMessage("🔇 Waiting additional 0.5s for audio echo to settle");
+        yield return new WaitForSeconds(0.5f);
+        
+        isWaitingForSpeechEnd = false;
+        
+        // TRIỆT ĐỂ: Khởi động lại microphone recording với safety checks
+        if (isSessionActive && !isRecording && !isAISpeaking)
+        {
+            try
+            {
+                // Final check - ensure we're not in any audio state
+                if (audioSource != null && audioSource.isPlaying)
+                {
+                    LogMessage("❌ Cannot restart microphone - AudioSource still playing");
+                    yield break;
+                }
+                
+                microphoneClip = Microphone.Start(microphoneDevice, true, 10, sampleRate);
+                isRecording = true;
+                lastMicrophonePosition = 0;
+                LogMessage("🎤 Microphone SAFELY RESTARTED after all delays and checks");
+            }
+            catch (Exception e)
+            {
+                LogMessage($"❌ Failed to restart microphone: {e.Message}");
+            }
+        }
+        else
+        {
+            LogMessage($"⚠️ Cannot restart microphone - Session: {isSessionActive}, Recording: {isRecording}, AI Speaking: {isAISpeaking}");
+        }
+        
+        LogMessage("🎤 Speech delay completed - Recording allowed again");
+        
+        // Set Myaku to listening for next question
+        // if (myakuController != null)
+        // {
+        //     myakuController.StartListening(false); // Silent for follow-up
+        // }
+        
+        // Start timeout for next question
+        StartQuestionTimeout();
+    }
+
+    private void StartQuestionTimeout()
+    {
+        try
+        {
+            isWaitingForNextQuestion = true;
+            
+            if (timeoutCoroutine != null)
+            {
+                StopCoroutine(timeoutCoroutine);
+            }
+            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
+            LogMessage($"⏰ Question timeout started: {sessionTimeoutAfterResponse}s");
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Error starting timeout: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Safety timeout to reset AI speaking state if it gets stuck
+    /// </summary>
+    private IEnumerator AISpeakingTimeoutCoroutine()
+    {
+        yield return new WaitForSeconds(30f); // 30 second timeout
+        
+        if (isAISpeaking)
+        {
+            LogMessage("⚠️ AI speaking timeout reached - forcing reset to prevent feedback loop");
+            isAISpeaking = false;
+            isWaitingForSpeechEnd = false;
+            hasSpeechStarted = false;
+            
+            // Force restart microphone if session is still active
+            if (isSessionActive && !isRecording)
+            {
+                try
+                {
+                    microphoneClip = Microphone.Start(microphoneDevice, true, 10, sampleRate);
+                    isRecording = true;
+                    lastMicrophonePosition = 0;
+                    LogMessage("🎤 Microphone force restarted after timeout");
+                }
+                catch (Exception e)
+                {
+                    LogMessage($"❌ Failed to force restart microphone: {e.Message}");
+                }
+            }
+            
+            UpdateStatus("🔴 LIVE - Recovered from timeout");
+        }
+    }
+    #endregion
+
     #region Public Methods
     public void StartRealtimeConversation()
     {
-        if (string.IsNullOrEmpty(openAIApiKey))
+        if (string.IsNullOrEmpty(config.openAIApiKey))
         {
-            LogMessage("❌ OpenAI API Key is required!");
-            UpdateStatus("Please set OpenAI API Key in Inspector");
+            LogMessage("❌ OpenAI API Key required in config!");
+            UpdateStatus("Please set OpenAI API Key in Resources/config.json");
             return;
         }
 
@@ -210,13 +421,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             return;
         }
 
-        // Clean up any previous session
-        CleanBeforeNewSession();
-        
-        // Mark as first session after manual start
-        isFirstSessionAfterWakeWord = false;
-        
-        StartCoroutine(BeginRealtimeSession());
+        StartCoroutine(BeginSession());
     }
 
     public void StopRealtimeConversation()
@@ -230,9 +435,6 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         StartCoroutine(EndSession());
     }
 
-    /// <summary>
-    /// Called by AudioPlugin when wake word "Hey DT" is detected
-    /// </summary>
     public void OnWakeWordDetected()
     {
         if (!enableHeyDT || isSessionActive)
@@ -242,16 +444,8 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
 
         LogMessage("🎯 Wake word 'Hey DT' detected!");
-
-        // Clean up any previous session
-        CleanBeforeNewSession();
-
-        // Mark as first session after wake word
         isFirstSessionAfterWakeWord = true;
-        LogMessage($"🔍 DEBUG: Set isFirstSessionAfterWakeWord = {isFirstSessionAfterWakeWord}");
-
-        // Start new session automatically
-        StartCoroutine(BeginRealtimeSession());
+        StartCoroutine(BeginSession());
     }
 
     public void BackButtonClick() 
@@ -260,152 +454,98 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     }
     #endregion
 
-    #region Private Methods
-    private void InitializeComponent()
+    #region Session Management
+    private IEnumerator BeginSession()
     {
-        if (startButton != null)
-            startButton.onClick.AddListener(StartRealtimeConversation);
-            
-        if (stopButton != null)
-            stopButton.onClick.AddListener(StopRealtimeConversation);
-            
-        if (audioSource == null)
-            audioSource = GetComponent<AudioSource>();
-
-        // Configure AudioSource for optimal playback
-        ConfigureAudioSource();
-
-        // Calculate target buffer size
-        targetBufferSize = Mathf.RoundToInt(sampleRate * 0.1f * audioBufferMultiplier);
-
-        // Get default microphone
-        if (Microphone.devices.Length > 0)
-        {
-            microphoneDevice = Microphone.devices[0];
-            LogMessage($"🎤 Using microphone: {microphoneDevice}");
-        }
-        else
-        {
-            LogMessage("❌ No microphone devices found!");
-        }
-            
-        ClearLogs();
-        ClearConversationDisplay();
-
-        // Initialize AudioPlugin for wake word detection
-        InitializeAudioPlugin();
-    }
-
-    private void ConfigureAudioSource()
-    {
-        if (audioSource != null)
-        {
-            audioSource.volume = audioVolume;
-            audioSource.pitch = 1.0f;
-            audioSource.spatialBlend = 0f; // 2D sound
-            audioSource.rolloffMode = AudioRolloffMode.Linear;
-            audioSource.playOnAwake = false;
-            audioSource.loop = false;
-            
-            // Reduce audio latency
-            AudioConfiguration audioConfig = AudioSettings.GetConfiguration();
-            audioConfig.dspBufferSize = 256;
-            AudioSettings.Reset(audioConfig);
-            
-            LogMessage("🔊 AudioSource configured for optimal playback");
-        }
-    }
-
-    private IEnumerator BeginRealtimeSession()
-    {
-        LogMessage("\n🚀 === STARTING HYBRID REALTIME SESSION ===");
-        LogMessage("🎤 Session active - Speak anytime, AI will respond automatically");
-        LogMessage("🤖 Myaku animations enabled for immersive experience");
-
+        LogMessage("🚀 Starting simplified realtime session");
+        LogMessage($"🔑 API Key: {(string.IsNullOrEmpty(config.openAIApiKey) ? "MISSING" : "Present")}");
+        LogMessage($"🎵 Model: {config.model}");
+        
+        // Clean up
+        CleanupBeforeSession();
+        LogMessage("🔄 Cleanup completed - coroutine still running");
+        
         isSessionActive = true;
         sessionStartTime = Time.time;
-
-        // Pause AudioPlugin during session to avoid conflicts
-        PauseAudioPlugin();
-
-        // Myaku Animation: Start listening mode with special audio feedback for wake word
-        bool needToWaitForListeningSound = false;
-
-        if (myakuController != null)
-        {
-            if (isFirstSessionAfterWakeWord)
-            {
-                LogMessage("🎯 WAKE WORD SESSION - Playing welcome sound");
-                myakuController.StartListening(true);
-                needToWaitForListeningSound = true;
-                isFirstSessionAfterWakeWord = false;
-            }
-            else
-            {
-                LogMessage("🔄 MANUAL START - Silent listening mode");
-                myakuController.StartListening(false);
-            }
-        }
-
-        // Wait for listening sound to finish before starting recording
-        if (needToWaitForListeningSound && myakuController != null)
-        {
-            LogMessage("⏳ Waiting for listening sound to finish...");
-            yield return new WaitForSeconds(0.2f);
-            
-            float timeoutCounter = 0f;
-            const float MAX_WAIT_TIME = 10f;
-            
-            while (myakuController.IsPlayingAudio() && timeoutCounter < MAX_WAIT_TIME)
-            {
-                yield return new WaitForSeconds(0.1f);
-                timeoutCounter += 0.1f;
-            }
-            
-            yield return new WaitForSeconds(0.3f);
-            LogMessage("✅ Audio buffer cleared - Starting WebSocket connection");
-        }
-
-        // Connect to OpenAI Realtime WebSocket
-        yield return StartCoroutine(ConnectWebSocket());
+        LogMessage("✅ Session marked as active");
         
+        // Pause wake word detection
+        PauseAudioPlugin();
+        LogMessage("⏸️ Wake word detection paused");
+        
+        // Myaku listening with sound for wake word, silent for manual
+        // if (myakuController != null)
+        // {
+        //     bool playSound = isFirstSessionAfterWakeWord;
+        //     LogMessage($"🎧 Myaku listening with sound: {playSound}");
+        //     myakuController.StartListening(playSound);
+        //     isFirstSessionAfterWakeWord = false;
+        //     LogMessage("✅ Myaku StartListening() called successfully");
+            
+        //     if (playSound)
+        //     {
+        //         // Debug the wait process
+        //         LogMessage("⏳ Playing listening sound - starting 2 second wait...");
+        //         bool waitException = false;
+        //         try
+        //         {
+        //             LogMessage("⏰ Wait started - yielding for 2 seconds");
+        //         }
+        //         catch (System.Exception e)
+        //         {
+        //             LogMessage($"❌ Exception during wait: {e.Message}");
+        //             waitException = true;
+        //         }
+        //         if (!waitException)
+        //         {
+        //             yield return new WaitForSeconds(2f);
+        //             LogMessage("⏰ Wait completed - 2 seconds elapsed");
+        //         }
+        //         LogMessage("✅ Listening sound wait completed");
+        //     }
+        // }
+        
+        LogMessage("📡 Starting WebSocket connection...");
+        
+        // Connect WebSocket
+        yield return StartCoroutine(ConnectWebSocket());
         if (!isConnected)
         {
+            LogMessage("❌ WebSocket connection failed - aborting session");
             UpdateStatus("❌ Failed to connect to OpenAI");
             yield break;
         }
-
-        // Create session
-        yield return StartCoroutine(CreateRealtimeSession());
+        
+        LogMessage("✅ WebSocket connected - proceeding to create session");
+        
+        // Create session with OpenAI VAD
+        yield return StartCoroutine(CreateSession());
+        
+        LogMessage("📡 Session created - starting recording");
         
         // Start recording
         StartRecording();
         
-        string statusText = "🔴 LIVE - Speak anytime, AI responds automatically";
-        UpdateStatus(statusText);
+        LogMessage("🎤 Recording started - finalizing setup");
+        
+        UpdateStatus("🔴 LIVE - OpenAI handling VAD");
         UpdateButtonStates();
-
-        // Start initial timeout for first question
-        if (enableAutoTimeout)
-        {
-            LogMessage($"⏰ Starting session timeout: {sessionTimeoutAfterResponse}s");
-            isWaitingForNextQuestion = true;
-            if (timeoutCoroutine != null)
-            {
-                StopCoroutine(timeoutCoroutine);
-            }
-            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
-        }
-
-        LogMessage("✅ Hybrid realtime session started successfully");
+        
+        // Start initial timeout
+        StartQuestionTimeout();
+        
+        LogMessage("✅ Simplified session started successfully!");
     }
 
     private IEnumerator ConnectWebSocket()
     {
-        string wsUrl = WEBSOCKET_URL + model;
+        string wsUrl = WEBSOCKET_URL + config.model;
+        LogMessage($"🌐 WebSocket URL: {wsUrl}");
+        LogMessage($"🔑 Auth header: Bearer {config.openAIApiKey.Substring(0, 10)}...");
+        
         webSocket = new WebSocket(wsUrl, new Dictionary<string, string>
         {
-            {"Authorization", "Bearer " + openAIApiKey},
+            {"Authorization", "Bearer " + config.openAIApiKey},
             {"OpenAI-Beta", "realtime=v1"}
         });
 
@@ -416,39 +556,46 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
         try
         {
+            LogMessage("🔗 Attempting WebSocket connection...");
             webSocket.Connect();
         }
         catch (Exception e)
         {
-            LogMessage($"❌ WebSocket connection error: {e.Message}");
+            LogMessage($"❌ WebSocket connection exception: {e.Message}");
             yield break;
         }
 
-        // Wait for connection
+        // Wait for connection with detailed logging
         float timeout = 10f;
+        LogMessage($"⏳ Waiting for connection (timeout: {timeout}s)...");
+        
         while (!isConnected && timeout > 0)
         {
             timeout -= Time.deltaTime;
             yield return null;
         }
-
+        
         if (!isConnected)
         {
-            LogMessage("❌ WebSocket connection timeout");
+            LogMessage($"❌ WebSocket connection timeout after 10 seconds");
+        }
+        else
+        {
+            LogMessage("✅ WebSocket connected successfully");
         }
     }
 
-    private IEnumerator CreateRealtimeSession()
+    private IEnumerator CreateSession()
     {
-        if (!isConnected)
+        if (!isConnected) 
         {
-            LogMessage("❌ Cannot create session - not connected");
+            LogMessage("❌ Cannot create session - WebSocket not connected");
             yield break;
         }
 
-        // Sử dụng custom instructions nếu có, nếu không dùng default
-        string systemInstructions = !string.IsNullOrEmpty(customInstructions) ? 
-            customInstructions : GetDefaultMultilingualInstructions();
+        LogMessage("⚙️ Creating OpenAI session...");
+        string instructions = !string.IsNullOrEmpty(customInstructions) ? 
+            customInstructions : GetDefaultInstructions();
 
         var sessionConfig = new
         {
@@ -456,17 +603,14 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             session = new
             {
                 modalities = new[] { "text", "audio" },
-                instructions = systemInstructions,
-                voice = voice,
+                instructions = instructions,
+                voice = config.voice,
                 input_audio_format = audioFormat,
                 output_audio_format = audioFormat,
-                input_audio_transcription = new
-                {
-                    model = "whisper-1"
-                },
+                input_audio_transcription = new { model = "whisper-1" },
                 turn_detection = new
                 {
-                    type = "server_vad",
+                    type = "server_vad", // CRITICAL: OpenAI handles VAD
                     threshold = 0.5,
                     prefix_padding_ms = 300,
                     silence_duration_ms = 200
@@ -474,42 +618,46 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             }
         };
 
-        string jsonMessage = JsonConvert.SerializeObject(sessionConfig);
-        webSocket.SendText(jsonMessage);
-        
-        LogMessage($"📡 Hybrid session configuration sent");
+        try
+        {
+            string jsonConfig = JsonConvert.SerializeObject(sessionConfig);
+            LogMessage($"📤 Sending session config: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
+            webSocket.SendText(jsonConfig);
+            LogMessage("📡 Session config sent - waiting for response...");
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Error sending session config: {e.Message}");
+            yield break;
+        }
         
         yield return new WaitForSeconds(1f);
+        LogMessage("✅ Session creation completed");
     }
 
     private void StartRecording()
     {
-        if (string.IsNullOrEmpty(microphoneDevice))
+        LogMessage("🎤 Starting microphone recording...");
+        
+        if (Microphone.devices.Length == 0)
         {
-            LogMessage("❌ No microphone available");
+            LogMessage("❌ No microphone devices found");
             return;
         }
 
+        microphoneDevice = Microphone.devices[0];
+        LogMessage($"🎙️ Using microphone: {microphoneDevice}");
+        
         try
         {
             microphoneClip = Microphone.Start(microphoneDevice, true, 10, sampleRate);
             isRecording = true;
             lastMicrophonePosition = 0;
-            
-            LogMessage($"🎤 Recording started - Sample rate: {sampleRate}Hz");
-            
-            // Reset voice detection state
-            ResetVoiceDetectionState();
-            
-            // Capture noise profile for noise reduction if enabled
-            if (enableInputNoiseReduction && !noiseProfileCaptured)
-            {
-                StartCoroutine(CaptureNoiseProfile());
-            }
+            LogMessage($"✅ Recording started successfully: {microphoneDevice} at {sampleRate}Hz");
         }
         catch (Exception e)
         {
-            LogMessage($"❌ Failed to start recording: {e.Message}");
+            LogMessage($"❌ Recording failed: {e.Message}");
         }
     }
 
@@ -523,432 +671,34 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Simplified microphone processing - chỉ gửi audio tới OpenAI
+    /// Không có client-side VAD, chỉ pure audio streaming
+    /// </summary>
     private void ProcessMicrophoneAudio()
     {
-        if (!isConnected || microphoneClip == null)
-            return;
+        if (!isConnected || microphoneClip == null) return;
 
         int currentPosition = Microphone.GetPosition(microphoneDevice);
-        if (currentPosition < 0 || currentPosition == lastMicrophonePosition)
-            return;
+        if (currentPosition < 0 || currentPosition == lastMicrophonePosition) return;
 
         int sampleCount = currentPosition - lastMicrophonePosition;
-        if (sampleCount < 0)
-            sampleCount += microphoneClip.samples;
+        if (sampleCount < 0) sampleCount += microphoneClip.samples;
 
         if (sampleCount > 0)
         {
             float[] audioData = new float[sampleCount];
             microphoneClip.GetData(audioData, lastMicrophonePosition);
             
-            // Voice activity detection
-            float audioLevel = GetAudioLevel(audioData);
-            bool currentVoiceDetected = audioLevel > voiceVolumeThreshold;
-
-            if (currentVoiceDetected)
-            {
-                consecutiveVoiceFrameCount++;
-
-                if (!voiceDetected)
-                {
-                    firstVoiceDetectionTime = Time.time;
-                    voiceDetected = true;
-                    confirmedVoiceDetected = false;
-                    LogMessage($"🔍 Potential voice detected (level: {audioLevel:F3})...");
-                }
-
-                // Confirm voice after meeting criteria
-                if (!confirmedVoiceDetected &&
-                    consecutiveVoiceFrameCount >= consecutiveVoiceFrames &&
-                    (Time.time - firstVoiceDetectionTime) >= minimumSpeechDuration)
-                {
-                    confirmedVoiceDetected = true;
-                    voiceStartTime = firstVoiceDetectionTime;
-                    LogMessage("🗣️ Voice CONFIRMED - Sending to OpenAI...");
-                    UpdateStatus("🎤 Recording your voice...");
-
-                    // Cancel timeout when user starts speaking
-                    if (timeoutCoroutine != null)
-                    {
-                        StopCoroutine(timeoutCoroutine);
-                        timeoutCoroutine = null;
-                        isWaitingForNextQuestion = false;
-                        LogMessage("⏰ Auto-timeout cancelled - User speaking");
-                    }
-
-                    // Myaku Animation: User speaking
-                    if (myakuController != null)
-                    {
-                        myakuController.StartRecording();
-                    }
-
-                    // Update UI
-                    if (userQuestionText != null)
-                    {
-                        userQuestionText.text = "👤 User: (Speaking...)";
-                    }
-                }
-
-                if (confirmedVoiceDetected)
-                {
-                    lastVoiceTime = Time.time;
-                    
-                    // Apply minimal processing and send to OpenAI
-                    if (enableInputNoiseReduction && noiseProfileCaptured)
-                    {
-                        audioData = ApplyLightNoiseReduction(audioData);
-                    }
-                    
-                    byte[] pcmData = ConvertToPCM16Raw(audioData);
-                    SendAudioToOpenAI(pcmData);
-                }
-            }
-            else
-            {
-                consecutiveVoiceFrameCount = 0;
-
-                if (voiceDetected && !confirmedVoiceDetected)
-                {
-                    voiceDetected = false;
-                    LogMessage("❌ False voice detection - Ignoring noise");
-                }
-            }
+            // Convert and send directly to OpenAI - no processing
+            byte[] pcmData = ConvertToPCM16(audioData);
+            SendAudioToOpenAI(pcmData);
             
             lastMicrophonePosition = currentPosition;
         }
     }
 
-    private void ProcessAudioPlayback()
-    {
-        // Add queued audio to buffer
-        while (audioPlaybackQueue.Count > 0)
-        {
-            float[] audioChunk = audioPlaybackQueue.Dequeue();
-            audioBuffer.AddRange(audioChunk);
-            isAIResponseComplete = false;
-            silenceTimer = 0f;
-        }
-
-        // Detect silence at end of response
-        if (isAIResponseComplete && audioBuffer.Count > 0)
-        {
-            int checkSamples = Mathf.Min(audioBuffer.Count, sampleRate / 10);
-            bool isSilent = true;
-            
-            for (int i = audioBuffer.Count - checkSamples; i < audioBuffer.Count; i++)
-            {
-                if (Mathf.Abs(audioBuffer[i]) > SILENCE_THRESHOLD)
-                {
-                    isSilent = false;
-                    break;
-                }
-            }
-            
-            if (isSilent)
-            {
-                silenceTimer += Time.deltaTime;
-                if (silenceTimer >= SILENCE_DURATION && enableAdvancedFadeOut)
-                {
-                    ApplyAdvancedFadeOut();
-                }
-            }
-            else
-            {
-                silenceTimer = 0f;
-            }
-        }
-
-        // Play audio when buffer has enough data or when response is complete
-        bool shouldPlay = !isPlayingAudio && 
-                         (audioBuffer.Count >= targetBufferSize || 
-                          (isAIResponseComplete && audioBuffer.Count > 0));
-                          
-        if (shouldPlay)
-        {
-            StartCoroutine(PlayBufferedAudio());
-        }
-    }
-
-    private IEnumerator PlayBufferedAudio()
-    {
-        if (audioBuffer.Count == 0)
-            yield break;
-
-        isPlayingAudio = true;
-        isPlayingResponse = true; // Tạm dừng thu nhận audio
-        
-        // Create AudioClip from buffer
-        float[] audioData = audioBuffer.ToArray();
-        audioBuffer.Clear();
-
-        // Apply smooth transition if enabled
-        if (enableSmoothTransition)
-        {
-            audioData = ApplySmoothTransition(audioData);
-        }
-
-        AudioClip clip = CreateAudioClipFromFloatArray(audioData);
-        if (clip != null && audioSource != null)
-        {
-            audioSource.clip = clip;
-            audioSource.volume = audioVolume;
-            audioSource.Play();
-
-            // Myaku Animation: Start answer animation when audio plays
-            if (myakuController != null)
-            {
-                LogMessage("🎵 Starting Myaku answer animation");
-                myakuController.MyakuAnswer();
-            }
-            
-            // Wait for playback to complete
-            float playbackTime = clip.length;
-            
-            if (isAIResponseComplete && audioPlaybackQueue.Count == 0)
-            {
-                yield return new WaitForSeconds(playbackTime);
-                LogMessage("🔊 Final audio chunk played with complete fade-out");
-                
-                // Response completely finished
-                isPlayingResponse = false;
-                
-                // Myaku Animation: Finished speaking, back to listening
-                if (myakuController != null)
-                {
-                    myakuController.FinishSpeaking();
-                    myakuController.StartListening(false);
-                    LogMessage("🔇 Silent listening mode for follow-up questions");
-                }
-
-                // Apply timeout after response completion
-                ApplyUniversalTimeout();
-            }
-            else
-            {
-                yield return new WaitForSeconds(playbackTime - 0.02f);
-            }
-        }
-        
-        isPlayingAudio = false;
-    }
-
-    private void SendAudioToOpenAI(byte[] audioData)
-    {
-        if (!isConnected || audioData.Length == 0)
-            return;
-
-        var audioMessage = new
-        {
-            type = "input_audio_buffer.append",
-            audio = Convert.ToBase64String(audioData)
-        };
-
-        string jsonMessage = JsonConvert.SerializeObject(audioMessage);
-        webSocket.SendText(jsonMessage);
-    }
-    #endregion
-
-    #region WebSocket Event Handlers
-    private void OnWebSocketOpen()
-    {
-        isConnected = true;
-        LogMessage("✅ WebSocket connected to OpenAI Realtime API");
-    }
-
-    private void OnWebSocketMessage(byte[] data)
-    {
-        try
-        {
-            string message = Encoding.UTF8.GetString(data);
-            var jsonMessage = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
-
-            if (jsonMessage.ContainsKey("type"))
-            {
-                string messageType = jsonMessage["type"].ToString();
-                HandleRealtimeMessage(messageType, jsonMessage);
-            }
-        }
-        catch (Exception e)
-        {
-            LogMessage($"❌ Error processing WebSocket message: {e.Message}");
-        }
-    }
-
-    private void OnWebSocketError(string error)
-    {
-        LogMessage($"❌ WebSocket error: {error}");
-        isConnected = false;
-        UpdateStatus("Connection error occurred");
-    }
-
-    private void OnWebSocketClose(WebSocketCloseCode closeCode)
-    {
-        LogMessage($"🔌 WebSocket closed: {closeCode}");
-        isConnected = false;
-        UpdateStatus("Connection closed");
-    }
-
-    private void HandleRealtimeMessage(string messageType, Dictionary<string, object> message)
-    {
-        switch (messageType)
-        {
-            case "session.created":
-                LogMessage("✅ Realtime session created successfully");
-                break;
-
-            case "session.updated":
-                LogMessage("✅ Session updated");
-                break;
-
-            case "input_audio_buffer.speech_started":
-                LogMessage("🎤 OpenAI detected speech start");
-                UpdateStatus("🎤 OpenAI is listening...");
-                break;
-
-            case "input_audio_buffer.speech_stopped":
-                LogMessage("🤐 OpenAI detected speech end, processing...");
-                UpdateStatus("🤖 AI is thinking...");
-                
-                // Myaku Animation: Stop recording, start thinking
-                if (myakuController != null)
-                {
-                    myakuController.StopRecording();
-                    myakuController.MyakuThinking();
-                }
-                
-                ResetVoiceDetectionState();
-                break;
-
-            case "conversation.item.input_audio_transcription.completed":
-                if (message.ContainsKey("transcript"))
-                {
-                    string transcript = message["transcript"].ToString();
-                    LogMessage($"📝 You said: {transcript}");
-                    UpdateUserQuestionWithTimestamp(transcript);
-                }
-                break;
-
-            case "response.created":
-                LogMessage("🤖 AI response started");
-                break;
-
-            case "response.audio_transcript.delta":
-                if (message.ContainsKey("delta"))
-                {
-                    string delta = message["delta"].ToString();
-                    LogMessage($"💬 AI: {delta}");
-                    UpdateAIResponse(delta);
-                }
-                break;
-
-            case "response.audio.delta":
-                if (message.ContainsKey("delta"))
-                {
-                    string audioBase64 = message["delta"].ToString();
-                    byte[] audioData = Convert.FromBase64String(audioBase64);
-                    
-                    // Convert PCM16 to float array for better processing
-                    float[] audioFloats = ConvertPCM16ToFloat(audioData);
-                    
-                    // Apply audio enhancement
-                    if (enableOutputNormalization)
-                    {
-                        audioFloats = NormalizeAudio(audioFloats);
-                    }
-                    
-                    audioPlaybackQueue.Enqueue(audioFloats);
-
-                    if (!isPlayingAudio)
-                    {
-                        UpdateStatus("🔊 AI is speaking...");
-                    }
-                }
-                break;
-
-            case "response.done":
-                LogMessage("✅ AI response completed");
-                UpdateStatus("🎤 Ready for next question...");
-                isAIResponseComplete = true;
-                
-                // Stop thinking animation
-                if (myakuController != null)
-                {
-                    myakuController.MyakuStopThinking();
-                }
-                break;
-
-            case "error":
-                if (message.ContainsKey("error"))
-                {
-                    var error = message["error"];
-                    LogMessage($"❌ OpenAI API Error: {error}");
-                    UpdateStatus("Error occurred");
-                }
-                break;
-
-            default:
-                LogMessage($"📥 Received: {messageType}");
-                break;
-        }
-    }
-    #endregion
-
-    #region Audio Processing Methods
-    private IEnumerator CaptureNoiseProfile()
-    {
-        LogMessage("🔇 Capturing noise profile... Please stay quiet for 2 seconds");
-        yield return new WaitForSeconds(2f);
-        
-        if (microphoneClip != null && isRecording)
-        {
-            int position = Microphone.GetPosition(microphoneDevice);
-            if (position > sampleRate)
-            {
-                float[] noiseData = new float[sampleRate];
-                microphoneClip.GetData(noiseData, 0);
-                noiseProfile = noiseData;
-                noiseProfileCaptured = true;
-                LogMessage("✅ Noise profile captured");
-            }
-        }
-    }
-
-    private float[] ApplyLightNoiseReduction(float[] audioData)
-    {
-        if (noiseProfile == null || noiseProfile.Length == 0)
-            return audioData;
-
-        float[] processedData = new float[audioData.Length];
-        float noiseThreshold = CalculateRMS(noiseProfile) * 1.5f;
-
-        for (int i = 0; i < audioData.Length; i++)
-        {
-            float sample = audioData[i];
-            
-            if (Mathf.Abs(sample) < noiseThreshold)
-            {
-                processedData[i] = sample * 0.3f;
-            }
-            else
-            {
-                processedData[i] = sample;
-            }
-        }
-
-        return processedData;
-    }
-
-    private float CalculateRMS(float[] audioData)
-    {
-        float sum = 0f;
-        for (int i = 0; i < audioData.Length; i++)
-        {
-            sum += audioData[i] * audioData[i];
-        }
-        return Mathf.Sqrt(sum / audioData.Length);
-    }
-
-    private byte[] ConvertToPCM16Raw(float[] audioData)
+    private byte[] ConvertToPCM16(float[] audioData)
     {
         byte[] pcmData = new byte[audioData.Length * 2];
         for (int i = 0; i < audioData.Length; i++)
@@ -960,236 +710,195 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         return pcmData;
     }
 
-    private float[] NormalizeAudio(float[] audioData)
+    private void SendAudioToOpenAI(byte[] audioData)
     {
-        float maxAmplitude = audioData.Max(Mathf.Abs);
-        if (maxAmplitude > 0.01f)
+        if (!isConnected || audioData.Length == 0) return;
+
+        // LogMessage($"📤 Sending {audioData.Length} bytes to OpenAI - AI Speaking: {isAISpeaking}, Waiting: {isWaitingForSpeechEnd}");
+
+        var message = new
         {
-            float normalizeRatio = 0.8f / maxAmplitude;
-            for (int i = 0; i < audioData.Length; i++)
-            {
-                audioData[i] *= normalizeRatio;
-            }
-        }
-        return audioData;
+            type = "input_audio_buffer.append",
+            audio = Convert.ToBase64String(audioData)
+        };
+
+        webSocket.SendText(JsonConvert.SerializeObject(message));
     }
 
-    private float[] ApplySmoothTransition(float[] audioData)
+    /// <summary>
+    /// Simplified audio playback - chỉ phát audio từ OpenAI
+    /// </summary>
+    private void ProcessAudioPlayback()
     {
-        if (audioData.Length == 0)
-            return audioData;
-
-        int fadeSamples = Mathf.RoundToInt(fadeDuration * sampleRate);
-        fadeSamples = Mathf.Min(fadeSamples, audioData.Length / 4);
-
-        // Fade in
-        for (int i = 0; i < fadeSamples && i < audioData.Length; i++)
+        // Add queued audio to buffer
+        while (audioPlaybackQueue.Count > 0)
         {
-            float fadeIn = (float)i / fadeSamples;
-            audioData[i] = Mathf.Lerp(lastAudioSample, audioData[i], fadeIn);
+            float[] chunk = audioPlaybackQueue.Dequeue();
+            audioBuffer.AddRange(chunk);
+            // DON'T reset isAIResponseComplete here - it should only be reset for new responses
+            LogMessage($"📥 Added audio chunk to buffer - Chunk size: {chunk.Length}, Total buffer: {audioBuffer.Count}, Queue remaining: {audioPlaybackQueue.Count}");
         }
 
-        // Fade out
-        for (int i = audioData.Length - fadeSamples; i < audioData.Length; i++)
+        // Play when we have enough audio or response complete
+        if (!isPlayingAudio && (audioBuffer.Count > 1000 || (isAIResponseComplete && audioBuffer.Count > 0)))
         {
-            if (i >= 0)
-            {
-                float fadeOut = (float)(audioData.Length - i) / fadeSamples;
-                audioData[i] *= fadeOut;
-            }
+            LogMessage($"🎵 Triggering PlayAudio - Buffer: {audioBuffer.Count}, Response complete: {isAIResponseComplete}, Queue: {audioPlaybackQueue.Count}");
+            StartCoroutine(PlayAudio());
         }
-
-        if (audioData.Length > 0)
-        {
-            lastAudioSample = audioData[audioData.Length - 1];
-        }
-
-        return audioData;
     }
 
-    private void ApplyAdvancedFadeOut()
+    private IEnumerator PlayAudio()
     {
-        if (audioBuffer.Count == 0) return;
-        
-        int fadeOutSamples = Mathf.RoundToInt(fadeDuration * sampleRate * 2f);
-        fadeOutSamples = Mathf.Min(fadeOutSamples, audioBuffer.Count);
-        
-        for (int i = audioBuffer.Count - fadeOutSamples; i < audioBuffer.Count; i++)
-        {
-            if (i >= 0)
-            {
-                float fadeRatio = (float)(audioBuffer.Count - i) / fadeOutSamples;
-                fadeRatio = Mathf.SmoothStep(0f, 1f, fadeRatio);
-                audioBuffer[i] *= fadeRatio;
-            }
-        }
-        
-        LogMessage("🔇 Applied advanced fade-out to prevent end-of-sentence artifacts");
-    }
+        if (audioBuffer.Count == 0) yield break;
 
-    private AudioClip CreateAudioClipFromFloatArray(float[] audioData)
-    {
-        if (audioData.Length == 0)
-            return null;
+        isPlayingAudio = true;
+        
+        // Mark AI speaking start
+        OnAIStartSpeaking();
+        
+        float[] audioData = audioBuffer.ToArray();
+        audioBuffer.Clear();
 
-        AudioClip clip = AudioClip.Create("RealtimeAudio", audioData.Length, 1, sampleRate, false);
+        AudioClip clip = AudioClip.Create("OpenAIAudio", audioData.Length, 1, sampleRate, false);
         clip.SetData(audioData, 0);
-        return clip;
-    }
 
-    private float[] ConvertPCM16ToFloat(byte[] pcmData)
-    {
-        if (pcmData.Length < 2)
-            return new float[0];
-
-        int sampleCount = pcmData.Length / 2;
-        float[] audioData = new float[sampleCount];
-        
-        for (int i = 0; i < sampleCount; i++)
+        if (audioSource != null)
         {
-            short sample = (short)(pcmData[i * 2] | (pcmData[i * 2 + 1] << 8));
-            audioData[i] = sample / 32767f;
-        }
-
-        return audioData;
-    }
-
-    private float GetAudioLevel(float[] samples)
-    {
-        float sum = 0f;
-        for (int i = 0; i < samples.Length; i++)
-        {
-            sum += samples[i] * samples[i];
-        }
-        return Mathf.Sqrt(sum / samples.Length);
-    }
-    #endregion
-
-    #region Session Management
-    private void ApplyUniversalTimeout()
-    {
-        lastResponseEndTime = Time.time;
-        isWaitingForNextQuestion = true;
-
-        if (enableAutoTimeout)
-        {
-            if (timeoutCoroutine != null)
+            audioSource.clip = clip;
+            audioSource.volume = audioVolume;
+            audioSource.Play();
+            
+            LogMessage($"🔊 Playing audio clip - Duration: {clip.length}s, Buffer cleared, Queue count: {audioPlaybackQueue.Count}");
+            
+            yield return new WaitForSeconds(clip.length);
+            
+            LogMessage($"🔊 Audio finished playing - Response complete: {isAIResponseComplete}, Queue count: {audioPlaybackQueue.Count}");
+            
+            // If this was the final chunk, AI finished speaking
+            if (isAIResponseComplete && audioPlaybackQueue.Count == 0)
             {
-                StopCoroutine(timeoutCoroutine);
+                LogMessage("🔊 AI finished speaking - Final audio played");
+                OnAIFinishedSpeaking(); // CRITICAL: This is where we detect "phát xong câu trả lời"
             }
-            timeoutCoroutine = StartCoroutine(SessionTimeoutCoroutine());
-            LogMessage($"⏰ Universal timeout started: {sessionTimeoutAfterResponse}s");
+            else
+            {
+                LogMessage($"🔊 NOT calling OnAIFinishedSpeaking - Response complete: {isAIResponseComplete}, Queue count: {audioPlaybackQueue.Count}");
+            }
         }
+        
+        isPlayingAudio = false;
+        LogMessage("🔊 PlayAudio coroutine finished - isPlayingAudio set to false");
     }
 
     private IEnumerator SessionTimeoutCoroutine()
     {
-        float timeElapsed = 0f;
-
-        while (timeElapsed < sessionTimeoutAfterResponse && isWaitingForNextQuestion && isSessionActive)
+        float elapsed = 0f;
+        while (elapsed < sessionTimeoutAfterResponse && isWaitingForNextQuestion && isSessionActive)
         {
             yield return new WaitForSeconds(1f);
-            timeElapsed += 1f;
-
-            int remainingTime = Mathf.CeilToInt(sessionTimeoutAfterResponse - timeElapsed);
-            if (remainingTime <= 5)
+            elapsed += 1f;
+            
+            int remaining = Mathf.CeilToInt(sessionTimeoutAfterResponse - elapsed);
+            if (remaining <= 5)
             {
-                string message = $"🔴 LIVE - Auto-ending in {remainingTime}s (say something to continue)";
-                UpdateStatus(message);
+                UpdateStatus($"🔴 Auto-ending in {remaining}s");
             }
         }
 
-        if (isWaitingForNextQuestion && isSessionActive && timeElapsed >= sessionTimeoutAfterResponse)
+        if (isWaitingForNextQuestion && isSessionActive)
         {
-            LogMessage($"⏰ Session auto-ended after {sessionTimeoutAfterResponse}s timeout");
-            UpdateStatus("Session ended due to inactivity");
+            LogMessage("⏰ Session timeout - Ending");
             StopRealtimeConversation();
         }
-
-        timeoutCoroutine = null;
     }
 
     private IEnumerator EndSession()
     {
-        LogMessage("\n🛑 === ENDING HYBRID REALTIME SESSION ===");
-
+        LogMessage("🛑 Ending session");
+        
+        // Reset all states
         isSessionActive = false;
         isRecording = false;
-        isPlayingResponse = false;
+        isAISpeaking = false;
+        isWaitingForSpeechEnd = false;
         isWaitingForNextQuestion = false;
-
-        // Stop timeout coroutine if running
+        hasSpeechStarted = false;
+        
         if (timeoutCoroutine != null)
         {
             StopCoroutine(timeoutCoroutine);
             timeoutCoroutine = null;
         }
-
-        // Myaku Animation: Stop all activities
-        if (myakuController != null)
+        
+        if (aiSpeakingTimeoutCoroutine != null)
         {
-            myakuController.StopAllActivities();
+            StopCoroutine(aiSpeakingTimeoutCoroutine);
+            aiSpeakingTimeoutCoroutine = null;
         }
-
-        ResetVoiceDetectionState();
+        
         StopRecording();
         DisconnectWebSocket();
-        ClearAudioBuffer();
-
-        float sessionDuration = Time.time - sessionStartTime;
-        LogMessage($"✅ Session ended. Duration: {sessionDuration:F1}s");
-
-        // Resume AudioPlugin for wake word detection
+        ClearAudioBuffers();
+        
+        // if (myakuController != null)
+        // {
+        //     myakuController.StopAllActivities();
+        // }
+        
         ResumeAudioPlugin();
-
-        UpdateStatus("Click START or say 'Hey DT' to begin new session");
-        ClearConversationDisplay();
+        UpdateStatus("Click START or say 'Hey DT'");
         UpdateButtonStates();
-
+        ClearConversationDisplay();
+        
         yield return null;
     }
 
-    private void CleanBeforeNewSession()
+    private void CleanupBeforeSession()
     {
-        // Stop any playing audio immediately
+        LogMessage("🧹 Cleanup before session - stopping audio and resetting states");
+        
         if (audioSource != null && audioSource.isPlaying)
         {
             audioSource.Stop();
             audioSource.clip = null;
+            LogMessage("🔇 Audio stopped");
         }
-
-        // Stop all coroutines
-        StopAllCoroutines();
-
-        // Reset states
+        
+        // DON'T use StopAllCoroutines() here - it would kill the current BeginSession() coroutine!
+        // Instead, only stop specific coroutines if needed
+        if (timeoutCoroutine != null)
+        {
+            StopCoroutine(timeoutCoroutine);
+            timeoutCoroutine = null;
+            LogMessage("⏰ Timeout coroutine stopped");
+        }
+        
+        if (aiSpeakingTimeoutCoroutine != null)
+        {
+            StopCoroutine(aiSpeakingTimeoutCoroutine);
+            aiSpeakingTimeoutCoroutine = null;
+            LogMessage("⏰ AI speaking timeout coroutine stopped");
+        }
+        
         isRecording = false;
-        isPlayingResponse = false;
-
-        // Clear conversation display UI
+        isAISpeaking = false;
+        isWaitingForSpeechEnd = false;
+        hasSpeechStarted = false;
+        
         ClearConversationDisplay();
-
-        // Disable Hey DT during session
         enableHeyDT = false;
-
-        LogMessage("🧹 Cleaned up before new session");
+        
+        LogMessage("✅ Cleanup completed - states reset");
     }
 
-    private void ResetVoiceDetectionState()
+    private void ClearAudioBuffers()
     {
-        voiceDetected = false;
-        confirmedVoiceDetected = false;
-        consecutiveVoiceFrameCount = 0;
-        lastVoiceTime = Time.time;
-    }
-
-    private void ClearAudioBuffer()
-    {
+        LogMessage($"🧹 Clearing audio buffers - Buffer: {audioBuffer.Count}, Queue: {audioPlaybackQueue.Count}, Playing: {isPlayingAudio}, Complete: {isAIResponseComplete}");
         audioBuffer.Clear();
         audioPlaybackQueue.Clear();
-        lastAudioSample = 0f;
         isPlayingAudio = false;
         isAIResponseComplete = false;
-        silenceTimer = 0f;
+        LogMessage("🧹 Audio buffers cleared and states reset");
     }
 
     private void DisconnectWebSocket()
@@ -1199,49 +908,226 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             webSocket.Close();
             webSocket = null;
         }
-
         isConnected = false;
     }
     #endregion
 
+    #region WebSocket Events
+    private void OnWebSocketOpen()
+    {
+        isConnected = true;
+        LogMessage("✅ Connected to OpenAI Realtime");
+    }
+
+    private void OnWebSocketMessage(byte[] data)
+    {
+        try
+        {
+            string message = Encoding.UTF8.GetString(data);
+            var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
+
+            if (json.ContainsKey("type"))
+            {
+                HandleMessage(json["type"].ToString(), json);
+            }
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Message error: {e.Message}");
+        }
+    }
+
+    private void OnWebSocketError(string error)
+    {
+        LogMessage($"❌ WebSocket error: {error}");
+        isConnected = false;
+    }
+
+    private void OnWebSocketClose(WebSocketCloseCode closeCode)
+    {
+        LogMessage($"🔌 WebSocket closed: {closeCode}");
+        isConnected = false;
+    }
+
+    private void HandleMessage(string messageType, Dictionary<string, object> message)
+    {
+        switch (messageType)
+        {
+            case "session.created":
+            case "session.updated":
+                LogMessage("✅ Session ready");
+                break;
+
+            case "input_audio_buffer.speech_started":
+                LogMessage("🎤 OpenAI: Speech detected");
+                UpdateStatus("🎤 OpenAI processing...");
+                
+                // Cancel timeout
+                if (timeoutCoroutine != null)
+                {
+                    StopCoroutine(timeoutCoroutine);
+                    timeoutCoroutine = null;
+                    isWaitingForNextQuestion = false;
+                }
+                
+                // Myaku start recording
+                // if (myakuController != null)
+                // {
+                //     myakuController.StartRecording();
+                // }
+                
+                if (userQuestionText != null)
+                {
+                    userQuestionText.text = "👤 User: (Speaking...)";
+                }
+                break;
+
+            case "input_audio_buffer.speech_stopped":
+                LogMessage("🤐 OpenAI: Speech stopped");
+                UpdateStatus("🤖 AI thinking...");
+                
+                // if (myakuController != null)
+                // {
+                //     myakuController.StopRecording();
+                //     myakuController.MyakuThinking();
+                // }
+                break;
+
+            case "conversation.item.input_audio_transcription.completed":
+                if (message.ContainsKey("transcript"))
+                {
+                    string transcript = message["transcript"].ToString();
+                    LogMessage($"📝 Transcript: {transcript}");
+                    UpdateUserQuestion(transcript);
+                }
+                break;
+
+            case "response.created":
+                LogMessage("🤖 AI response starting");
+                hasSpeechStarted = false; // Reset for new response
+                isAIResponseComplete = false; // Reset for new response
+                break;
+
+            case "response.audio_transcript.delta":
+                if (message.ContainsKey("delta"))
+                {
+                    string delta = message["delta"].ToString();
+                    UpdateAIResponse(delta);
+                }
+                break;
+
+            case "response.audio.delta":
+                if (message.ContainsKey("delta"))
+                {
+                    string audioBase64 = message["delta"].ToString();
+                    byte[] audioData = Convert.FromBase64String(audioBase64);
+                    float[] audioFloats = ConvertPCM16ToFloat(audioData);
+                    audioPlaybackQueue.Enqueue(audioFloats);
+
+                    // CRITICAL: Stop microphone IMMEDIATELY when first audio chunk arrives
+                    if (isRecording && !isAISpeaking)
+                    {
+                        Microphone.End(microphoneDevice);
+                        isRecording = false;
+                        isAISpeaking = true; // Prevent further recording
+                        LogMessage("🎤 Microphone STOPPED on first audio chunk to prevent feedback");
+                        
+                        // Start safety timeout for AI speaking state (max 30 seconds)
+                        if (aiSpeakingTimeoutCoroutine != null)
+                        {
+                            StopCoroutine(aiSpeakingTimeoutCoroutine);
+                        }
+                        aiSpeakingTimeoutCoroutine = StartCoroutine(AISpeakingTimeoutCoroutine());
+                    }
+
+                    if (!isPlayingAudio)
+                    {
+                        UpdateStatus("🔊 AI speaking...");
+                    }
+                }
+                break;
+
+            case "response.done":
+                LogMessage("✅ AI response complete - Generation finished");
+                isAIResponseComplete = true; // CRITICAL: This marks response as complete
+                LogMessage($"🎯 isAIResponseComplete set to TRUE - Queue count: {audioPlaybackQueue.Count}, Buffer count: {audioBuffer.Count}");
+                
+                // if (myakuController != null)
+                // {
+                //     myakuController.MyakuStopThinking();
+                // }
+                break;
+
+            case "error":
+                LogMessage($"❌ API Error: {(message.ContainsKey("error") ? message["error"] : "Unknown")}");
+                break;
+        }
+    }
+
+    private float[] ConvertPCM16ToFloat(byte[] pcmData)
+    {
+        if (pcmData.Length < 2) return new float[0];
+
+        int sampleCount = pcmData.Length / 2;
+        float[] audioData = new float[sampleCount];
+        
+        for (int i = 0; i < sampleCount; i++)
+        {
+            short sample = (short)(pcmData[i * 2] | (pcmData[i * 2 + 1] << 8));
+            audioData[i] = sample / 32767f;
+        }
+        return audioData;
+    }
+    #endregion
+
     #region Wake Word Detection
+    private void InitializeComponent()
+    {
+        if (startButton != null) startButton.onClick.AddListener(StartRealtimeConversation);
+        if (stopButton != null) stopButton.onClick.AddListener(StopRealtimeConversation);
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
+
+        ConfigureAudioSource();
+        ClearLogs();
+        ClearConversationDisplay();
+        InitializeAudioPlugin();
+    }
+
+    private void ConfigureAudioSource()
+    {
+        if (audioSource != null)
+        {
+            audioSource.volume = audioVolume;
+            audioSource.spatialBlend = 0f;
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+        }
+    }
+
     private void InitializeAudioPlugin()
     {
-        if (!enableWakeWordDetection)
-        {
-            LogMessage("🔇 Wake word detection disabled");
-            return;
-        }
+        if (!enableWakeWordDetection) return;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         try
         {
-            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
-            {
-                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.Microphone);
-            }
-
             using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             {
                 AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
                 audioPlugin = new AndroidJavaObject("com.unity3d.player.BackgroundAudioPlugin", activity);
             }
 
-            LogMessage("🎤 AudioPlugin: " + (audioPlugin != null ? "Initialized" : "Failed"));
-
             if (audioPlugin != null)
             {
                 audioPlugin.Call("startRecordingFromUnity");
                 enableHeyDT = true;
-                LogMessage("✅ Wake word detection 'Hey DT' is active");
+                LogMessage("✅ Wake word 'Hey DT' active");
             }
         }
         catch (System.Exception e)
         {
-            LogMessage($"❌ Failed to initialize AudioPlugin: {e.Message}");
+            LogMessage($"❌ AudioPlugin failed: {e.Message}");
         }
-#else
-        LogMessage("🔇 Wake word detection only available on Android");
 #endif
     }
 
@@ -1251,7 +1137,6 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (audioPlugin != null)
         {
             audioPlugin.Call("pauseRecordingFromUnity");
-            LogMessage("⏸️ AudioPlugin paused");
         }
 #endif
     }
@@ -1263,214 +1148,49 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         {
             audioPlugin.Call("resumeRecordingFromUnity");
             enableHeyDT = true;
-            LogMessage("▶️ AudioPlugin resumed - Wake word detection active");
         }
 #endif
     }
     #endregion
 
-    #region System Prompt
-    private string GetDefaultMultilingualInstructions()
-    {
-        return @"You are Tenaya, created by Simulation and Visualization Center - Duy Tan University.
-
-🔴 CRITICAL LANGUAGE MATCHING RULES (MUST FOLLOW):
-- STEP 1: Listen carefully to identify the exact language of the CURRENT audio input
-- STEP 2: Respond in the EXACT SAME LANGUAGE as the input - NO EXCEPTIONS
-- STEP 3: Completely IGNORE language from previous conversation history - each input is independent
-- STEP 4: If unsure about language, default to Vietnamese for unclear inputs
-
-🎯 LANGUAGE DETECTION EXAMPLES:
-Input in English → Respond in English ONLY
-Input in Vietnamese → Respond in Vietnamese ONLY  
-Input in Thai → Respond in Thai ONLY
-Input in Chinese → Respond in Chinese ONLY
-Input mixed languages → Use primary/dominant language detected
-
-🚫 FORBIDDEN BEHAVIORS:
-- Never mix languages in one response
-- Never use English if input was Vietnamese (and vice versa)
-- Never be influenced by conversation history language
-- Never assume user language preference from past messages
-
-✅ CORRECT RESPONSE PATTERNS:
-
-🔵 **GREETING DETECTION & RESPONSE**:
-- ONLY respond with greeting IF user input contains PURE greeting words: ""hello"", ""hi"", ""xin chào"", ""chào"", ""สวัสดี"", ""你好"", etc.
-- If user asks question + greeting (e.g., ""Hello, what is ASEAN?""), respond directly to the QUESTION (skip greeting)
-- If user only greets (e.g., ""Hello""), then respond with greeting + offer help:
-  * Vietnamese: ""Chào bạn! Tôi có thể giúp gì cho bạn không?""
-  * English: ""Hello! How can I help you today?""
-  * Thai: ""สวัสดีครับ! มีอะไรให้ผมช่วยไหม?""
-  * Chinese: ""你好！我能为您做些什么吗？""
-
-🔵 **DIRECT QUESTION HANDLING**:
-- If user asks direct questions (even as first message), answer IMMEDIATELY without greeting
-- Examples: ""What is EXPO 2025?"" → Direct answer about EXPO 2025 (NO ""Hello! EXPO 2025 is..."")
-- Examples: ""ASEAN là gì?"" → Direct answer in Vietnamese (NO ""Xin chào! ASEAN là..."")
-
-🚫 **FORBIDDEN RESPONSE PATTERNS**:
-- Never repeat or rephrase the user's question in your response
-- Never echo back what the user said (e.g., ""You asked about ASEAN..."")
-- Never start with greetings unless user ONLY greeted
-- Never use phrases like ""Based on your question..."", ""As you asked..."", ""You mentioned...""
-
-✅ **RESPONSE STYLE**:
-- Provide direct, concise answers (2-4 sentences, each under 25 words)
-- Start immediately with the information requested
-- Focus purely on answering what was asked
-- If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
-
-CAMERA/PHOTO FUNCTIONALITY:
-- If user requests taking a photo or opening camera (phrases like ""take a photo"", ""chụp ảnh"", ""mở camera"", ""take a picture"", ""ถ่ายรูป"", ""拍照"", ""사진 찍기""), respond with: ""CAMERA_REQUEST""
-- This special response will trigger the camera interface automatically
-- Examples of photo requests: ""Can you take a photo?"", ""Chụp ảnh cho tôi"", ""Take a picture"", ""Open camera"", ""Mở máy ảnh"", ""ถ่ายรูปให้หน่อย"", ""帮我拍照"", ""사진 좀 찍어줘""
-
-EXPO 2025 KNOWLEDGE BASE:
-When asked about EXPO 2025, Japan Expo, Osaka exhibition, or Myaku-Myaku, use this information:
-
-**EXPO 2025 Overview:**
-- Location: Yumeshima Island, Osaka Bay, Kansai, Japan
-- Duration: April 13 - October 13, 2025 (184 days)
-- Theme: ""Designing Future Society for Our Lives""
-- Expected visitors: 28.2 million (3.5 million international)
-- Participants: 153 countries/territories + 6 international organizations
-- Organizers: BIE (Bureau International des Expositions) + Japan Association for the 2025 World Exposition
-- This is Osaka's second EXPO (first was 1970)
-
-**Key Features:**
-- Mascot: Myaku-Myaku (red & blue design, represents ""life"" and ""water"", symbolizes connection and adaptation)
-- Main Symbol: The Grand Roof - world's largest wooden structure (2km perimeter, 20m high)
-- Logo: Designed by Tamotsu Shimada, inspired by Sun Tower from EXPO 1970
-- Focus: 17 UN Sustainable Development Goals by 2030
-- Model: ""Green EXPO"" - carbon neutral, using recycled materials and renewable energy
-
-**Vietnam Participation:**
-- Theme: ""An Inclusive Society Where People Are Centered""
-- Location: ""Empowering Lives"" zone, near Japan Pavilion
-- Area: 300m²
-- Organizer: International Cooperation Department, Ministry of Culture, Sports and Tourism of Vietnam
-- Opening: April 12, 2025 with ASEAN Secretary-General Kao Kim Hourn attending
-- Purpose: Showcase Vietnamese culture, people, sustainable values, products, and technologies
-
-**Major Events:**
-- Opening Ceremony (April 12, 2025): Emperor Naruhito, Empress Masako, Crown Prince Fumihito + 1,300 guests
-- Daily activities: National Days, cultural performances, technology exhibitions
-- Myaku-Myaku participates in parades, photo sessions, and interactive activities
-
-**Ticket Info:**
-- Available from late 2024 at www.expo2025.or.jp
-- Contact: Japan Association for 2025 World Exposition or Vietnam's International Cooperation Department
-
-P2A (PASSAGE TO ASEAN) KNOWLEDGE BASE:
-When asked about P2A, Passage to ASEAN, ASEAN education cooperation, or student exchange programs, use this information:
-
-**P2A Overview:**
-- Full Name: Passage to ASEAN (P2A)
-- Established: June 2012 in Thailand
-- Type: Non-profit educational organization
-- Motto: ""One Vision, One Identity, One Community""
-- Mission: Bridge universities/colleges in ASEAN, promote educational/cultural exchange, develop high-quality human resources for ASEAN integration
-
-**Founding Members (2012):**
-- Rangsit University (Thailand)
-- Duy Tan University (Vietnam)
-- Norton University (Cambodia)
-- National University of Laos
-- Myanmar Institute of Information Technology
-
-**Current Scale:**
-- Over 80 member institutions from all 10 ASEAN countries
-- Connects over 1 million students across the region
-- Countries: Brunei, Cambodia, Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand, Vietnam
-
-DUY TAN UNIVERSITY (DTU) KNOWLEDGE BASE:
-When asked about Duy Tan University, Đại học Duy Tân, DTU, or related topics, use this information:
-
-**University Overview (Founded November 11, 1994):**
-- First and largest private university in Central Vietnam
-- Upgraded to full university status (October 7, 2024) - Decision 1115/QĐ-TTg
-- First private university in Vietnam, 8th university nationwide
-- Location: 254 Nguyen Van Linh, Thanh Khe District, Da Nang City (Pacific Coast)
-- 5 campuses, 85,000+ m², 254+ labs/practice rooms
-
-**Leadership:**
-- Chairman of University Council: Distinguished Educator & Labor Hero Le Cong Co (founder)
-- University Director (Rector): Dr. Le Nguyen Bao
-
-**Academic Structure (7 Schools + 2 Institutes):**
-*Schools:* Computer Science, Technology, Economics & Business, Languages & Humanities, Tourism, Medicine & Pharmacy, International Education
-*Institutes:* Nam Khue Management Institute, Vietnam-Japan Institute
-
-**Vision & Mission:**
-*Mission:* Education integrated with scientific research, developing patriotic graduates with humanitarian values, community consciousness, and comprehensive skills for global entrepreneurship
-*Vision:* Reach Top 300 Asian universities (QS Asia Ranking) by 2030
-
-**Connection to ASEAN & P2A:**
-- Founding member of P2A (Passage to ASEAN) network since 2012
-- Key role in ASEAN educational cooperation and student exchange
-- Bridge for Vietnam-ASEAN academic collaboration
-- Participation in regional conferences and initiatives
-
-Be helpful, accurate, and respond naturally in whatever language the user uses.";
-    }
-    #endregion
-
-    #region Utility Methods
+    #region Utilities
     private void UpdateButtonStates()
     {
-        if (startButton != null)
-            startButton.interactable = !isSessionActive;
-            
-        if (stopButton != null)
-            stopButton.interactable = isSessionActive;
+        if (startButton != null) startButton.interactable = !isSessionActive;
+        if (stopButton != null) stopButton.interactable = isSessionActive;
     }
 
     private void LogMessage(string message)
     {
         logMessages += message + "\n";
+        if (logText != null) logText.text = logMessages;
+        Debug.Log($"[SimplifiedRealtime] {message}");
 
-        if (logText != null)
-        {
-            logText.text = logMessages;
-        }
-
-        Debug.Log($"[HybridRealtimeSpeech] {message}");
-
-        if (logMessages.Length > 3000)
+        if (logMessages.Length > 2000)
         {
             string[] lines = logMessages.Split('\n');
-            logMessages = string.Join("\n", lines, lines.Length - 20, 20);
+            logMessages = string.Join("\n", lines, lines.Length - 15, 15);
         }
     }
 
     private void UpdateStatus(string status)
     {
-        if (statusText != null)
-        {
-            statusText.text = status;
-        }
-
-        LogMessage($"Status: {status}");
+        if (statusText != null) statusText.text = status;
     }
 
     private void ClearLogs()
     {
         logMessages = "";
-        if (logText != null)
-        {
-            logText.text = "";
-        }
+        if (logText != null) logText.text = "";
     }
 
-    private void UpdateUserQuestionWithTimestamp(string question)
+    private void UpdateUserQuestion(string question)
     {
         string timestamp = System.DateTime.Now.ToString("HH:mm:ss");
         if (userQuestionText != null)
         {
-            userQuestionText.text = $"👤 [{timestamp}] User: {question}";
+            userQuestionText.text = $"👤 [{timestamp}] {question}";
         }
-        LogMessage($"👤 [{timestamp}] User Question: {question}");
     }
 
     private void UpdateAIResponse(string response)
@@ -1479,80 +1199,33 @@ Be helpful, accurate, and respond naturally in whatever language the user uses."
         {
             aiResponseText.text = $"🤖 AI: {response}";
         }
-        LogMessage($"🤖 AI Response: {response}");
     }
 
     private void ClearConversationDisplay()
     {
-        if (userQuestionText != null)
-        {
-            userQuestionText.text = "👤 User: (Waiting for question...)";
-        }
+        if (userQuestionText != null) userQuestionText.text = "👤 User: (Waiting...)";
+        if (aiResponseText != null) aiResponseText.text = "🤖 AI: Ready";
+    }
 
-        if (aiResponseText != null)
-        {
-            aiResponseText.text = "🤖 AI: Say 'Hey DT' or click START to begin";
-        }
+    private string GetDefaultInstructions()
+    {
+        return @"You are Tenaya from Duy Tan University. 
+
+CRITICAL CONSTRAINTS:
+- Maximum 4 sentences per response
+- Each sentence maximum 20 words
+- Respond in the EXACT same language as input
+- Be direct and concise
+
+Respond naturally and helpfully in the user's language.";
     }
     #endregion
 
-    #region Context Menu Methods
-    [ContextMenu("Test Realtime Connection")]
-    public void TestConnection()
-    {
-        StartRealtimeConversation();
-    }
+    #region Context Menu
+    [ContextMenu("Test Connection")]
+    public void TestConnection() => StartRealtimeConversation();
 
-    [ContextMenu("Stop Realtime Session")]
-    public void StopSession()
-    {
-        StopRealtimeConversation();
-    }
-
-    [ContextMenu("Clear Audio Buffer")]
-    public void ClearBuffer()
-    {
-        ClearAudioBuffer();
-        LogMessage("🧹 Audio buffer cleared");
-    }
-
-    [ContextMenu("Update Session Instructions")]
-    public void UpdateInstructions()
-    {
-        if (isSessionActive && isConnected)
-        {
-            StartCoroutine(UpdateSessionInstructions());
-        }
-        else
-        {
-            LogMessage("⚠️ No active session to update");
-        }
-    }
-
-    private IEnumerator UpdateSessionInstructions()
-    {
-        if (!isConnected)
-        {
-            LogMessage("❌ Cannot update instructions - not connected");
-            yield break;
-        }
-
-        string systemInstructions = !string.IsNullOrEmpty(customInstructions) ? 
-            customInstructions : GetDefaultMultilingualInstructions();
-
-        var updateConfig = new
-        {
-            type = "session.update",
-            session = new
-            {
-                instructions = systemInstructions
-            }
-        };
-
-        string jsonMessage = JsonConvert.SerializeObject(updateConfig);
-        webSocket.SendText(jsonMessage);
-        
-        LogMessage("📡 Session instructions updated during active session");
-    }
+    [ContextMenu("Stop Session")]
+    public void StopSession() => StopRealtimeConversation();
     #endregion
 } 
