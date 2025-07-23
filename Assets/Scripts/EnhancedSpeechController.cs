@@ -8,7 +8,8 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
- 
+using UnityEngine.SceneManagement;
+
 public class EnhancedSpeechController : MonoBehaviour
 {
     #region Singleton
@@ -87,6 +88,10 @@ public class EnhancedSpeechController : MonoBehaviour
     [SerializeField] private bool showRealTimeAudioLevel = true;
 
     
+    public void ChangeToTestScene()
+    {
+        SceneManager.LoadScene("TestScene");
+    }
 
     // Language mappings from RecordAudio.cs (complete list)
     private static readonly Dictionary<string, string> SupportedLanguages = new Dictionary<string, string>
@@ -1653,51 +1658,7 @@ When asked about Duy Tan University, Đại học Duy Tân, DTU, or related topi
 **Academic Structure (7 Schools + 2 Institutes):**
 *Schools:* Computer Science, Technology, Economics & Business, Languages & Humanities, Tourism, Medicine & Pharmacy, International Education
 *Institutes:* Nam Khue Management Institute, Vietnam-Japan Institute
-
-**Key Programs & Rankings:**
-*International Accreditation:*
-- 4 ABET-accredited programs (USA): Software Engineering, Network Engineering, MIS, Electrical Engineering
-- 2 UNWTO TedQual programs: International Hotel/Restaurant Management
-
-*Global Rankings (2024-2025):*
-- QS World University Rankings: #495 globally (highest in Vietnam)
-- Computer Science: Top 351-400 (QS), Top 140 (US News)
-- Engineering, Environmental Science: Top 351-400 (QS)
-- Tourism & Hospitality: Top 101-150 (QS)
-- Medicine: Top 501-550 (QS)
-
-**Academic Excellence:**
-- Total enrolled: 153,771+ students (63 PhD, 3,045 Masters, 109,130+ undergrad/college)
-- Graduated: 87,116+ doctors, masters, engineers, architects, bachelors
-- Employment rate: 95%+ within 6 months (100% for IT, Engineering, Architecture)
-- Research: 1,500+ projects, 79 national-level, 12,008+ international publications
-
-**Study Programs:**
-*Information Technology:* Software Engineering, AI, Network Engineering, MIS
-*Engineering:* Electrical-Electronics, Construction, Architecture, Food Technology, Environmental Management
-*Economics:* Business Administration, Marketing, Banking-Finance, Accounting, Economic Law
-*Tourism:* Tourism Management, Hotel, Travel, Events & Entertainment
-*Health Sciences:* General Medicine, Dentistry, Pharmacy, Nursing
-*Languages & Humanities:* English, Korean, Chinese, International Relations, Literature-Journalism
-*International Programs:* Partnerships with Carnegie Mellon, Penn State (USA), UK, Canada, Singapore universities
-
-**Innovation & Facilities:**
-- E-University system: 3D technology, video conferencing, anytime-anywhere learning
-- MedSIM (Medical Simulation Center)
-- Silver Swallows Studio (film production)
-- Advanced Data Center
-- Digital library (VISTA, Springer access)
-
-**Student Support:**
-- Annual Job Fair: 3,000-5,000 job positions
-- Scholarships: 50 full/partial scholarships (18+ billion VND), 225 talent scholarships (14+ billion VND)
-- International cooperation: 300+ corporations and universities worldwide
-
-**Awards & Recognition:**
-- Labor Order First Class (2019), Second Class (2014), Third Class (2009)
-- Multiple commendations from President, Prime Minister, Ministry of Education
-- Student achievements: CDIO Academy Champion 2013 (MIT/Harvard), IDEERS Asia-Pacific Champion 2014, Microsoft Imagine Cup Vietnam Winner 2016
-
+ 
 **Vision & Mission:**
 *Mission:* Education integrated with scientific research, developing patriotic graduates with humanitarian values, community consciousness, and comprehensive skills for global entrepreneurship
 *Vision:* Reach Top 300 Asian universities (QS Asia Ranking) by 2030
