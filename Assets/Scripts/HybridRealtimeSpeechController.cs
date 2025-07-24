@@ -102,6 +102,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     // Wake Word Detection
     private AndroidJavaObject audioPlugin;
     private bool enableHeyDT = true;
+    private bool isFirstListening = true;
     
     // Logging
     private string logMessages = "";
@@ -245,10 +246,10 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             LogMessage("🔊 AI started speaking - Already blocked in audio.delta");
             
             // Myaku animation
-            // if (myakuController != null)
-            // {
-            //     myakuController.MyakuAnswer();
-            // }
+            if (myakuController != null)
+            {
+                myakuController.MyakuAnswer();
+            }
         }
     }
 
@@ -278,12 +279,17 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             isRecording = false;
             LogMessage("🛑 Final microphone stop in OnAIFinishedSpeaking");
         }
-        
-        // Myaku animation
-        // if (myakuController != null)
-        // {
-        //     myakuController.FinishSpeaking();
-        // }
+        if(isFirstListening == true){
+
+            isFirstListening = false;
+        }
+       else {
+ // Myaku animation
+            if (myakuController != null)
+            {
+                myakuController.MyakuListen(false);
+            }
+       }
         
         // Start delay before allowing recording again
         StartCoroutine(SpeechEndDelayCoroutine());
@@ -582,6 +588,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         else
         {
             LogMessage("✅ WebSocket connected successfully");
+            myakuController.MyakuListen(true);
         }
     }
 
@@ -840,10 +847,10 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         DisconnectWebSocket();
         ClearAudioBuffers();
         
-        // if (myakuController != null)
-        // {
-        //     myakuController.StopAllActivities();
-        // }
+        if (myakuController != null)
+        {
+            myakuController.MyakuHello();
+        }
         
         ResumeAudioPlugin();
         UpdateStatus("Click START or say 'Hey DT'");
@@ -961,20 +968,14 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             case "input_audio_buffer.speech_started":
                 LogMessage("🎤 OpenAI: Speech detected");
                 UpdateStatus("🎤 OpenAI processing...");
-                
+                isFirstListening = true;
                 // Cancel timeout
                 if (timeoutCoroutine != null)
                 {
                     StopCoroutine(timeoutCoroutine);
                     timeoutCoroutine = null;
                     isWaitingForNextQuestion = false;
-                }
-                
-                // Myaku start recording
-                // if (myakuController != null)
-                // {
-                //     myakuController.StartRecording();
-                // }
+                } 
                 
                 if (userQuestionText != null)
                 {
@@ -987,8 +988,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                 UpdateStatus("🤖 AI thinking...");
                 
                 // if (myakuController != null)
-                // {
-                //     myakuController.StopRecording();
+                // { 
                 //     myakuController.MyakuThinking();
                 // }
                 break;
@@ -1054,7 +1054,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                 
                 // if (myakuController != null)
                 // {
-                //     myakuController.MyakuStopThinking();
+                //     myakuController.MyakuListen(false);
                 // }
                 break;
 

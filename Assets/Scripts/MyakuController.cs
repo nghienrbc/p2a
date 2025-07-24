@@ -37,11 +37,6 @@ public class MyakuController : MonoBehaviour
     // Enhanced Speech Controller Integration
     // State variables removed - EnhancedSpeechController handles state management
 
-    // State variables for Enhanced Speech Controller
-    private bool isListening = false;
-    private bool isRecording = false;
-    private bool isThinking = false;
-    private bool isSpeaking = false;
 
     private void Start()
     {
@@ -222,13 +217,13 @@ public class MyakuController : MonoBehaviour
     public void MyakuHello()
     {
         animator.SetTrigger("hello");
-        
+
         // Nếu đang trong chế độ chờ câu hỏi tiếp theo, kết thúc chế độ này
         if (isWaitingForNextQuestion)
         {
             EndWaitingForNextQuestion();
         }
-        
+
         // Khởi động lại lắng nghe wake word
         if (EnhancedSpeechController.Instance != null)
         {
@@ -239,13 +234,14 @@ public class MyakuController : MonoBehaviour
 
     public void MyakuListen(bool playSound = true)
     {
-        animator.SetTrigger("listen"); 
+        animator.SetTrigger("listen");
+        animator.SetBool("answer", false);
         if (playSound)
         {
             PlayRandomSound(listeningSounds, "listening");
+            // We need to wait for the audio to finish playing before proceeding
+            StartCoroutine(WaitForAudioAndNotify(playSound));
         }
-        // We need to wait for the audio to finish playing before proceeding
-        StartCoroutine(WaitForAudioAndNotify(playSound));
     }
 
     private IEnumerator WaitForAudioAndNotify(bool playSound = true)
@@ -258,12 +254,6 @@ public class MyakuController : MonoBehaviour
                 yield return null;
             }
         }
-        // EnhancedSpeechController handles status updates automatically
-
-        // Add additional 1 second delay after audio finishes
-        // yield return new WaitForSeconds(1.0f);
-        
-        // EnhancedSpeechController tự động xử lý continuous recording
         // Không cần gọi thêm method nào vì nó đã tự động lắng nghe liên tục
         if (EnhancedSpeechController.Instance != null)
         {
@@ -271,14 +261,12 @@ public class MyakuController : MonoBehaviour
         }
     }
 
-
-
     public void MyakuThinking()
     {
         Debug.Log("🤔 MyakuThinking() called - Starting thinking animation");
         animator.SetBool("thinking", true);
-        animator.SetBool("answer", false);
-        PlayRandomSound(thinkingSounds, "thinking");
+        //animator.SetBool("answer", false);
+        //PlayRandomSound(thinkingSounds, "thinking");
     }
 
     public void MyakuStopThinking()
@@ -291,8 +279,6 @@ public class MyakuController : MonoBehaviour
     {
         Debug.Log("🎵 MyakuAnswer() called - Starting answer animation");
 
-        // Ensure all other states are off
-        animator.SetBool("listen", false);
 
         // Start answer animation
         animator.SetBool("answer", true);
@@ -313,10 +299,10 @@ public class MyakuController : MonoBehaviour
     public void StartWaitingForNextQuestion()
     {
         isWaitingForNextQuestion = true;
-        
+
         // Hiển thị animation listen nhưng không phát âm thanh cho câu hỏi tiếp theo
         MyakuListen(false); // playSound = false
-        
+
         // Bắt đầu timer 10 giây
         if (questionTimeoutCoroutine != null)
         {
@@ -328,14 +314,14 @@ public class MyakuController : MonoBehaviour
     private IEnumerator QuestionTimeoutCoroutine()
     {
         yield return new WaitForSeconds(QUESTION_TIMEOUT);
-        
+
         // Nếu sau 10 giây không có câu hỏi mới, quay về chế độ lắng nghe wake word
         if (isWaitingForNextQuestion)
         {
             Debug.Log("Timeout waiting for next question. Returning to wake word mode.");
             EndWaitingForNextQuestion();
             MyakuHello(); // Kết thúc phiên và quay về wake word mode
-            
+
             // EnhancedSpeechController tự động resume wake word detection
             if (EnhancedSpeechController.Instance != null)
             {
@@ -347,10 +333,10 @@ public class MyakuController : MonoBehaviour
     public void EndWaitingForNextQuestion()
     {
         isWaitingForNextQuestion = false;
-        
+
         // Không cần reset animation ở đây vì sẽ chuyển sang thinking hoặc answer
         // animator.SetTrigger("hello"); // Bỏ dòng này để tránh xung đột animation
-        
+
         if (questionTimeoutCoroutine != null)
         {
             StopCoroutine(questionTimeoutCoroutine);
@@ -450,196 +436,7 @@ public class MyakuController : MonoBehaviour
         }
     }
 
-    #region Enhanced Speech Controller Integration
-    /// <summary>
-    /// Bắt đầu chế độ lắng nghe - Myaku sẵn sàng nhận câu hỏi
-    /// </summary>
-    public void StartListening()
-    {
-        StartListening(false); // Default: no sound
-    }
 
-    /// <summary>
-    /// Bắt đầu chế độ lắng nghe với tùy chọn phát âm thanh
-    /// </summary>
-    /// <param name="playSound">True để phát âm thanh listening, False để im lặng</param>
-    public void StartListening(bool playSound)
-    {
-        Debug.Log($"🔍 DEBUG: StartListening called with playSound = {playSound}");
-
-        isListening = true;
-        isRecording = false;
-        isThinking = false;
-        isSpeaking = false;
-
-        // Animation: Idle/listening state
-        animator.SetBool("listen", true);  
-        animator.SetBool("answer", false);
-
-        // Move to near position for interaction
-        //MoveToNear();
-
-        // Play listening sound only if requested (for wake word sessions)
-        if (playSound)
-        {
-            Debug.Log("🎧 Myaku: Starting listening mode WITH SOUND");
-            PlayRandomListeningSound();
-            Debug.Log("🎧 Myaku: Started listening mode with sound");
-        }
-        else
-        {
-            Debug.Log("🎧 Myaku: Started listening mode (silent)");
-        }
-        UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
-    }
-
-    /// <summary>
-    /// Bắt đầu ghi âm - Người dùng đang nói
-    /// </summary>
-    public void StartRecording()
-    {
-        isListening = false;
-        isRecording = true;
-        isThinking = false;
-        isSpeaking = false;
-
-        // Animation: Recording state
-        animator.SetBool("listen", false);
-        animator.SetBool("answer", false);
-
-        // Show record panel
-        if (recordPanelAnimator != null)
-        {
-            recordPanelAnimator.SetBool("show", true);
-        }
-
-        Debug.Log("🎤 Myaku: Started recording mode");
-    }
-
-    /// <summary>
-    /// Dừng ghi âm - Người dùng đã nói xong
-    /// </summary>
-    public void StopRecording()
-    {
-        isRecording = false;
-
-        // Hide record panel
-        if (recordPanelAnimator != null)
-        {
-            recordPanelAnimator.SetBool("show", false);
-        }
-
-        Debug.Log("🛑 Myaku: Stopped recording");
-    }
-
-    /// <summary>
-    /// Bắt đầu suy nghĩ - AI đang xử lý câu hỏi
-    /// </summary>
-    public void StartThinking()
-    {
-        isListening = false;
-        isRecording = false;
-        isThinking = true;
-        isSpeaking = false;
-
-        // Animation: Thinking state
-        animator.SetBool("thinking", true);
-        animator.SetBool("listen", false);
-        animator.SetBool("answer", false);
-
-        // Play thinking sound
-        PlayRandomThinkingSound();
-
-        Debug.Log("🤔 Myaku: Started thinking mode");
-    }
-
-    /// <summary>
-    /// Dừng suy nghĩ
-    /// </summary>
-    public void StopThinking()
-    {
-        isThinking = false;
-
-        // Animation: Stop thinking
-        animator.SetBool("thinking", false);
-
-        Debug.Log("🛑 Myaku: Stopped thinking");
-    }
-
-    /// <summary>
-    /// Bắt đầu nói - AI đang chuẩn bị phát câu trả lời (chưa phát)
-    /// </summary>
-    public void StartSpeaking()
-    {
-        isListening = false;
-        isRecording = false;
-        isThinking = false;
-        isSpeaking = true;
-
-        // Animation: Prepare for speaking (không set answer = true ở đây)
-        animator.SetBool("listen", false);
-        
-        // Không set answer = true ở đây, để MyakuAnswer() xử lý
-
-        // Show speak panel
-        // if (speakPanelAnimator != null)
-        // {
-        //     speakPanelAnimator.SetBool("show", true);
-        // }
-
-        Debug.Log("🗣️ Myaku: Prepared for speaking - waiting for MyakuAnswer()");
-    }
-
-    /// <summary>
-    /// Kết thúc nói - AI đã phát xong câu trả lời
-    /// </summary>
-    public void FinishSpeaking()
-    {
-        isSpeaking = false;
-
-        // Animation: Stop speaking
-        animator.SetBool("answer", false);
-
-        // Hide speak panel
-        // if (speakPanelAnimator != null)
-        // {
-        //     speakPanelAnimator.SetBool("show", false);
-        // }
-
-        //UIManager.Instance.connectionTxt.text = "I'm listening! Ask me something!";
-        Debug.Log("✅ Myaku: Finished speaking");
-        
-        MyakuStopThinking();
-    }
-
-    /// <summary>
-    /// Dừng tất cả hoạt động - Kết thúc session
-    /// </summary>
-    public void StopAllActivities()
-    {
-        isListening = false;
-        isRecording = false;
-        isThinking = false;
-        isSpeaking = false;
-
-        // Reset all animations
-        animator.SetBool("listen", false);        
-        animator.SetBool("answer", false);
-
-        // Hide all panels
-        if (recordPanelAnimator != null)
-        {
-            recordPanelAnimator.SetBool("show", false);
-        }
-
-        // if (speakPanelAnimator != null)
-        // {
-        //     speakPanelAnimator.SetBool("show", false);
-        // }
- 
-        MyakuHello();
-        Debug.Log("🛑 Myaku: Stopped all activities");
-    }
 
     /// <summary>
     /// Phát âm thanh listening ngẫu nhiên
@@ -662,11 +459,11 @@ public class MyakuController : MonoBehaviour
             {
                 AudioClip selectedClip = listeningSounds[randomIndex];
                 Debug.Log($"🎵 Playing listening sound {randomIndex}: {selectedClip.name} (duration: {selectedClip.length:F2}s)");
-                
+
                 audioPlayer.clip = selectedClip;
                 audioPlayer.volume = 0.7f; // Ensure proper volume
                 audioPlayer.Play();
-                
+
                 Debug.Log($"✅ Listening sound started playing - EnhancedSpeechController will wait for it to finish");
             }
             else
@@ -717,5 +514,4 @@ public class MyakuController : MonoBehaviour
         }
         return 0f;
     }
-    #endregion
 }
