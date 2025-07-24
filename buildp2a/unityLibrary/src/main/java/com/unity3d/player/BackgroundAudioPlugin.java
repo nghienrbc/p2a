@@ -301,7 +301,7 @@ public class BackgroundAudioPlugin {
                                 Log.d(TAG, "Phát hiện wake word từ WebSocket");
                                 if (isAppInForeground()) {
                                     Log.d(TAG, "Ứng dụng đang ở foreground, gửi thông báo wake word đến Unity");
-                                    UnityPlayer.UnitySendMessage("EnhancedSpeechController", "OnWakeWordDetected", "");
+                                    UnityPlayer.UnitySendMessage("HybridRealtimeSpeechController", "OnWakeWordDetected", "");
                                 } else {
                                     Log.d(TAG, "Ứng dụng ở background, mở Activity");
                                    // startMainActivity();

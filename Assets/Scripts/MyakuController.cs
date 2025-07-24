@@ -236,6 +236,7 @@ public class MyakuController : MonoBehaviour
     {
         animator.SetTrigger("listen");
         animator.SetBool("answer", false);
+        UIManager.Instance.connectionTxt.text = "I'm Listening...";
         if (playSound)
         {
             PlayRandomSound(listeningSounds, "listening");
@@ -279,6 +280,7 @@ public class MyakuController : MonoBehaviour
     {
         Debug.Log("🎵 MyakuAnswer() called - Starting answer animation");
 
+        UIManager.Instance.connectionTxt.text = "...";
 
         // Start answer animation
         animator.SetBool("answer", true);

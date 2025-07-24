@@ -131,7 +131,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         LogMessage("🎤 Simplified Realtime Speech Controller Ready");
         LogMessage("✅ Pure OpenAI WebSocket - No client-side VAD");
         LogMessage("🤖 Myaku Integration Enabled");
-        UpdateStatus("Click START or say 'Hey DT' to begin");
+        //UpdateStatus("Click START or say 'Hey DT' to begin");
     }
 
     private void Update()
@@ -848,7 +848,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
         
         ResumeAudioPlugin();
-        UpdateStatus("Click START or say 'Hey DT'");
+        // UpdateStatus("Click START or say 'Hey DT'");
         UpdateButtonStates();
         ClearConversationDisplay();
         
@@ -993,7 +993,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                 {
                     string transcript = message["transcript"].ToString();
                     LogMessage($"📝 Transcript: {transcript}");
-                    UpdateUserQuestion(transcript);
+                    //UpdateUserQuestion(transcript);
                 }
                 break;
 
@@ -1015,7 +1015,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                     string fullResponse = currentAIResponse.ToLower().Trim();
                     LogMessage($"🔍 DEBUG: Full accumulated response: '{fullResponse}'");
                     
-                    UpdateAIResponse(delta);
+                    //UpdateAIResponse(delta);
                     
                     // Check for camera request in both delta and accumulated response
                     string lowerDelta = delta.ToLower().Trim();
