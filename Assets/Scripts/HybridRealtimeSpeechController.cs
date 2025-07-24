@@ -1250,8 +1250,8 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
     private void ClearConversationDisplay()
     {
-        if (userQuestionText != null) userQuestionText.text = "👤 User: (Waiting...)";
-        if (aiResponseText != null) aiResponseText.text = "🤖 AI: Ready";
+        //if (userQuestionText != null) userQuestionText.text = "👤 User: (Waiting...)";
+        if (aiResponseText != null) aiResponseText.text = "Click START or say 'Hey DT' to begin";
     }
 
     /// <summary>
