@@ -52,7 +52,6 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     [Header("Wake Word Detection")]
     public bool enableWakeWordDetection = true;
     
-    [SerializeField, TextArea(3, 10)] private string customInstructions = "";
     #endregion
 
     #region Config System
@@ -61,7 +60,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     {
         public string openAIApiKey;
         public string model = "gpt-4o-realtime-preview-2024-10-01";
-        public string voice = "alloy";
+        public string voice = "fable";
         public string customInstructions = "";
     }
 
@@ -187,12 +186,6 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                 LogMessage($"🔑 API Key loaded: {(string.IsNullOrEmpty(config.openAIApiKey) ? "MISSING" : "Present")}");
                 LogMessage($"🎵 Model: {config.model}");
                 LogMessage($"🗣️ Voice: {config.voice}");
-                
-                if (!string.IsNullOrEmpty(config.customInstructions))
-                {
-                    customInstructions = config.customInstructions;
-                    LogMessage("📝 Custom instructions loaded from config");
-                }
             }
             else
             {
@@ -604,8 +597,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
 
         LogMessage("⚙️ Creating OpenAI session...");
-        string instructions = !string.IsNullOrEmpty(customInstructions) ? 
-            customInstructions : GetDefaultInstructions();
+        string instructions = GetDefaultInstructions();
 
         var sessionConfig = new
         {
@@ -1348,6 +1340,12 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 - STEP 3: Completely IGNORE language from previous conversation history - each input is independent
 - STEP 4: If unsure about language, default to Vietnamese for unclear inputs
 
+✅ **RESPONSE STYLE**:
+- Provide direct, concise answers (2-3 sentences, each under 20 words)
+- Start immediately with the information requested
+- Focus purely on answering what was asked
+- If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
+
 🎯 LANGUAGE DETECTION EXAMPLES:
 Input in English → Respond in English ONLY
 Input in Vietnamese → Respond in Vietnamese ONLY  
@@ -1383,11 +1381,11 @@ Input mixed languages → Use primary/dominant language detected
 - Never start with greetings unless user ONLY greeted
 - Never use phrases like ""Based on your question..."", ""As you asked..."", ""You mentioned...""
 
-✅ **RESPONSE STYLE**:
-- Provide direct, concise answers (2-3 sentences, each under 20 words)
-- Start immediately with the information requested
-- Focus purely on answering what was asked
-- If you cannot understand the audio clearly, respond with: ""Không nhận dạng được câu hỏi"" (Vietnamese) or ""Cannot understand the question"" (English)
+🔥 **PRIORITY DATA SOURCE RULE**:
+- ALWAYS prioritize information from the provided knowledge base when available
+- Use exact data from instructions for EXPO 2025, P2A, ASEAN, DTU topics
+- Only use general knowledge if specific data not provided in instructions
+
 
 CAMERA/PHOTO FUNCTIONALITY:
 - If user requests taking a photo or opening camera (phrases like ""take a photo"", ""chụp ảnh"", ""mở camera"", ""take a picture"", ""ถ่ายรูป"", ""拍照"", ""사진 찍기""), respond with: ""CAMERA_REQUEST""
