@@ -754,7 +754,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
 
         LogMessage("⚙️ Creating OpenAI session...");
-        string instructions = ""; //GetDefaultInstructions();
+        string instructions = GetDefaultInstructions();
 
         var sessionConfig = new
         {

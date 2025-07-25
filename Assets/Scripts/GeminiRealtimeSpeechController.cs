@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using NativeWebSocket;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text;
 using System.Linq;
 using UnityEngine.SceneManagement;
@@ -1282,34 +1283,43 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
             string message = Encoding.UTF8.GetString(data);
             LogMessage($"🔍 RAW MESSAGE: {message.Substring(0, Math.Min(300, message.Length))}...");
             
-            var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
+            // Parse as JObject instead of Dictionary to handle nested objects properly
+            var json = JObject.Parse(message);
+            LogMessage($"🔍 PARSED JSON KEYS: {string.Join(", ", json.Properties().Select(p => p.Name))}");
 
             // CORRECT Gemini Live API message handling
             if (json.ContainsKey("setupComplete"))
             {
+                LogMessage("✅ Found setupComplete in message");
                 HandleMessage("setupComplete", json);
             }
             else if (json.ContainsKey("serverContent"))
             {
+                LogMessage("📨 Found serverContent in message");
+                LogMessage($"🔍 serverContent type: {json["serverContent"]?.GetType().Name}");
+                LogMessage($"🔍 serverContent preview: {json["serverContent"]?.ToString().Substring(0, Math.Min(200, json["serverContent"]?.ToString().Length ?? 0))}...");
                 HandleMessage("serverContent", json);
             }
             else if (json.ContainsKey("toolCall"))
             {
+                LogMessage("🔧 Found toolCall in message");
                 HandleMessage("toolCall", json);
             }
             else if (json.ContainsKey("usageMetadata"))
             {
+                LogMessage("📊 Found usageMetadata in message");
                 HandleMessage("usageMetadata", json);
             }
             else
             {
-                LogMessage($"❓ Unknown message type - Keys: {string.Join(", ", json.Keys)}");
+                LogMessage($"❓ Unknown message type - Keys: {string.Join(", ", json.Properties().Select(p => p.Name))}");
                 LogMessage($"📋 Full message: {message.Substring(0, Math.Min(500, message.Length))}...");
             }
         }
         catch (Exception e)
         {
             LogMessage($"❌ Message parsing error: {e.Message}");
+            LogMessage($"❌ Stack trace: {e.StackTrace}");
             LogMessage($"📋 Raw data: {Encoding.UTF8.GetString(data).Substring(0, Math.Min(200, data.Length))}...");
         }
     }
@@ -1350,7 +1360,7 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
         isConnected = false;
     }
 
-    private void HandleMessage(string messageType, Dictionary<string, object> message)
+    private void HandleMessage(string messageType, JObject message)
     {
         switch (messageType)
         {
@@ -1379,32 +1389,35 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
 
             default:
                 LogMessage($"❓ Unknown message type: {messageType}");
-                LogMessage($"📋 Message content: {JsonConvert.SerializeObject(message).Substring(0, Math.Min(300, JsonConvert.SerializeObject(message).Length))}...");
+                LogMessage($"📋 Message content: {message.ToString().Substring(0, Math.Min(300, message.ToString().Length))}...");
                 break;
         }
     }
 
-    private void HandleServerContent(Dictionary<string, object> message)
+    private void HandleServerContent(JObject message)
     {
         try
         {
             if (!message.ContainsKey("serverContent")) 
             {
                 LogMessage("⚠️ No serverContent in message");
+                LogMessage($"🔍 Available keys: {string.Join(", ", message.Properties().Select(p => p.Name))}");
                 return;
             }
             
-            var serverContent = message["serverContent"] as Dictionary<string, object>;
+            var serverContent = message["serverContent"] as JObject;
             if (serverContent == null) 
             {
-                LogMessage("⚠️ serverContent is null");
+                LogMessage("⚠️ serverContent is null after JObject cast");
+                LogMessage($"🔍 serverContent actual type: {message["serverContent"]?.GetType().Name}");
+                LogMessage($"🔍 serverContent raw value: {message["serverContent"]}");
                 return;
             }
 
-            LogMessage($"🔍 Server content keys: {string.Join(", ", serverContent.Keys)}");
+            LogMessage($"🔍 Server content keys: {string.Join(", ", serverContent.Properties().Select(p => p.Name))}");
 
             // Check for turn_complete
-            if (serverContent.ContainsKey("turnComplete") && Convert.ToBoolean(serverContent["turnComplete"]))
+            if (serverContent.ContainsKey("turnComplete") && serverContent["turnComplete"]?.Value<bool>() == true)
             {
                 LogMessage("✅ AI response turn complete");
                 isAIResponseComplete = true;
@@ -1412,7 +1425,7 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
             }
 
             // Check for interruption
-            if (serverContent.ContainsKey("interrupted") && Convert.ToBoolean(serverContent["interrupted"]))
+            if (serverContent.ContainsKey("interrupted") && serverContent["interrupted"]?.Value<bool>() == true)
             {
                 LogMessage("🚫 AI response interrupted");
                 // Handle interruption
@@ -1422,59 +1435,62 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
             if (serverContent.ContainsKey("modelTurn"))
             {
                 LogMessage("📋 ModelTurn found - processing parts...");
-                var modelTurn = serverContent["modelTurn"] as Dictionary<string, object>;
+                var modelTurn = serverContent["modelTurn"] as JObject;
                 if (modelTurn != null && modelTurn.ContainsKey("parts"))
                 {
-                    var parts = modelTurn["parts"] as object[];
-                    LogMessage($"📋 Found {parts?.Length ?? 0} parts");
+                    var parts = modelTurn["parts"] as JArray;
+                    LogMessage($"📋 Found {parts?.Count ?? 0} parts");
                     
                     if (parts != null)
                     {
                         foreach (var part in parts)
                         {
-                            var partDict = part as Dictionary<string, object>;
-                            if (partDict != null)
+                            var partObject = part as JObject;
+                            if (partObject != null)
                             {
-                                LogMessage($"🔍 Part keys: {string.Join(", ", partDict.Keys)}");
+                                LogMessage($"🔍 Part keys: {string.Join(", ", partObject.Properties().Select(p => p.Name))}");
                                 
                                 // Handle audio data from inlineData (match Kotlin implementation)
-                                if (partDict.ContainsKey("inlineData"))
+                                if (partObject.ContainsKey("inlineData"))
                                 {
-                                    var inlineData = partDict["inlineData"] as Dictionary<string, object>;
+                                    var inlineData = partObject["inlineData"] as JObject;
                                     if (inlineData != null && inlineData.ContainsKey("mimeType") && inlineData.ContainsKey("data"))
                                     {
-                                        string mimeType = inlineData["mimeType"].ToString();
+                                        string mimeType = inlineData["mimeType"]?.Value<string>();
                                         // Check mime type exactly like Kotlin implementation
                                         if (mimeType == "audio/pcm;rate=24000")
                                         {
                                             LogMessage("🎵 Audio data found with correct mime type: audio/pcm;rate=24000");
-                                            string audioBase64 = inlineData["data"].ToString();
-                                            byte[] audioData = Convert.FromBase64String(audioBase64);
-                                            float[] audioFloats = ConvertPCM16ToFloat(audioData);
-                                            audioPlaybackQueue.Enqueue(audioFloats);
-                                        
-                                        LogMessage($"🎵 Audio chunk processed: {audioData.Length} bytes -> {audioFloats.Length} samples");
-
-                                        // CRITICAL: Stop microphone IMMEDIATELY when first audio chunk arrives
-                                        if (isRecording && !isAISpeaking)
-                                        {
-                                            Microphone.End(microphoneDevice);
-                                            isRecording = false;
-                                            isAISpeaking = true; // Prevent further recording
-                                            LogMessage("🎤 Microphone STOPPED on first audio chunk to prevent feedback");
-                                            
-                                            // Start safety timeout for AI speaking state (max 30 seconds)
-                                            if (aiSpeakingTimeoutCoroutine != null)
+                                            string audioBase64 = inlineData["data"]?.Value<string>();
+                                            if (!string.IsNullOrEmpty(audioBase64))
                                             {
-                                                StopCoroutine(aiSpeakingTimeoutCoroutine);
-                                            }
-                                            aiSpeakingTimeoutCoroutine = StartCoroutine(AISpeakingTimeoutCoroutine());
-                                        }
+                                                byte[] audioData = Convert.FromBase64String(audioBase64);
+                                                float[] audioFloats = ConvertPCM16ToFloat(audioData);
+                                                audioPlaybackQueue.Enqueue(audioFloats);
+                                            
+                                                LogMessage($"🎵 Audio chunk processed: {audioData.Length} bytes -> {audioFloats.Length} samples");
 
-                                        if (!isPlayingAudio)
-                                        {
-                                            UpdateStatus("🔊 AI speaking...");
-                                        }
+                                                // CRITICAL: Stop microphone IMMEDIATELY when first audio chunk arrives
+                                                if (isRecording && !isAISpeaking)
+                                                {
+                                                    Microphone.End(microphoneDevice);
+                                                    isRecording = false;
+                                                    isAISpeaking = true; // Prevent further recording
+                                                    LogMessage("🎤 Microphone STOPPED on first audio chunk to prevent feedback");
+                                                    
+                                                    // Start safety timeout for AI speaking state (max 30 seconds)
+                                                    if (aiSpeakingTimeoutCoroutine != null)
+                                                    {
+                                                        StopCoroutine(aiSpeakingTimeoutCoroutine);
+                                                    }
+                                                    aiSpeakingTimeoutCoroutine = StartCoroutine(AISpeakingTimeoutCoroutine());
+                                                }
+
+                                                if (!isPlayingAudio)
+                                                {
+                                                    UpdateStatus("🔊 AI speaking...");
+                                                }
+                                            }
                                         }
                                         else
                                         {
@@ -1484,9 +1500,9 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
                                 }
 
                                 // Handle text data
-                                if (partDict.ContainsKey("text"))
+                                if (partObject.ContainsKey("text"))
                                 {
-                                    string text = partDict["text"].ToString();
+                                    string text = partObject["text"]?.Value<string>();
                                     LogMessage($"📝 AI Response Text: '{text}'");
                                     
                                     // Accumulate response
@@ -1494,7 +1510,7 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
                                     string fullResponse = currentAIResponse.ToLower().Trim();
                                     
                                     // Check for camera request
-                                    string lowerText = text.ToLower().Trim();
+                                    string lowerText = text?.ToLower().Trim() ?? "";
                                     
                                     if ((lowerText.Contains("camera_request") || lowerText.Contains("camera request") || 
                                          lowerText == "camera_request" || lowerText == "camera request") ||
@@ -1521,7 +1537,8 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
                 }
                 else
                 {
-                    LogMessage("⚠️ ModelTurn found but no parts");
+                    LogMessage("⚠️ ModelTurn found but no parts or modelTurn is null");
+                    LogMessage($"🔍 modelTurn type: {serverContent["modelTurn"]?.GetType().Name}");
                 }
             }
             else
