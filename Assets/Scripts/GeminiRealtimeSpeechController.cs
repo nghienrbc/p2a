@@ -11,14 +11,14 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Simplified Realtime Speech Controller - Pure OpenAI WebSocket
-/// Chỉ sử dụng OpenAI Realtime WebSocket, loại bỏ tất cả logic speech-to-speech phức tạp
-/// VAD hoàn toàn do OpenAI xử lý, speech flow control đơn giản
+/// Simplified Realtime Speech Controller - Pure Gemini Live API WebSocket
+/// Chỉ sử dụng Gemini Live API WebSocket, loại bỏ tất cả logic speech-to-speech phức tạp
+/// VAD hoàn toàn do Gemini xử lý, speech flow control đơn giản
 /// </summary>
-public class HybridRealtimeSpeechController : MonoBehaviour
+public class GeminiRealtimeSpeechController : MonoBehaviour
 {
     #region Singleton
-    public static HybridRealtimeSpeechController Instance { get; private set; }
+    public static GeminiRealtimeSpeechController Instance { get; private set; }
     #endregion
 
     #region UI References
@@ -39,7 +39,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
     #region Configuration
     [Header("Audio Configuration")]
-    [SerializeField] private int sampleRate = 24000;
+    [SerializeField] private int sampleRate = 24000; // FIXED: Gemini Live API requires 24kHz input/output
     [SerializeField] private string audioFormat = "pcm16";
     [SerializeField, Range(0.1f, 1.0f)] private float audioVolume = 0.8f;
     
@@ -59,7 +59,8 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     public class Config
     {
         public string openAIApiKey;
-        public string model = "gpt-4o-mini-realtime-preview";
+        public string geminiApiKey;
+        public string model = "gemini-2.0-flash-live-001";
         public string voice = "alloy";
         public string customInstructions = "";
     }
@@ -68,11 +69,11 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     #endregion
 
     #region Private Fields - Simplified
-    // WebSocket và OpenAI Realtime
+    // WebSocket và Gemini Live API
     private WebSocket webSocket;
     private bool isConnected = false;
     private bool isSessionActive = false;
-    private const string WEBSOCKET_URL = "wss://api.openai.com/v1/realtime?model=";
+    private const string WEBSOCKET_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
     
     // Simple speech control
     private bool isRecording = false;
@@ -129,7 +130,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     {
         InitializeComponent();
         LogMessage("🎤 Simplified Realtime Speech Controller Ready");
-        LogMessage("✅ Pure OpenAI WebSocket - No client-side VAD");
+        LogMessage("✅ Pure Gemini Live API WebSocket - No client-side VAD");
         LogMessage("🤖 Myaku Integration Enabled");
         //UpdateStatus("Click START or say 'Hey DT' to begin");
     }
@@ -145,6 +146,10 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (isSessionActive && isRecording && microphoneClip != null && CanRecord())
         {
             ProcessMicrophoneAudio();
+        }
+        else if (isSessionActive && Time.frameCount % 60 == 0) // Debug every 60 frames
+        {
+            LogMessage($"🔍 DEBUG Update: Session={isSessionActive}, Recording={isRecording}, Clip={microphoneClip != null}, CanRecord={CanRecord()}");
         }
 
         // Simple audio playback
@@ -183,7 +188,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                 LogMessage($"📄 Config file found - Content: {configFile.text.Substring(0, Math.Min(100, configFile.text.Length))}...");
                 config = JsonUtility.FromJson<Config>(configFile.text);
                 LogMessage("✅ Configuration loaded from Resources/config.json");
-                LogMessage($"🔑 API Key loaded: {(string.IsNullOrEmpty(config.openAIApiKey) ? "MISSING" : "Present")}");
+                LogMessage($"🔑 Gemini API Key loaded: {(string.IsNullOrEmpty(config.geminiApiKey) ? "MISSING" : "Present")}");
                 LogMessage($"🎵 Model: {config.model}");
                 LogMessage($"🗣️ Voice: {config.voice}");
             }
@@ -212,13 +217,13 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     {
         if (isAISpeaking)
         {
-            // LogMessage("🚫 Cannot record - AI is speaking");
+            if (Time.frameCount % 60 == 0) LogMessage("🚫 Cannot record - AI is speaking");
             return false;
         }
         
         if (isWaitingForSpeechEnd)
         {
-            // LogMessage("🚫 Cannot record - Waiting for speech end delay");
+            if (Time.frameCount % 60 == 0) LogMessage("🚫 Cannot record - Waiting for speech end delay");
             return false;
         }
         
@@ -424,10 +429,10 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
     public void StartRealtimeConversation()
     {
-        if (string.IsNullOrEmpty(config.openAIApiKey))
+        if (string.IsNullOrEmpty(config.geminiApiKey))
         {
-            LogMessage("❌ OpenAI API Key required in config!");
-            UpdateStatus("Please set OpenAI API Key in Resources/config.json");
+            LogMessage("❌ Gemini API Key required in config!");
+            UpdateStatus("Please set Gemini API Key in Resources/config.json");
             return;
         }
 
@@ -595,7 +600,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private IEnumerator BeginSession()
     {
         LogMessage("🚀 Starting simplified realtime session");
-        LogMessage($"🔑 API Key: {(string.IsNullOrEmpty(config.openAIApiKey) ? "MISSING" : "Present")}");
+        LogMessage($"🔑 API Key: {(string.IsNullOrEmpty(config.geminiApiKey) ? "MISSING" : "Present")}");
         LogMessage($"🎵 Model: {config.model}");
         
         // Clean up
@@ -649,13 +654,13 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (!isConnected)
         {
             LogMessage("❌ WebSocket connection failed - aborting session");
-            UpdateStatus("❌ Failed to connect to OpenAI");
+            UpdateStatus("❌ Failed to connect to Gemini Live API");
             yield break;
         }
         
         LogMessage("✅ WebSocket connected - proceeding to create session");
         
-        // Create session with OpenAI VAD
+        // Create session with Gemini Live API VAD
         yield return StartCoroutine(CreateSession());
         
         LogMessage("📡 Session created - starting recording");
@@ -664,8 +669,10 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         StartRecording();
         
         LogMessage("🎤 Recording started - finalizing setup");
+        LogMessage($"🔍 DEBUG Session State: Active={isSessionActive}, Recording={isRecording}, Connected={isConnected}");
+        LogMessage("⏳ Wait for setupComplete message from Gemini Live API...");
         
-        UpdateStatus("🔴 LIVE - OpenAI handling VAD");
+        UpdateStatus("🔴 LIVE - Wait for Gemini Live API setup...");
         UpdateButtonStates();
         
         // Start initial timeout
@@ -676,6 +683,35 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
     private IEnumerator ConnectWebSocket()
     {
+        // STEP 1: Test API key with simple HTTP request first
+        LogMessage("🧪 Testing API key with HTTP request...");
+        
+        string testUrl = $"https://generativelanguage.googleapis.com/v1beta/models?key={config.geminiApiKey}";
+        
+        using (UnityEngine.Networking.UnityWebRequest www = UnityEngine.Networking.UnityWebRequest.Get(testUrl))
+        {
+            yield return www.SendWebRequest();
+            
+            if (www.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+            {
+                LogMessage($"❌ API Key test FAILED: {www.error}");
+                LogMessage($"❌ Response Code: {www.responseCode}");
+                LogMessage($"❌ Response: {www.downloadHandler.text}");
+                
+                if (www.responseCode == 403 || www.responseCode == 401)
+                {
+                    LogMessage($"🚫 INVALID API KEY - Please check your Gemini API key in config.json");
+                    LogMessage($"🔑 Current key: {config.geminiApiKey?.Substring(0, 10)}...");
+                    yield break;
+                }
+            }
+            else
+            {
+                LogMessage($"✅ API Key test SUCCESS - Key is valid");
+                LogMessage($"✅ Available models response: {www.downloadHandler.text.Substring(0, Math.Min(200, www.downloadHandler.text.Length))}...");
+            }
+        }
+        
         // CRITICAL: Final validation before creating new WebSocket
         if (webSocket != null)
         {
@@ -698,15 +734,19 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             yield return new WaitForSeconds(0.2f); // Additional safety delay
         }
         
-        string wsUrl = WEBSOCKET_URL + config.model;
+        string wsUrl = WEBSOCKET_URL + "?key=" + config.geminiApiKey;
         LogMessage($"🌐 WebSocket URL: {wsUrl}");
-        LogMessage($"🔑 Auth header: Bearer {config.openAIApiKey.Substring(0, 10)}...");
+        LogMessage($"🔑 API Key: {config.geminiApiKey.Substring(0, 10)}...");
+        LogMessage($"🔑 Full API Key length: {config.geminiApiKey?.Length ?? 0}");
         
-        webSocket = new WebSocket(wsUrl, new Dictionary<string, string>
+        // Add headers for better authentication
+        var headers = new Dictionary<string, string>
         {
-            {"Authorization", "Bearer " + config.openAIApiKey},
-            {"OpenAI-Beta", "realtime=v1"}
-        });
+            {"User-Agent", "Unity-GeminiLive/1.0"},
+            {"Origin", "https://localhost"}
+        };
+        
+        webSocket = new WebSocket(wsUrl, headers);
 
         webSocket.OnOpen += OnWebSocketOpen;
         webSocket.OnMessage += OnWebSocketMessage;
@@ -753,26 +793,17 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             yield break;
         }
 
-        LogMessage("⚙️ Creating OpenAI session...");
-        string instructions = ""; //GetDefaultInstructions();
+        LogMessage("⚙️ Creating Gemini Live session...");
 
+        // Use EXACT same minimal setup format as Kotlin implementation
         var sessionConfig = new
         {
-            type = "session.update",
-            session = new
+            setup = new
             {
-                modalities = new[] { "text", "audio" },
-                instructions = instructions,
-                voice = config.voice,
-                input_audio_format = audioFormat,
-                output_audio_format = audioFormat,
-                input_audio_transcription = new { model = "whisper-1" },
-                turn_detection = new
+                model = "models/gemini-2.0-flash-exp", // Exact model from Kotlin
+                generation_config = new
                 {
-                    type = "server_vad", // CRITICAL: OpenAI handles VAD
-                    threshold = 0.5,
-                    prefix_padding_ms = 300,
-                    silence_duration_ms = 200
+                    response_modalities = new[] { "AUDIO" }
                 }
             }
         };
@@ -780,32 +811,38 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         try
         {
             string jsonConfig = JsonConvert.SerializeObject(sessionConfig);
-            LogMessage($"📤 Sending session config: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
+            LogMessage($"📤 Sending Gemini Live setup: {jsonConfig.Substring(0, Math.Min(150, jsonConfig.Length))}...");
             webSocket.SendText(jsonConfig);
-            LogMessage("📡 Session config sent - waiting for response...");
+            LogMessage("📡 Gemini Live setup sent - waiting for setupComplete...");
         }
         catch (Exception e)
         {
-            LogMessage($"❌ Error sending session config: {e.Message}");
+            LogMessage($"❌ Error sending setup config: {e.Message}");
             yield break;
         }
         
-        yield return new WaitForSeconds(1f);
-        LogMessage("✅ Session creation completed");
+        yield return new WaitForSeconds(2f); // Wait longer for setupComplete
+        LogMessage("✅ Session setup completed");
     }
 
     private void StartRecording()
     {
         LogMessage("🎤 Starting microphone recording...");
+        LogMessage($"🔍 DEBUG Available microphones: {Microphone.devices.Length} devices");
         
         if (Microphone.devices.Length == 0)
         {
-            LogMessage("❌ No microphone devices found");
+            LogMessage("❌ No microphone devices found - Check permissions!");
             return;
         }
 
         microphoneDevice = Microphone.devices[0];
         LogMessage($"🎙️ Using microphone: {microphoneDevice}");
+        
+        for (int i = 0; i < Microphone.devices.Length; i++)
+        {
+            LogMessage($"🔍 DEBUG Device {i}: {Microphone.devices[i]}");
+        }
         
         try
         {
@@ -813,6 +850,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             isRecording = true;
             lastMicrophonePosition = 0;
             LogMessage($"✅ Recording started successfully: {microphoneDevice} at {sampleRate}Hz");
+            LogMessage($"🔍 DEBUG Microphone: Clip={microphoneClip != null}, Samples={microphoneClip?.samples ?? 0}, Frequency={microphoneClip?.frequency ?? 0}");
         }
         catch (Exception e)
         {
@@ -831,15 +869,26 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     }
 
     /// <summary>
-    /// Simplified microphone processing - chỉ gửi audio tới OpenAI
+    /// Simplified microphone processing - chỉ gửi audio tới Gemini Live API
     /// Không có client-side VAD, chỉ pure audio streaming
     /// </summary>
     private void ProcessMicrophoneAudio()
     {
-        if (!isConnected || microphoneClip == null) return;
+        if (!isConnected || microphoneClip == null) 
+        {
+            LogMessage($"🔍 DEBUG ProcessMicrophone BLOCKED: Connected={isConnected}, Clip={microphoneClip != null}");
+            return;
+        }
 
         int currentPosition = Microphone.GetPosition(microphoneDevice);
-        if (currentPosition < 0 || currentPosition == lastMicrophonePosition) return;
+        if (currentPosition < 0 || currentPosition == lastMicrophonePosition) 
+        {
+            if (Time.frameCount % 120 == 0) // Debug every 120 frames
+            {
+                LogMessage($"🔍 DEBUG Microphone Position: current={currentPosition}, last={lastMicrophonePosition}");
+            }
+            return;
+        }
 
         int sampleCount = currentPosition - lastMicrophonePosition;
         if (sampleCount < 0) sampleCount += microphoneClip.samples;
@@ -849,11 +898,16 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             float[] audioData = new float[sampleCount];
             microphoneClip.GetData(audioData, lastMicrophonePosition);
             
-            // Convert and send directly to OpenAI - no processing
+            // Convert and send directly to Gemini Live API - no processing
             byte[] pcmData = ConvertToPCM16(audioData);
-            SendAudioToOpenAI(pcmData);
+            LogMessage($"🔍 DEBUG: About to send {pcmData.Length} bytes, samples={sampleCount}");
+            SendAudioToGemini(pcmData);
             
             lastMicrophonePosition = currentPosition;
+        }
+        else if (Time.frameCount % 120 == 0) // Debug when no samples
+        {
+            LogMessage($"🔍 DEBUG: No samples to send, sampleCount={sampleCount}");
         }
     }
 
@@ -869,23 +923,46 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         return pcmData;
     }
 
-    private void SendAudioToOpenAI(byte[] audioData)
+    private void SendAudioToGemini(byte[] audioData)
     {
-        if (!isConnected || audioData.Length == 0) return;
+        if (!isConnected || audioData.Length == 0) 
+        {
+            LogMessage($"🔍 DEBUG SendAudio BLOCKED: Connected={isConnected}, DataLength={audioData?.Length ?? 0}");
+            return;
+        }
 
-        // LogMessage($"📤 Sending {audioData.Length} bytes to OpenAI - AI Speaking: {isAISpeaking}, Waiting: {isWaitingForSpeechEnd}");
+        LogMessage($"📤 Sending {audioData.Length} bytes to Gemini Live API - AI Speaking: {isAISpeaking}, Waiting: {isWaitingForSpeechEnd}");
 
+        // Use EXACT same format as Kotlin implementation
         var message = new
         {
-            type = "input_audio_buffer.append",
-            audio = Convert.ToBase64String(audioData)
+            realtime_input = new
+            {
+                media_chunks = new[]
+                {
+                    new
+                    {
+                        mime_type = "audio/pcm", // Exact format from Kotlin (no rate specification)
+                        data = Convert.ToBase64String(audioData)
+                    }
+                }
+            }
         };
 
-        webSocket.SendText(JsonConvert.SerializeObject(message));
+        try
+        {
+            string jsonMessage = JsonConvert.SerializeObject(message);
+            webSocket.SendText(jsonMessage);
+            LogMessage($"✅ Audio message sent successfully: {audioData.Length} bytes");
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Error sending audio message: {e.Message}");
+        }
     }
 
     /// <summary>
-    /// Simplified audio playback - chỉ phát audio từ OpenAI
+    /// Simplified audio playback - chỉ phát audio từ Gemini Live API
     /// </summary>
     private void ProcessAudioPlayback()
     {
@@ -939,7 +1016,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         float[] audioData = audioBuffer.ToArray();
         audioBuffer.Clear();
 
-        AudioClip clip = AudioClip.Create("OpenAIAudio", audioData.Length, 1, sampleRate, false);
+        AudioClip clip = AudioClip.Create("GeminiAudio", audioData.Length, 1, sampleRate, false); // Output is 24kHz from Gemini
         clip.SetData(audioData, 0);
 
         if (audioSource != null && isSessionActive) // Double-check session is still active
@@ -1195,7 +1272,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private void OnWebSocketOpen()
     {
         isConnected = true;
-        LogMessage("✅ Connected to OpenAI Realtime");
+        LogMessage("✅ Connected to Gemini Live API");
     }
 
     private void OnWebSocketMessage(byte[] data)
@@ -1203,28 +1280,73 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         try
         {
             string message = Encoding.UTF8.GetString(data);
+            LogMessage($"🔍 RAW MESSAGE: {message.Substring(0, Math.Min(300, message.Length))}...");
+            
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(message);
 
-            if (json.ContainsKey("type"))
+            // CORRECT Gemini Live API message handling
+            if (json.ContainsKey("setupComplete"))
             {
-                HandleMessage(json["type"].ToString(), json);
+                HandleMessage("setupComplete", json);
+            }
+            else if (json.ContainsKey("serverContent"))
+            {
+                HandleMessage("serverContent", json);
+            }
+            else if (json.ContainsKey("toolCall"))
+            {
+                HandleMessage("toolCall", json);
+            }
+            else if (json.ContainsKey("usageMetadata"))
+            {
+                HandleMessage("usageMetadata", json);
+            }
+            else
+            {
+                LogMessage($"❓ Unknown message type - Keys: {string.Join(", ", json.Keys)}");
+                LogMessage($"📋 Full message: {message.Substring(0, Math.Min(500, message.Length))}...");
             }
         }
         catch (Exception e)
         {
-            LogMessage($"❌ Message error: {e.Message}");
+            LogMessage($"❌ Message parsing error: {e.Message}");
+            LogMessage($"📋 Raw data: {Encoding.UTF8.GetString(data).Substring(0, Math.Min(200, data.Length))}...");
         }
     }
 
     private void OnWebSocketError(string error)
     {
         LogMessage($"❌ WebSocket error: {error}");
+        LogMessage($"🔍 Error details - API Key valid: {!string.IsNullOrEmpty(config.geminiApiKey)}");
+        LogMessage($"🔍 WebSocket state: {webSocket?.State}");
         isConnected = false;
     }
 
     private void OnWebSocketClose(WebSocketCloseCode closeCode)
     {
         LogMessage($"🔌 WebSocket closed: {closeCode}");
+        LogMessage($"🔍 Close reason: {closeCode.ToString()}");
+        
+        // Log specific error codes
+        switch (closeCode)
+        {
+            // case WebSocketCloseCode.Unauthorized:
+            //     LogMessage($"🚫 UNAUTHORIZED - Check API key: {config.geminiApiKey?.Substring(0, 10)}...");
+            //     break;
+            case WebSocketCloseCode.ProtocolError:
+                LogMessage($"🚫 PROTOCOL ERROR - Endpoint or format issue");
+                break;
+            case WebSocketCloseCode.UnsupportedData:
+                LogMessage($"🚫 UNSUPPORTED DATA - Message format issue");
+                break;
+            // case WebSocketCloseCode.InvalidPayloadData:
+            //     LogMessage($"🚫 INVALID PAYLOAD - Check message structure");
+            //     break;
+            default:
+                LogMessage($"🚫 Other close reason: {closeCode}");
+                break;
+        }
+        
         isConnected = false;
     }
 
@@ -1232,159 +1354,185 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     {
         switch (messageType)
         {
-            case "session.created":
-            case "session.updated":
-                LogMessage("✅ Session ready");
+            case "setupComplete":
+                LogMessage("✅ Gemini Live API setup completed - ready to send audio");
+                UpdateStatus("🔴 LIVE - Gemini Live API ready!");
+                // isSessionActive is already set in BeginSession()
                 break;
 
-            case "input_audio_buffer.speech_started":
-                LogMessage("🎤 OpenAI: Speech detected");
-                UpdateStatus("🎤 OpenAI processing...");
-                isFirstListening = true;
-                // Cancel timeout
-                if (timeoutCoroutine != null)
+            case "serverContent":
+                LogMessage("📨 Server content received - processing...");
+                HandleServerContent(message);
+                break;
+
+            case "toolCall":
+                LogMessage("🔧 Tool call received");
+                // Handle function calls if needed
+                break;
+
+            case "usageMetadata":
+                if (message.ContainsKey("usageMetadata"))
                 {
-                    StopCoroutine(timeoutCoroutine);
-                    timeoutCoroutine = null;
-                    isWaitingForNextQuestion = false;
-                } 
-                
-                if (userQuestionText != null)
-                {
-                    userQuestionText.text = "👤 User: (Speaking...)";
+                    LogMessage("📊 Usage metadata received");
                 }
                 break;
 
-            case "input_audio_buffer.speech_stopped":
-                LogMessage("🤐 OpenAI: Speech stopped");
-                UpdateStatus("🤖 AI thinking...");
-                
-                // if (myakuController != null)
-                // { 
-                //     myakuController.MyakuThinking();
-                // }
+            default:
+                LogMessage($"❓ Unknown message type: {messageType}");
+                LogMessage($"📋 Message content: {JsonConvert.SerializeObject(message).Substring(0, Math.Min(300, JsonConvert.SerializeObject(message).Length))}...");
                 break;
+        }
+    }
 
-            case "conversation.item.input_audio_transcription.completed":
-                if (message.ContainsKey("transcript"))
-                {
-                    string transcript = message["transcript"].ToString();
-                    LogMessage($"📝 Transcript: {transcript}");
-                    //UpdateUserQuestion(transcript);
-                }
-                break;
+    private void HandleServerContent(Dictionary<string, object> message)
+    {
+        try
+        {
+            if (!message.ContainsKey("serverContent")) 
+            {
+                LogMessage("⚠️ No serverContent in message");
+                return;
+            }
+            
+            var serverContent = message["serverContent"] as Dictionary<string, object>;
+            if (serverContent == null) 
+            {
+                LogMessage("⚠️ serverContent is null");
+                return;
+            }
 
-            case "response.created":
-                LogMessage("🤖 AI response starting");
-                hasSpeechStarted = false; // Reset for new response
-                isAIResponseComplete = false; // Reset for new response
-                currentAIResponse = ""; // Reset AI response accumulator
-                break;
+            LogMessage($"🔍 Server content keys: {string.Join(", ", serverContent.Keys)}");
 
-            case "response.audio_transcript.delta":
-                if (message.ContainsKey("delta"))
-                {
-                    string delta = message["delta"].ToString();
-                    LogMessage($"🔍 DEBUG: AI Response Delta: '{delta}'");
-                    
-                    // Accumulate response
-                    currentAIResponse += delta;
-                    string fullResponse = currentAIResponse.ToLower().Trim();
-                    LogMessage($"🔍 DEBUG: Full accumulated response: '{fullResponse}'");
-                    
-                    //UpdateAIResponse(delta);
-                    
-                    // Check for camera request in both delta and accumulated response
-                    string lowerDelta = delta.ToLower().Trim();
-                    
-                    if ((lowerDelta.Contains("camera_request") || lowerDelta.Contains("camera request") || 
-                         lowerDelta == "camera_request" || lowerDelta == "camera request") ||
-                        (fullResponse.Contains("camera_request") || fullResponse.Contains("camera request")))
-                    {
-                        LogMessage($"📸 AI detected camera request - Delta: '{delta}', Full: '{currentAIResponse}'");
-                        
-                        // Trigger camera functionality
-                        TriggerCameraFunction();
-                        
-                        // Show confirmation message
-                        if (UIManager.Instance?.connectionTxt != null)
-                        {
-                            UIManager.Instance.connectionTxt.text = "📸 Opening camera for you...";
-                        }
-                        
-                        // Prevent multiple triggers
-                        currentAIResponse = "[CAMERA_TRIGGERED]";
-                    }
-                }
-                break;
-
-            case "response.audio.delta":
-                if (message.ContainsKey("delta"))
-                {
-                    string audioBase64 = message["delta"].ToString();
-                    byte[] audioData = Convert.FromBase64String(audioBase64);
-                    float[] audioFloats = ConvertPCM16ToFloat(audioData);
-                    audioPlaybackQueue.Enqueue(audioFloats);
-
-                    // CRITICAL: Stop microphone IMMEDIATELY when first audio chunk arrives
-                    if (isRecording && !isAISpeaking)
-                    {
-                        Microphone.End(microphoneDevice);
-                        isRecording = false;
-                        isAISpeaking = true; // Prevent further recording
-                        LogMessage("🎤 Microphone STOPPED on first audio chunk to prevent feedback");
-                        
-                        // Start safety timeout for AI speaking state (max 30 seconds)
-                        if (aiSpeakingTimeoutCoroutine != null)
-                        {
-                            StopCoroutine(aiSpeakingTimeoutCoroutine);
-                        }
-                        aiSpeakingTimeoutCoroutine = StartCoroutine(AISpeakingTimeoutCoroutine());
-                    }
-
-                    if (!isPlayingAudio)
-                    {
-                        UpdateStatus("🔊 AI speaking...");
-                    }
-                }
-                break;
-
-            case "response.done":
-                LogMessage("✅ AI response complete - Generation finished");
-                isAIResponseComplete = true; // CRITICAL: This marks response as complete
+            // Check for turn_complete
+            if (serverContent.ContainsKey("turnComplete") && Convert.ToBoolean(serverContent["turnComplete"]))
+            {
+                LogMessage("✅ AI response turn complete");
+                isAIResponseComplete = true;
                 LogMessage($"🎯 isAIResponseComplete set to TRUE - Queue count: {audioPlaybackQueue.Count}, Buffer count: {audioBuffer.Count}");
-                
-                // Final check for camera request in complete response
-                if (!string.IsNullOrEmpty(currentAIResponse) && !currentAIResponse.Contains("[CAMERA_TRIGGERED]"))
+            }
+
+            // Check for interruption
+            if (serverContent.ContainsKey("interrupted") && Convert.ToBoolean(serverContent["interrupted"]))
+            {
+                LogMessage("🚫 AI response interrupted");
+                // Handle interruption
+            }
+
+            // Check for model_turn content
+            if (serverContent.ContainsKey("modelTurn"))
+            {
+                LogMessage("📋 ModelTurn found - processing parts...");
+                var modelTurn = serverContent["modelTurn"] as Dictionary<string, object>;
+                if (modelTurn != null && modelTurn.ContainsKey("parts"))
                 {
-                    string finalResponse = currentAIResponse.ToLower().Trim();
-                    LogMessage($"🔍 DEBUG: Final response check: '{finalResponse}'");
+                    var parts = modelTurn["parts"] as object[];
+                    LogMessage($"📋 Found {parts?.Length ?? 0} parts");
                     
-                    if (finalResponse.Contains("camera_request") || finalResponse.Contains("camera request") ||
-                        finalResponse == "camera_request" || finalResponse == "camera request")
+                    if (parts != null)
                     {
-                        LogMessage($"📸 Final check - AI detected camera request: '{currentAIResponse}'");
-                        
-                        // Trigger camera functionality
-                        TriggerCameraFunction();
-                        
-                        // Show confirmation message
-                        if (UIManager.Instance?.connectionTxt != null)
+                        foreach (var part in parts)
                         {
-                            UIManager.Instance.connectionTxt.text = "📸 Opening camera for you...";
+                            var partDict = part as Dictionary<string, object>;
+                            if (partDict != null)
+                            {
+                                LogMessage($"🔍 Part keys: {string.Join(", ", partDict.Keys)}");
+                                
+                                // Handle audio data from inlineData (match Kotlin implementation)
+                                if (partDict.ContainsKey("inlineData"))
+                                {
+                                    var inlineData = partDict["inlineData"] as Dictionary<string, object>;
+                                    if (inlineData != null && inlineData.ContainsKey("mimeType") && inlineData.ContainsKey("data"))
+                                    {
+                                        string mimeType = inlineData["mimeType"].ToString();
+                                        // Check mime type exactly like Kotlin implementation
+                                        if (mimeType == "audio/pcm;rate=24000")
+                                        {
+                                            LogMessage("🎵 Audio data found with correct mime type: audio/pcm;rate=24000");
+                                            string audioBase64 = inlineData["data"].ToString();
+                                            byte[] audioData = Convert.FromBase64String(audioBase64);
+                                            float[] audioFloats = ConvertPCM16ToFloat(audioData);
+                                            audioPlaybackQueue.Enqueue(audioFloats);
+                                        
+                                        LogMessage($"🎵 Audio chunk processed: {audioData.Length} bytes -> {audioFloats.Length} samples");
+
+                                        // CRITICAL: Stop microphone IMMEDIATELY when first audio chunk arrives
+                                        if (isRecording && !isAISpeaking)
+                                        {
+                                            Microphone.End(microphoneDevice);
+                                            isRecording = false;
+                                            isAISpeaking = true; // Prevent further recording
+                                            LogMessage("🎤 Microphone STOPPED on first audio chunk to prevent feedback");
+                                            
+                                            // Start safety timeout for AI speaking state (max 30 seconds)
+                                            if (aiSpeakingTimeoutCoroutine != null)
+                                            {
+                                                StopCoroutine(aiSpeakingTimeoutCoroutine);
+                                            }
+                                            aiSpeakingTimeoutCoroutine = StartCoroutine(AISpeakingTimeoutCoroutine());
+                                        }
+
+                                        if (!isPlayingAudio)
+                                        {
+                                            UpdateStatus("🔊 AI speaking...");
+                                        }
+                                        }
+                                        else
+                                        {
+                                            LogMessage($"⚠️ Unsupported audio mime type: {mimeType}");
+                                        }
+                                    }
+                                }
+
+                                // Handle text data
+                                if (partDict.ContainsKey("text"))
+                                {
+                                    string text = partDict["text"].ToString();
+                                    LogMessage($"📝 AI Response Text: '{text}'");
+                                    
+                                    // Accumulate response
+                                    currentAIResponse += text;
+                                    string fullResponse = currentAIResponse.ToLower().Trim();
+                                    
+                                    // Check for camera request
+                                    string lowerText = text.ToLower().Trim();
+                                    
+                                    if ((lowerText.Contains("camera_request") || lowerText.Contains("camera request") || 
+                                         lowerText == "camera_request" || lowerText == "camera request") ||
+                                        (fullResponse.Contains("camera_request") || fullResponse.Contains("camera request")))
+                                    {
+                                        LogMessage($"📸 AI detected camera request - Text: '{text}', Full: '{currentAIResponse}'");
+                                        
+                                        // Trigger camera functionality
+                                        TriggerCameraFunction();
+                                        
+                                        // Show confirmation message
+                                        if (UIManager.Instance?.connectionTxt != null)
+                                        {
+                                            UIManager.Instance.connectionTxt.text = "📸 Opening camera for you...";
+                                        }
+                                        
+                                        // Prevent multiple triggers
+                                        currentAIResponse = "[CAMERA_TRIGGERED]";
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-                
-                // if (myakuController != null)
-                // {
-                //     myakuController.MyakuListen(false);
-                // }
-                break;
-
-            case "error":
-                LogMessage($"❌ API Error: {(message.ContainsKey("error") ? message["error"] : "Unknown")}");
-                break;
+                else
+                {
+                    LogMessage("⚠️ ModelTurn found but no parts");
+                }
+            }
+            else
+            {
+                LogMessage("⚠️ No modelTurn in serverContent");
+            }
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Error handling server content: {e.Message}");
+            LogMessage($"❌ Stack trace: {e.StackTrace}");
         }
     }
 
