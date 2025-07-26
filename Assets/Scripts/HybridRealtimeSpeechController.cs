@@ -35,6 +35,12 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     
     [Header("Myaku Integration")]
     public MyakuController myakuController;
+    
+    [Header("Audio Processing")]
+    [Tooltip("Checkbox để bật/tắt xử lý âm thanh trước khi gửi")]
+    public Toggle enableAudioFilteringToggle;
+    [Tooltip("Text input để thiết lập ngưỡng âm lượng tối thiểu")]
+    public TMP_InputField volumeThresholdInput;
     #endregion
 
     #region Configuration
@@ -51,6 +57,13 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     
     [Header("Wake Word Detection")]
     public bool enableWakeWordDetection = true;
+    
+    [Header("Audio Filtering")]
+    [Tooltip("Bật/tắt xử lý âm thanh trước khi gửi")]
+    public bool enableAudioFiltering = false;
+    [Tooltip("Ngưỡng âm lượng tối thiểu (0.0 - 1.0)")]
+    [Range(0.0f, 1.0f)]
+    public float volumeThreshold = 0.01f;
     
     #endregion
 
@@ -849,9 +862,24 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             float[] audioData = new float[sampleCount];
             microphoneClip.GetData(audioData, lastMicrophonePosition);
             
-            // Convert and send directly to OpenAI - no processing
-            byte[] pcmData = ConvertToPCM16(audioData);
-            SendAudioToOpenAI(pcmData);
+            // Kiểm tra xử lý âm thanh trước khi gửi
+            bool shouldSendAudio = true;
+            
+            if (enableAudioFiltering)
+            {
+                float currentVolume = CalculateAudioVolume(audioData);
+                shouldSendAudio = currentVolume >= volumeThreshold;
+                
+                // Log thông tin volume (tùy chọn - có thể comment lại để giảm log)
+                // LogMessage($"🔊 Audio volume: {currentVolume:F4}, Threshold: {volumeThreshold:F4}, Send: {shouldSendAudio}");
+            }
+            
+            if (shouldSendAudio)
+            {
+                // Convert and send to OpenAI
+                byte[] pcmData = ConvertToPCM16(audioData);
+                SendAudioToOpenAI(pcmData);
+            }
             
             lastMicrophonePosition = currentPosition;
         }
@@ -867,6 +895,24 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             pcmData[i * 2 + 1] = (byte)((sample >> 8) & 0xFF);
         }
         return pcmData;
+    }
+
+    /// <summary>
+    /// Tính toán âm lượng RMS (Root Mean Square) từ audio data
+    /// </summary>
+    /// <param name="audioData">Mảng audio data (float từ -1.0 đến 1.0)</param>
+    /// <returns>Giá trị RMS từ 0.0 đến 1.0</returns>
+    private float CalculateAudioVolume(float[] audioData)
+    {
+        if (audioData == null || audioData.Length == 0) return 0f;
+
+        float sum = 0f;
+        for (int i = 0; i < audioData.Length; i++)
+        {
+            sum += audioData[i] * audioData[i];
+        }
+        
+        return Mathf.Sqrt(sum / audioData.Length);
     }
 
     private void SendAudioToOpenAI(byte[] audioData)
@@ -1411,6 +1457,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
 
         ConfigureAudioSource();
+        SetupAudioFilteringUI();
         ClearLogs();
         ClearConversationDisplay();
         InitializeAudioPlugin();
@@ -1425,6 +1472,45 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             audioSource.spatialBlend = 0f;
             audioSource.playOnAwake = false;
             audioSource.loop = false;
+        }
+    }
+
+    private void SetupAudioFilteringUI()
+    {
+        // Setup checkbox cho audio filtering
+        if (enableAudioFilteringToggle != null)
+        {
+            enableAudioFilteringToggle.isOn = enableAudioFiltering;
+            enableAudioFilteringToggle.onValueChanged.AddListener(OnAudioFilteringToggleChanged);
+        }
+
+        // Setup text input cho volume threshold
+        if (volumeThresholdInput != null)
+        {
+            volumeThresholdInput.text = volumeThreshold.ToString("F3");
+            volumeThresholdInput.onEndEdit.AddListener(OnVolumeThresholdChanged);
+        }
+    }
+
+    private void OnAudioFilteringToggleChanged(bool isEnabled)
+    {
+        enableAudioFiltering = isEnabled;
+        LogMessage($"🔧 Audio filtering: {(isEnabled ? "BẬT" : "TẮT")}");
+    }
+
+    private void OnVolumeThresholdChanged(string value)
+    {
+        if (float.TryParse(value, out float newThreshold))
+        {
+            volumeThreshold = Mathf.Clamp(newThreshold, 0.0f, 1.0f);
+            volumeThresholdInput.text = volumeThreshold.ToString("F3");
+            LogMessage($"🔧 Volume threshold: {volumeThreshold:F3}");
+        }
+        else
+        {
+            // Reset to current value if invalid input
+            volumeThresholdInput.text = volumeThreshold.ToString("F3");
+            LogMessage("❌ Giá trị ngưỡng âm lượng không hợp lệ. Sử dụng giá trị từ 0.000 đến 1.000");
         }
     }
 
@@ -1559,6 +1645,8 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             UIManager.Instance.MovePanel(UIManager.Instance.settingPanel, PanelMover.Direction.Up, true, 3000);
             UIManager.Instance.MovePanel(UIManager.Instance.appNamePanel, PanelMover.Direction.Up, true, 3000);
             UIManager.Instance.ShowHideTestPanel(false);
+            GameObject cameraBtn = FindAnyObjectByType<CameraBtn>().gameObject;
+            UIManager.Instance.SetStateForButton(cameraBtn);
             
             LogMessage("📸 Camera interface opened successfully");
         }
