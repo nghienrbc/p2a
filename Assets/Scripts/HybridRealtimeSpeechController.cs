@@ -119,6 +119,9 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private bool enableHeyDT = true;
     private bool isFirstListening = true;
     
+    // Audio session control
+    private bool isAudioSessionActive = false; // Đã bắt đầu gửi audio lên OpenAI
+
     // Logging
     private string logMessages = "";
     #endregion
@@ -862,21 +865,27 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             float[] audioData = new float[sampleCount];
             microphoneClip.GetData(audioData, lastMicrophonePosition);
             
-            // Kiểm tra xử lý âm thanh trước khi gửi
-            bool shouldSendAudio = true;
-            
             if (enableAudioFiltering)
             {
                 float currentVolume = CalculateAudioVolume(audioData);
-                shouldSendAudio = currentVolume >= volumeThreshold;
-                
-                // Log thông tin volume (tùy chọn - có thể comment lại để giảm log)
-                // LogMessage($"🔊 Audio volume: {currentVolume:F4}, Threshold: {volumeThreshold:F4}, Send: {shouldSendAudio}");
+
+                // Nếu chưa bắt đầu audio session và phát hiện âm lượng vượt ngưỡng
+                if (!isAudioSessionActive && currentVolume >= volumeThreshold)
+                {
+                    isAudioSessionActive = true;
+                    LogMessage($"🎤 Audio session started - Volume: {currentVolume:F4} >= Threshold: {volumeThreshold:F4}");
+                }
+
+                // Nếu đã bắt đầu audio session, gửi tất cả audio (kể cả yên lặng)
+                if (isAudioSessionActive)
+                {
+                    byte[] pcmData = ConvertToPCM16(audioData);
+                    SendAudioToOpenAI(pcmData);
+                }
             }
-            
-            if (shouldSendAudio)
+            else
             {
-                // Convert and send to OpenAI
+                // Không dùng audio filtering, gửi tất cả audio
                 byte[] pcmData = ConvertToPCM16(audioData);
                 SendAudioToOpenAI(pcmData);
             }
@@ -1108,6 +1117,9 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         isWaitingForNextQuestion = false;
         hasSpeechStarted = false;
         isAIResponseComplete = false;
+
+        // Reset audio session state
+        isAudioSessionActive = false;
         
         // Clear timeout references (coroutines already stopped by StopAllCoroutines)
         timeoutCoroutine = null;
@@ -1169,10 +1181,13 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         isAISpeaking = false;
         isWaitingForSpeechEnd = false;
         hasSpeechStarted = false;
-        
+
+        // Reset audio session state
+        isAudioSessionActive = false;
+
         ClearConversationDisplay();
         enableHeyDT = false;
-        
+
         LogMessage("✅ Cleanup completed - states reset");
     }
 
@@ -1304,9 +1319,16 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             case "input_audio_buffer.speech_stopped":
                 LogMessage("🤐 OpenAI: Speech stopped");
                 UpdateStatus("🤖 AI thinking...");
-                
+
+                // Reset audio session - ngừng gửi audio cho đến khi có ngưỡng âm lượng lớn tiếp theo
+                if (isAudioSessionActive)
+                {
+                    isAudioSessionActive = false;
+                    LogMessage("🛑 Audio session ended - Waiting for next volume threshold trigger");
+                }
+
                 // if (myakuController != null)
-                // { 
+                // {
                 //     myakuController.MyakuThinking();
                 // }
                 break;
