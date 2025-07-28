@@ -36,11 +36,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     [Header("Myaku Integration")]
     public MyakuController myakuController;
     
-    [Header("Audio Processing")]
-    [Tooltip("Checkbox để bật/tắt xử lý âm thanh trước khi gửi")]
-    public Toggle enableAudioFilteringToggle;
-    [Tooltip("Text input để thiết lập ngưỡng âm lượng tối thiểu")]
-    public TMP_InputField volumeThresholdInput;
+
     #endregion
 
     #region Configuration
@@ -60,7 +56,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     
     [Header("Audio Filtering")]
     [Tooltip("Bật/tắt xử lý âm thanh trước khi gửi")]
-    public bool enableAudioFiltering = false;
+    public bool enableAudioFiltering = true;
     [Tooltip("Ngưỡng âm lượng tối thiểu (0.0 - 1.0)")]
     [Range(0.0f, 1.0f)]
     public float volumeThreshold = 0.01f;
@@ -144,6 +140,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private void Start()
     {
         InitializeComponent();
+        LoadAudioFilteringSettings();
         LogMessage("🎤 Simplified Realtime Speech Controller Ready");
         LogMessage("✅ Pure OpenAI WebSocket - No client-side VAD");
         LogMessage("🤖 Myaku Integration Enabled");
@@ -1479,7 +1476,6 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
 
         ConfigureAudioSource();
-        SetupAudioFilteringUI();
         ClearLogs();
         ClearConversationDisplay();
         InitializeAudioPlugin();
@@ -1497,43 +1493,32 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
     }
 
-    private void SetupAudioFilteringUI()
+    /// <summary>
+    /// Load audio filtering settings from PlayerPrefs
+    /// </summary>
+    private void LoadAudioFilteringSettings()
     {
-        // Setup checkbox cho audio filtering
-        if (enableAudioFilteringToggle != null)
+        // Load enableAudioFiltering
+        if (PlayerPrefs.HasKey("EnableAudioFiltering"))
         {
-            enableAudioFilteringToggle.isOn = enableAudioFiltering;
-            enableAudioFilteringToggle.onValueChanged.AddListener(OnAudioFilteringToggleChanged);
+            enableAudioFiltering = PlayerPrefs.GetInt("EnableAudioFiltering") == 1;
         }
 
-        // Setup text input cho volume threshold
-        if (volumeThresholdInput != null)
+        // Load volumeThreshold from voiceThreshold
+        if (PlayerPrefs.HasKey("VoiceThreshold"))
         {
-            volumeThresholdInput.text = volumeThreshold.ToString("F3");
-            volumeThresholdInput.onEndEdit.AddListener(OnVolumeThresholdChanged);
+            volumeThreshold = PlayerPrefs.GetFloat("VoiceThreshold");
         }
+
+        LogMessage($"🔧 Loaded settings - Audio filtering: {(enableAudioFiltering ? "BẬT" : "TẮT")}, Volume threshold: {volumeThreshold:F3}");
     }
 
-    private void OnAudioFilteringToggleChanged(bool isEnabled)
+    /// <summary>
+    /// Reload audio filtering settings from PlayerPrefs (called from MySettingManager)
+    /// </summary>
+    public void ReloadAudioFilteringSettings()
     {
-        enableAudioFiltering = isEnabled;
-        LogMessage($"🔧 Audio filtering: {(isEnabled ? "BẬT" : "TẮT")}");
-    }
-
-    private void OnVolumeThresholdChanged(string value)
-    {
-        if (float.TryParse(value, out float newThreshold))
-        {
-            volumeThreshold = Mathf.Clamp(newThreshold, 0.0f, 1.0f);
-            volumeThresholdInput.text = volumeThreshold.ToString("F3");
-            LogMessage($"🔧 Volume threshold: {volumeThreshold:F3}");
-        }
-        else
-        {
-            // Reset to current value if invalid input
-            volumeThresholdInput.text = volumeThreshold.ToString("F3");
-            LogMessage("❌ Giá trị ngưỡng âm lượng không hợp lệ. Sử dụng giá trị từ 0.000 đến 1.000");
-        }
+        LoadAudioFilteringSettings();
     }
 
     private void InitializeAudioPlugin()

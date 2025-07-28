@@ -10,6 +10,20 @@ Khi `enableAudioFiltering = true`, âm thanh chỉ được gửi lên OpenAI kh
 2. **Trong session**: Gửi TẤT CẢ audio (kể cả yên lặng) lên OpenAI
 3. **Kết thúc session**: Khi OpenAI phát hiện `speech_stopped` → `isAudioSessionActive = false`
 
+## Quản lý Settings
+
+### MySettingManager
+- Thêm `enableAudioFilteringToggle` để bật/tắt audio filtering
+- Sử dụng `voiceThresholdInputField` có sẵn cho volume threshold
+- Lưu trữ settings vào PlayerPrefs:
+  - `EnableAudioFiltering`: bool (0/1)
+  - `VoiceThreshold`: float
+
+### HybridRealtimeSpeechController
+- Xóa UI controls cũ (`enableAudioFilteringToggle`, `volumeThresholdInput`)
+- Load settings từ PlayerPrefs khi khởi động
+- Có method `ReloadAudioFilteringSettings()` để reload từ MySettingManager
+
 ### Code thay đổi
 
 **Thêm state variable:**
@@ -61,3 +75,18 @@ case "input_audio_buffer.speech_stopped":
 2. User bắt đầu nói (âm lượng > threshold) → Bắt đầu audio session → Gửi tất cả audio
 3. User ngừng nói → OpenAI phát hiện silence → Gửi speech_stopped → Kết thúc session
 4. Quay lại bước 1 cho lần nói tiếp theo
+
+## Thay đổi đã thực hiện
+
+### HybridRealtimeSpeechController.cs
+- ❌ Xóa: `enableAudioFilteringToggle`, `volumeThresholdInput`
+- ❌ Xóa: `SetupAudioFilteringUI()`, `OnAudioFilteringToggleChanged()`, `OnVolumeThresholdChanged()`
+- ✅ Thêm: `LoadAudioFilteringSettings()`, `ReloadAudioFilteringSettings()`
+- ✅ Load settings từ PlayerPrefs khi khởi động
+
+### MySettingMaanger.cs
+- ✅ Thêm: `enableAudioFilteringToggle` UI control
+- ✅ Thêm: `LoadAudioFilteringSettings()`, `SaveAudioFilteringSettings()`
+- ✅ Thêm: `ReloadHybridRealtimeSpeechControllerSettings()`
+- ✅ Sử dụng `voiceThresholdInputField` có sẵn cho volume threshold
+- ✅ Lưu trữ vào PlayerPrefs: `EnableAudioFiltering`, `VoiceThreshold`

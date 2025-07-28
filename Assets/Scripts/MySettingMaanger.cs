@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 using System.Text.RegularExpressions;
 
 public class MySettingMaanger : MonoBehaviour
@@ -20,6 +21,9 @@ public class MySettingMaanger : MonoBehaviour
     public TMP_InputField sessionTimeoutInputField;          // Thời gian timeout session (20s)
     public TMP_InputField consecutiveVoiceFramesInputField;  // Số frame liên tiếp để xác nhận giọng nói
     public TMP_InputField maxRecordingDurationInputField;    // Thời gian ghi âm tối đa (15s)
+
+    [Header("Audio Filtering Settings")]
+    public Toggle enableAudioFilteringToggle;               // Toggle để bật/tắt audio filtering
 
     // Start is called before the first frame update
     void Start()
@@ -52,6 +56,9 @@ public class MySettingMaanger : MonoBehaviour
 
         // Load Voice Detection Settings
         LoadVoiceDetectionSettings();
+
+        // Load Audio Filtering Settings
+        LoadAudioFilteringSettings();
     }
 
     private void LoadVoiceDetectionSettings()
@@ -141,6 +148,23 @@ public class MySettingMaanger : MonoBehaviour
         }
     }
 
+    private void LoadAudioFilteringSettings()
+    {
+        // Enable Audio Filtering (false default)
+        if (PlayerPrefs.HasKey("EnableAudioFiltering"))
+        {
+            bool savedValue = PlayerPrefs.GetInt("EnableAudioFiltering") == 1;
+            enableAudioFilteringToggle.isOn = savedValue;
+        }
+        else
+        {
+            bool defaultValue = true;
+            enableAudioFilteringToggle.isOn = defaultValue;
+            PlayerPrefs.SetInt("EnableAudioFiltering", defaultValue ? 1 : 0);
+            PlayerPrefs.Save();
+        }
+    }
+
     // Hàm sẽ được gọi khi Button được nhấn
     public void SubmitButtonClick()
     {
@@ -161,6 +185,9 @@ public class MySettingMaanger : MonoBehaviour
 
         // Save Voice Detection Settings
         SaveVoiceDetectionSettings();
+
+        // Save Audio Filtering Settings
+        SaveAudioFilteringSettings();
     }
 
     private void SaveVoiceDetectionSettings()
@@ -249,6 +276,9 @@ public class MySettingMaanger : MonoBehaviour
         // Reload settings in EnhancedSpeechController immediately
         ReloadEnhancedSpeechControllerSettings();
 
+        // Reload settings in HybridRealtimeSpeechController immediately
+        ReloadHybridRealtimeSpeechControllerSettings();
+
         // Show success message to user
         if (validateTxt != null)
         {
@@ -256,6 +286,14 @@ public class MySettingMaanger : MonoBehaviour
         }
     }
 
+    private void SaveAudioFilteringSettings()
+    {
+        // Enable Audio Filtering
+        bool enableAudioFiltering = enableAudioFilteringToggle.isOn;
+        PlayerPrefs.SetInt("EnableAudioFiltering", enableAudioFiltering ? 1 : 0);
+        Debug.Log("Enable Audio Filtering saved: " + enableAudioFiltering);
+    }
+    
     /// <summary>
     /// Reload settings in EnhancedSpeechController without restarting app
     /// </summary>
@@ -269,6 +307,22 @@ public class MySettingMaanger : MonoBehaviour
         else
         {
             Debug.LogWarning("❌ EnhancedSpeechController.Instance not found!");
+        }
+    }
+
+    /// <summary>
+    /// Reload settings in HybridRealtimeSpeechController without restarting app
+    /// </summary>
+    private void ReloadHybridRealtimeSpeechControllerSettings()
+    {
+        if (HybridRealtimeSpeechController.Instance != null)
+        {
+            HybridRealtimeSpeechController.Instance.ReloadAudioFilteringSettings();
+            Debug.Log("🔄 HybridRealtimeSpeechController settings reloaded successfully!");
+        }
+        else
+        {
+            Debug.LogWarning("❌ HybridRealtimeSpeechController.Instance not found!");
         }
     }
 
@@ -295,6 +349,9 @@ public class MySettingMaanger : MonoBehaviour
             consecutiveVoiceFramesInputField.interactable = true;
             maxRecordingDurationInputField.interactable = true;
 
+            // Enable audio filtering settings
+            enableAudioFilteringToggle.interactable = true;
+
             validateTxt.text = "";
             passwordInputField.text = "";
         }
@@ -315,6 +372,9 @@ public class MySettingMaanger : MonoBehaviour
         sessionTimeoutInputField.interactable = false;
         consecutiveVoiceFramesInputField.interactable = false;
         maxRecordingDurationInputField.interactable = false;
+
+        // Disable audio filtering settings
+        enableAudioFilteringToggle.interactable = false;
 
         validateTxt.text = "";
     }
