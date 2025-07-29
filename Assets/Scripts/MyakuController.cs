@@ -236,6 +236,7 @@ public class MyakuController : MonoBehaviour
     {
         animator.SetTrigger("listen");
         animator.SetBool("answer", false);
+        animator.SetBool("thinking", false);
         UIManager.Instance.connectionTxt.text = "I'm Listening...";
         if (playSound)
         {

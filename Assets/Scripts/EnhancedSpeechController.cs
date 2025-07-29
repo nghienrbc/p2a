@@ -745,7 +745,7 @@ public class EnhancedSpeechController : MonoBehaviour
             {
                 // First session after wake word - play listening sound
                 LogMessage("🎯 WAKE WORD SESSION - Calling myakuController.StartListening(true)");
-                //myakuController.StartListening(true);
+                myakuController.MyakuListen(true);
                 LogMessage("🎵 Playing welcome sound for wake word session");
                 needToWaitForListeningSound = true; // Need to wait for sound to finish
                 isFirstSessionAfterWakeWord = false; // Reset flag
@@ -755,7 +755,7 @@ public class EnhancedSpeechController : MonoBehaviour
             {
                 // Subsequent sessions - no audio feedback
                 LogMessage("🔄 FOLLOW-UP SESSION - Calling myakuController.StartListening(false)");
-                //myakuController.StartListening(false);
+                myakuController.MyakuListen(false);
                 LogMessage("🔇 Silent listening mode for follow-up questions");
             }
         }
@@ -1036,7 +1036,7 @@ public class EnhancedSpeechController : MonoBehaviour
             if (myakuController != null)
             {
                 //myakuController.FinishSpeaking();
-                //myakuController.StartListening(false);
+                myakuController.MyakuListen(false);
                 LogMessage("🔇 Silent listening mode for follow-up questions");
             }
 
@@ -1053,7 +1053,7 @@ public class EnhancedSpeechController : MonoBehaviour
             {
                 LogMessage("❌ Processing failed - Stopping thinking animation");
                 //myakuController.MyakuStopThinking();
-                //myakuController.StartListening(false);
+                myakuController.MyakuListen(false);
             }
 
             // Show error message to user
@@ -1077,29 +1077,29 @@ public class EnhancedSpeechController : MonoBehaviour
     /// <summary>
     /// Handle scenario where no TTS response is needed (noise, unclear audio, etc.)
     /// </summary>
-    private void HandleNoResponseScenario()
-    {
-        // Myaku Animation: No thinking needed, back to listening directly
-        if (myakuController != null)
-        {
-            // Don't call MyakuStopThinking() since we never started thinking for noise
-           // myakuController.StartListening(false);
-            LogMessage("🔇 No meaningful audio detected - Back to listening");
-        }
+    // private void HandleNoResponseScenario()
+    // {
+    //     // Myaku Animation: No thinking needed, back to listening directly
+    //     if (myakuController != null)
+    //     {
+    //         // Don't call MyakuStopThinking() since we never started thinking for noise
+    //        // myakuController.StartListening(false);
+    //         LogMessage("🔇 No meaningful audio detected - Back to listening");
+    //     }
 
-        // Update UI to show we're still listening
-        UpdateStatus("🔴 LIVE - Speak clearly, AI responds automatically");
+    //     // Update UI to show we're still listening
+    //     UpdateStatus("🔴 LIVE - Speak clearly, AI responds automatically");
         
-        // Update conversation display
-        if (userQuestionText != null)
-        {
-            userQuestionText.text = "👤 User: (Audio unclear - try again)";
-        }
-        if (aiResponseText != null)
-        {
-            aiResponseText.text = "🤖 AI: (Listening for clear speech...)";
-        }
-    }
+    //     // Update conversation display
+    //     if (userQuestionText != null)
+    //     {
+    //         userQuestionText.text = "👤 User: (Audio unclear - try again)";
+    //     }
+    //     if (aiResponseText != null)
+    //     {
+    //         aiResponseText.text = "🤖 AI: (Listening for clear speech...)";
+    //     }
+    // }
 
     /// <summary>
     /// Apply timeout in all scenarios - success, failure, or no response
@@ -1750,7 +1750,7 @@ User's audio input (analyze for clarity first):";
             LogMessage("🛑 Stopping thinking animation");
             myakuController.MyakuStopThinking();
             LogMessage("🗣️ Starting speaking preparation");
-            //myakuController.StartSpeaking();
+            myakuController.MyakuAnswer();
         }
 
         string responseLanguage = null;
@@ -2252,7 +2252,7 @@ User's audio input (analyze for clarity first):";
 
         if (aiResponseText != null)
         {
-            aiResponseText.text = "Say 'Hey DT' to ask me something";
+            aiResponseText.text = "Say 'Hey DT' or click START to ask me something!";
         }
     }
 
@@ -2275,7 +2275,7 @@ User's audio input (analyze for clarity first):";
         // Myaku Animation: Stop all activities
         if (myakuController != null)
         {
-           // myakuController.StopAllActivities();
+           myakuController.MyakuHello();
         }
 
         ResetVoiceDetectionState();
@@ -2299,6 +2299,7 @@ User's audio input (analyze for clarity first):";
 
         UpdateStatus("Click START to begin new enhanced speech session");
         ClearConversationDisplay();
+
         UpdateButtonStates();
 
         yield return null;

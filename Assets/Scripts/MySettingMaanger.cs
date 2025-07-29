@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Text.RegularExpressions;
+using UnityEngine.SceneManagement;
 
 public class MySettingMaanger : MonoBehaviour
 {
@@ -21,6 +22,10 @@ public class MySettingMaanger : MonoBehaviour
     public TMP_InputField sessionTimeoutInputField;          // Thời gian timeout session (20s)
     public TMP_InputField consecutiveVoiceFramesInputField;  // Số frame liên tiếp để xác nhận giọng nói
     public TMP_InputField maxRecordingDurationInputField;    // Thời gian ghi âm tối đa (15s)
+
+    
+    public Button saveSettingButton;
+    public Button changeMethodButton;
 
     [Header("Audio Filtering Settings")]
     public Toggle enableAudioFilteringToggle;               // Toggle để bật/tắt audio filtering
@@ -190,6 +195,11 @@ public class MySettingMaanger : MonoBehaviour
         SaveAudioFilteringSettings();
     }
 
+    public void ChangeMethodButtonClick(){
+        // đóng web socket trong hybrid
+        HybridRealtimeSpeechController.Instance.CloseWebsocketWhenChangeScene();
+        SceneManager.LoadScene("SpeechToSpeechScene");
+    }
     private void SaveVoiceDetectionSettings()
     {
         // Voice Threshold
@@ -354,6 +364,8 @@ public class MySettingMaanger : MonoBehaviour
 
             validateTxt.text = "";
             passwordInputField.text = "";
+            saveSettingButton.interactable = true;
+            if(changeMethodButton != null) changeMethodButton.interactable = true;
         }
         else
         {
@@ -377,6 +389,8 @@ public class MySettingMaanger : MonoBehaviour
         enableAudioFilteringToggle.interactable = false;
 
         validateTxt.text = "";
+        saveSettingButton.interactable = false;
+        if(changeMethodButton != null) changeMethodButton.interactable = false;
     }
 
     public void StartOpenSettingPanel()

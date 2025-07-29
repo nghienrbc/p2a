@@ -74,7 +74,7 @@ public class UIManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Giữ lại UIManager khi load scene mới
+            //DontDestroyOnLoad(gameObject); // Giữ lại UIManager khi load scene mới
         }
         else
         {

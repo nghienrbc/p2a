@@ -128,7 +128,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
             LoadConfiguration();
         }
         else
@@ -588,6 +588,39 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         
         // Add a small delay to ensure cleanup is complete before starting new session
         StartCoroutine(DelayedBeginSession());
+    }
+
+    public void CloseWebsocketWhenChangeScene(){
+        // CRITICAL: Check and cleanup existing WebSocket before creating new session
+        if (webSocket != null)
+        {
+            LogMessage("🔍 Existing WebSocket detected - performing cleanup validation");
+            
+            // Force cleanup existing connection
+            try
+            {
+                webSocket.OnOpen -= OnWebSocketOpen;
+                webSocket.OnMessage -= OnWebSocketMessage;
+                webSocket.OnError -= OnWebSocketError;
+                webSocket.OnClose -= OnWebSocketClose;
+                
+                if (isConnected || webSocket.State == WebSocketState.Open || webSocket.State == WebSocketState.Connecting)
+                {
+                    LogMessage("🛑 Closing existing WebSocket connection");
+                    webSocket.Close();
+                }
+                
+                webSocket = null;
+                isConnected = false;
+                LogMessage("✅ Existing WebSocket cleaned up successfully");
+            }
+            catch (Exception e)
+            {
+                LogMessage($"⚠️ Error during WebSocket cleanup: {e.Message}");
+                webSocket = null;
+                isConnected = false;
+            }
+        }
     }
     
     private IEnumerator DelayedBeginSession()
@@ -1628,7 +1661,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     private void ClearConversationDisplay()
     {
         //if (userQuestionText != null) userQuestionText.text = "👤 User: (Waiting...)";
-        if (aiResponseText != null) aiResponseText.text = "Click START or say 'Hey DT' to begin";
+        if (aiResponseText != null) aiResponseText.text = "Click START or say 'Hey DT' to ask me something!";
     }
 
     /// <summary>
