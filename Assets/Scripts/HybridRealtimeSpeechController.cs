@@ -1569,7 +1569,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
 
             if (audioPlugin != null)
             {
-                audioPlugin.Call("startRecordingFromUnity");
+                audioPlugin.Call("startRecordingFromUnity", "HybridRealtimeSpeechController");
                 enableHeyDT = true;
                 LogMessage("✅ Wake word 'Hey DT' active");
             }

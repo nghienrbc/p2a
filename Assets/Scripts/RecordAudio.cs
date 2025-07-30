@@ -302,7 +302,7 @@ public class RecordAudio : MonoBehaviour
         Debug.Log("AudioPlugin: " + (audioPlugin != null ? "Not null" : "Null"));
         if (audioPlugin != null)
         {
-            audioPlugin.Call("startRecordingFromUnity");
+            audioPlugin.Call("startRecordingFromUnity", "RecordAudio");
             //audioPlugin.Call("requestIgnoreBatteryOptimizations"); // Yêu cầu bỏ tối ưu hóa pin
         }
 #endif

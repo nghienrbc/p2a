@@ -2007,7 +2007,7 @@ User's audio input (analyze for clarity first):";
 
             if (audioPlugin != null)
             {
-                audioPlugin.Call("startRecordingFromUnity");
+                audioPlugin.Call("startRecordingFromUnity", "EnhancedSpeechController");
                 enableHeyDT = true;
                 LogMessage("✅ Wake word detection 'Hey DT' is active");
             }

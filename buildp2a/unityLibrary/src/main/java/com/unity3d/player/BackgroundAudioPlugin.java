@@ -63,6 +63,15 @@ public class BackgroundAudioPlugin {
 
     public void startRecordingFromUnity() {
         Log.d(TAG, "Bắt đầu thu âm từ Unity");
+        startRecordingWithScript("HybridRealtimeSpeechController"); // Default script name
+    }
+
+    public void startRecordingFromUnity(String scriptName) {
+        Log.d(TAG, "Bắt đầu thu âm từ Unity với script: " + scriptName);
+        startRecordingWithScript(scriptName);
+    }
+
+    private void startRecordingWithScript(String scriptName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "Thiếu quyền FOREGROUND_SERVICE_MICROPHONE");
@@ -76,6 +85,7 @@ public class BackgroundAudioPlugin {
             return;
         }
         Intent serviceIntent = new Intent(activity, AudioRecordingService.class);
+        serviceIntent.putExtra("SCRIPT_NAME", scriptName);
         activity.startService(serviceIntent);
     }
 
@@ -119,6 +129,7 @@ public class BackgroundAudioPlugin {
         private BroadcastReceiver serviceStarterReceiver;
         private BroadcastReceiver controlReceiver;
         private boolean shouldSendToWebSocket = true;
+        private String currentScriptName = "HybridRealtimeSpeechController"; // Default script name
         //private boolean isForeground = false; // Theo dõi trạng thái foreground
 
         private boolean isAppInForeground() {
@@ -154,6 +165,11 @@ public class BackgroundAudioPlugin {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
+            // Get script name from intent
+            if (intent != null && intent.hasExtra("SCRIPT_NAME")) {
+                currentScriptName = intent.getStringExtra("SCRIPT_NAME");
+                Log.d(TAG, "Received script name: " + currentScriptName);
+            }
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 //                if (!startForegroundService()) {
 //                    Log.e(TAG, "Không thể khởi động foreground service, dừng dịch vụ");
@@ -284,6 +300,19 @@ public class BackgroundAudioPlugin {
 
         private void setupWebSocket() {
             try {
+                // Check if there's an existing WebSocket connection to the same URL
+                if (webSocketClient != null) {
+                    Log.d(TAG, "Đóng WebSocket cũ trước khi tạo kết nối mới");
+                    try {
+                        if (webSocketClient.isOpen()) {
+                            webSocketClient.close();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Lỗi khi đóng WebSocket cũ: " + e.getMessage());
+                    }
+                    webSocketClient = null;
+                }
+
                 URI uri = new URI(WEBSOCKET_URL);
                 webSocketClient = new WebSocketClient(uri) {
                     @Override
@@ -300,8 +329,8 @@ public class BackgroundAudioPlugin {
                             if ("wake_word_detected".equals(type)) {
                                 Log.d(TAG, "Phát hiện wake word từ WebSocket");
                                 if (isAppInForeground()) {
-                                    Log.d(TAG, "Ứng dụng đang ở foreground, gửi thông báo wake word đến Unity");
-                                    UnityPlayer.UnitySendMessage("HybridRealtimeSpeechController", "OnWakeWordDetected", "");
+                                    Log.d(TAG, "Ứng dụng đang ở foreground, gửi thông báo wake word đến Unity script: " + currentScriptName);
+                                    UnityPlayer.UnitySendMessage(currentScriptName, "OnWakeWordDetected", "");
                                 } else {
                                     Log.d(TAG, "Ứng dụng ở background, mở Activity");
                                    // startMainActivity();

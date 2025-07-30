@@ -1608,7 +1608,7 @@ public class GeminiRealtimeSpeechController : MonoBehaviour
 
             if (audioPlugin != null)
             {
-                audioPlugin.Call("startRecordingFromUnity");
+                audioPlugin.Call("startRecordingFromUnity", "GeminiRealtimeSpeechController");
                 enableHeyDT = true;
                 LogMessage("✅ Wake word 'Hey DT' active");
             }
