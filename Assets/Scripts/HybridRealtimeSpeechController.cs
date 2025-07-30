@@ -288,17 +288,17 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             isRecording = false;
             LogMessage("🛑 Final microphone stop in OnAIFinishedSpeaking");
         }
-        if(isFirstListening == true){
+    //     if(isFirstListening == true){
 
-            isFirstListening = false;
-        }
-       else {
+    //         isFirstListening = false;
+    //     }
+    //    else {
  // Myaku animation
             if (myakuController != null)
             {
                 myakuController.MyakuListen(false);
             }
-       }
+    //    }
         
         // Start delay before allowing recording again
         StartCoroutine(SpeechEndDelayCoroutine());
@@ -1000,11 +1000,18 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         if (!isPlayingAudio && isSessionActive && (audioBuffer.Count > 1000 || (isAIResponseComplete && audioBuffer.Count > 0)))
         {
             LogMessage($"🎵 Triggering PlayAudio - Buffer: {audioBuffer.Count}, Response complete: {isAIResponseComplete}, Queue: {audioPlaybackQueue.Count}");
-            StartCoroutine(PlayAudio());
+            if(!isAIResponseComplete) {
+                LogMessage($"🎵 PlayAudio with not final chunk");
+                StartCoroutine(PlayAudio(false));
+            }
+            else {
+                LogMessage($"🎵 PlayAudio with final chunk");
+                StartCoroutine(PlayAudio(true));
+            }
         }
     }
 
-    private IEnumerator PlayAudio()
+    private IEnumerator PlayAudio(bool finalChunk)
     {
         // CRITICAL: Exit immediately if session is not active
         if (!isSessionActive)
@@ -1054,7 +1061,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             LogMessage($"🔊 Audio finished playing - Response complete: {isAIResponseComplete}, Queue count: {audioPlaybackQueue.Count}");
             
             // If this was the final chunk, AI finished speaking
-            if (isAIResponseComplete && audioPlaybackQueue.Count == 0)
+            if (isAIResponseComplete && audioPlaybackQueue.Count == 0 && finalChunk)
             {
                 LogMessage("🔊 AI finished speaking - Final audio played");
                 OnAIFinishedSpeaking(); // CRITICAL: This is where we detect "phát xong câu trả lời"
