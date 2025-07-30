@@ -1897,7 +1897,7 @@ When asked about P2A, Passage to ASEAN, ASEAN education cooperation, or student 
 - Myanmar Institute of Information Technology
 
 **Current Scale:**
-- Over 80 member institutions from all 10 ASEAN countries
+- Over 145 member institutions from all 10 ASEAN countries
 - Connects over 1 million students across the region
 - Countries: Brunei, Cambodia, Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand, Vietnam
 
