@@ -49,7 +49,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     [Tooltip("Delay after AI finishes speaking before allowing recording again (seconds)")]
     public float speechEndDelay = 2.0f; // Increased from 0.5f to 2.0f to prevent feedback
     [Tooltip("Auto session timeout after response (seconds)")]
-    public float sessionTimeoutAfterResponse = 30f;
+    public float sessionTimeoutAfterResponse = 10f;
     
     [Header("Wake Word Detection")]
     public bool enableWakeWordDetection = true;
@@ -1512,6 +1512,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
     #region Wake Word Detection
     private void InitializeComponent()
     {
+        sessionTimeoutAfterResponse = PlayerPrefs.GetFloat("SessionTimeout", 15f);
         if (startStopButton != null) startStopButton.onClick.AddListener(ToggleRealtimeConversation);
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
 

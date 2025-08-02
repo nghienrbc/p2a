@@ -158,11 +158,13 @@ public class MySettingMaanger : MonoBehaviour
         // Enable Audio Filtering (false default)
         if (PlayerPrefs.HasKey("EnableAudioFiltering"))
         {
+            Debug.Log("có key EnableAudioFiltering");
             bool savedValue = PlayerPrefs.GetInt("EnableAudioFiltering") == 1;
             enableAudioFilteringToggle.isOn = savedValue;
         }
         else
         {
+            Debug.Log("chưa có key EnableAudioFiltering");
             bool defaultValue = true;
             enableAudioFilteringToggle.isOn = defaultValue;
             PlayerPrefs.SetInt("EnableAudioFiltering", defaultValue ? 1 : 0);
@@ -302,6 +304,7 @@ public class MySettingMaanger : MonoBehaviour
         bool enableAudioFiltering = enableAudioFilteringToggle.isOn;
         PlayerPrefs.SetInt("EnableAudioFiltering", enableAudioFiltering ? 1 : 0);
         Debug.Log("Enable Audio Filtering saved: " + enableAudioFiltering);
+        ReloadHybridRealtimeSpeechControllerSettings();
     }
     
     /// <summary>
