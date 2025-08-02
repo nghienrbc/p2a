@@ -417,7 +417,7 @@ public class LocationSceneManager : MonoBehaviour
 
     private string GetDatabasePath(string dbName)
     {
-        string path;
+        string path = "";
 
 #if UNITY_EDITOR
         path = Application.dataPath + "/StreamingAssets/" + dbName;
