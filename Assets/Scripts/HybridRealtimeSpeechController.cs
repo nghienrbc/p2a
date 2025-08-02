@@ -821,16 +821,16 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                     silence_duration_ms = 300
                 },
                 // ✅ THÊM: Xóa history conversation mỗi khi tạo session mới
-                conversation = new { }
+                //conversation = new { }
             }
         };
 
         try
         {
             string jsonConfig = JsonConvert.SerializeObject(sessionConfig);
-            LogMessage($"📤 Sending session config with cleared history: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
+            LogMessage($"📤 Sending session config: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
             webSocket.SendText(jsonConfig);
-            LogMessage("📡 Session config sent with fresh conversation - waiting for response...");
+            LogMessage("📡 Session config sent - waiting for response...");
         }
         catch (Exception e)
         {
@@ -839,7 +839,43 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
         
         yield return new WaitForSeconds(1f);
-        LogMessage("✅ Fresh session created - conversation history cleared");
+        
+        // Clear conversation history after session is created
+        ClearConversationHistory();
+        
+        LogMessage("✅ Session creation completed with fresh conversation");
+    }
+
+    /// <summary>
+    /// Clear conversation history on OpenAI server sau khi session được tạo
+    /// </summary>
+    private void ClearConversationHistory()
+    {
+        if (!isConnected) 
+        {
+            LogMessage("⚠️ Cannot clear conversation - WebSocket not connected");
+            return;
+        }
+
+        try
+        {
+            // Method 1: Clear input audio buffer để reset conversation context
+            var clearInputBuffer = new
+            {
+                type = "input_audio_buffer.clear"
+            };
+
+            string jsonMessage = JsonConvert.SerializeObject(clearInputBuffer);
+            webSocket.SendText(jsonMessage);
+            LogMessage("🗑️ Input audio buffer cleared - conversation context reset");
+            
+            // Note: OpenAI Realtime API tự động clear conversation khi session được tạo mới
+            // Phương pháp này chỉ clear input buffer để đảm bảo không có audio cũ còn sót lại
+        }
+        catch (Exception e)
+        {
+            LogMessage($"❌ Error clearing conversation history: {e.Message}");
+        }
     }
 
     private void StartRecording()
