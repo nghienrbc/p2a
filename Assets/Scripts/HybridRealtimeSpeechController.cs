@@ -1589,6 +1589,12 @@ public class HybridRealtimeSpeechController : MonoBehaviour
             volumeThreshold = PlayerPrefs.GetFloat("VoiceThreshold");
         }
 
+        // Load volumeThreshold from voiceThreshold
+        if (PlayerPrefs.HasKey("SessionTimeout"))
+        {
+            sessionTimeoutAfterResponse = PlayerPrefs.GetFloat("SessionTimeout");
+        }
+
         LogMessage($"🔧 Loaded settings - Audio filtering: {(enableAudioFiltering ? "BẬT" : "TẮT")}, Volume threshold: {volumeThreshold:F3}");
     }
 
