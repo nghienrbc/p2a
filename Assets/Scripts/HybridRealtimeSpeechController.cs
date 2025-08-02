@@ -818,17 +818,19 @@ public class HybridRealtimeSpeechController : MonoBehaviour
                     type = "server_vad", // CRITICAL: OpenAI handles VAD
                     threshold = 0.5,
                     prefix_padding_ms = 300,
-                    silence_duration_ms = 200
-                }
+                    silence_duration_ms = 300
+                },
+                // ✅ THÊM: Xóa history conversation mỗi khi tạo session mới
+                conversation = new { }
             }
         };
 
         try
         {
             string jsonConfig = JsonConvert.SerializeObject(sessionConfig);
-            LogMessage($"📤 Sending session config: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
+            LogMessage($"📤 Sending session config with cleared history: {jsonConfig.Substring(0, Math.Min(100, jsonConfig.Length))}...");
             webSocket.SendText(jsonConfig);
-            LogMessage("📡 Session config sent - waiting for response...");
+            LogMessage("📡 Session config sent with fresh conversation - waiting for response...");
         }
         catch (Exception e)
         {
@@ -837,7 +839,7 @@ public class HybridRealtimeSpeechController : MonoBehaviour
         }
         
         yield return new WaitForSeconds(1f);
-        LogMessage("✅ Session creation completed");
+        LogMessage("✅ Fresh session created - conversation history cleared");
     }
 
     private void StartRecording()
